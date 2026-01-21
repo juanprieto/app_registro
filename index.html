@@ -370,14 +370,15 @@ async function exportarExcel() {
 
     if (!confirm(`¿Exportar informe de fecha ${fBonita}?`)) return;
 
+    // 🔹 1. Extraer datos de la tabla
     const data = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
         const res = tr.cells[5].textContent;
 
         const check = (sust) => {
-            if (!res || res === "-") return 1; // No realizado
-            if (res.includes(`${sust}:POS`)) return 2; // Positivo
-            if (res.includes(`${sust}:NEG`)) return 0; // Negativo
-            return 1; // No realizado
+            if (!res || res === "-") return 1;
+            if (res.includes(`${sust}:POS`)) return 2;
+            if (res.includes(`${sust}:NEG`)) return 0;
+            return 1;
         };
 
         return {
@@ -395,50 +396,76 @@ async function exportarExcel() {
         };
     });
 
-    // 🔹 GUARDAR CADA FILA EN SUPABASE
-    for (const fila of data) {
+    // 🔹 2. Obtener todos los nombres de pacientes
+    const nombres = data.map(f => f.PACIENTE);
 
-        // 1. Obtener ID del paciente según el nombre
-        const pacienteId = await obtenerPacienteId(fila.PACIENTE);
+    // 🔹 3. Obtener IDs de pacientes en una sola llamada
+    const { data: pacientes, error: errorPac } = await supabase
+        .from("pacientes")
+        .select("id, nombre")
+        .in("nombre", nombres);
 
-        // 2. Guardar registro en Supabase
-        await guardarRegistroEnSupabase({
-            fecha: fISO,
-            paciente_id: pacienteId,
-            asistencia: fila.ASISTENCIA,
-            mañana: fila.MAÑANA === "SI",
-            tarde: fila.TARDE === "SI",
-            control: fila.CONTROL === "SI",
-            sustancias: {
-                COC: fila.COC,
-                OH: fila.OH,
-                THC: fila.THC,
-                BZD: fila.BZD,
-                OPI: fila.OPI,
-                KETA: fila.KETA,
-                AMP: fila.AMP,
-                MTD: fila.MTD
-            },
-            rescate: fila.RESCATE === "SI",
-            medicacion: fila["MEDICACIÓN"] === "SI",
-            riesgo: fila.RIESGO,
-            observaciones: document.getElementById("observaciones")?.value || ""
-        });
+    if (errorPac) {
+        alert("Error obteniendo IDs de pacientes");
+        console.error(errorPac);
+        return;
     }
 
-    // 🔹 EXPORTACIÓN A EXCEL (tu código original)
+    // 🔹 4. Crear diccionario nombre → id
+    const mapaPacientes = {};
+    pacientes.forEach(p => mapaPacientes[p.nombre] = p.id);
+
+    // 🔹 5. Preparar registros para inserción masiva
+    const registros = data.map(fila => ({
+        fecha: fISO,
+        paciente_id: mapaPacientes[fila.PACIENTE],
+        asistencia: fila.ASISTENCIA,
+        mañana: fila.MAÑANA === "SI",
+        tarde: fila.TARDE === "SI",
+        control: fila.CONTROL === "SI",
+        sustancias: {
+            COC: fila.COC,
+            OH: fila.OH,
+            THC: fila.THC,
+            BZD: fila.BZD,
+            OPI: fila.OPI,
+            KETA: fila.KETA,
+            AMP: fila.AMP,
+            MTD: fila.MTD
+        },
+        rescate: fila.RESCATE === "SI",
+        medicacion: fila["MEDICACIÓN"] === "SI",
+        riesgo: fila.RIESGO,
+        observaciones: document.getElementById("observaciones")?.value || ""
+    }));
+
+    // 🔹 6. Insertar TODO en una sola llamada
+    const { error: errorInsert } = await supabase
+        .from("registros")
+        .insert(registros);
+
+    if (errorInsert) {
+        alert("Error guardando registros en Supabase");
+        console.error(errorInsert);
+        return;
+    }
+
+    // 🔹 7. Exportar Excel sin bloquear la interfaz
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Tesis");
-    XLSX.writeFile(wb, `Registro_${fISO}.xlsx`);
 
+    await XLSX.writeFileAsync(wb, `Registro_${fISO}.xlsx`, { compression: false });
+
+    // 🔹 8. Preguntar si limpiar pantalla
     setTimeout(() => {
         if (confirm("¿Finalizar día y limpiar pantalla?")) {
             localStorage.removeItem(STORAGE_KEY);
             location.reload();
         }
-    }, 1000);
+    }, 500);
 }
+
 
 
         
