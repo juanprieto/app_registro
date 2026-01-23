@@ -452,11 +452,11 @@ async function exportarExcel() {
     }
 
     // 🔹 7. Exportar Excel sin bloquear la interfaz
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Tesis");
+   const ws = XLSX.utils.json_to_sheet(data);
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "Tesis");
 
-    await XLSX.writeFileAsync(wb, `Registro_${fISO}.xlsx`, { compression: false });
+XLSX.writeFile(wb, `Registro_${fISO}.xlsx`);
 
     // 🔹 8. Preguntar si limpiar pantalla
     setTimeout(() => {
