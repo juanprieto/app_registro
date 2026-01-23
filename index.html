@@ -451,12 +451,12 @@ async function exportarExcel() {
         return;
     }
 
-    // 🔹 7. Exportar Excel sin bloquear la interfaz
-   const ws = XLSX.utils.json_to_sheet(data);
-const wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb, ws, "Tesis");
+    // 🔹 7. Exportar Excel sin errores
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Tesis");
 
-XLSX.writeFile(wb, `Registro_${fISO}.xlsx`);
+    XLSX.writeFile(wb, `Registro_${fISO}.xlsx`);
 
     // 🔹 8. Preguntar si limpiar pantalla
     setTimeout(() => {
@@ -466,6 +466,7 @@ XLSX.writeFile(wb, `Registro_${fISO}.xlsx`);
         }
     }, 500);
 }
+
 
 
         
