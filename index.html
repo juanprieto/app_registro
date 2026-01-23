@@ -363,6 +363,7 @@ if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
 
     return nuevo.id;
 }
+
 async function exportarExcel() {
     const fISO = document.getElementById('fecha').value;
     const [y, m, d] = fISO.split('-');
@@ -400,7 +401,7 @@ async function exportarExcel() {
     const nombres = data.map(f => f.PACIENTE);
 
     // 🔹 3. Obtener IDs de pacientes en una sola llamada
-    const { data: pacientes, error: errorPac } = await supabase
+    const { data: pacientes, error: errorPac } = await client
         .from("pacientes")
         .select("id, nombre")
         .in("nombre", nombres);
@@ -440,8 +441,8 @@ async function exportarExcel() {
     }));
 
     // 🔹 6. Insertar TODO en una sola llamada
-    const { error: errorInsert } = await supabase
-        .from("registros")
+    const { error: errorInsert } = await client
+        .from("registros_diarios")
         .insert(registros);
 
     if (errorInsert) {
@@ -465,7 +466,6 @@ async function exportarExcel() {
         }
     }, 500);
 }
-
 
 
         
