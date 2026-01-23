@@ -451,12 +451,21 @@ async function exportarExcel() {
         return;
     }
 
-    // 🔹 7. Exportar Excel sin errores
+    // 🔹 7. Exportar Excel compatible con Android/Samsung
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Tesis");
 
-    XLSX.writeFile(wb, `Registro_${fISO}.xlsx`);
+    // Generar el archivo como ArrayBuffer
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+    // Convertir a Blob
+    const blob = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+
+    // Descargar usando FileSaver (compatible con Android)
+    saveAs(blob, `Registro_${fISO}.xlsx`);
 
     // 🔹 8. Preguntar si limpiar pantalla
     setTimeout(() => {
@@ -466,6 +475,7 @@ async function exportarExcel() {
         }
     }, 500);
 }
+
 
 
 
