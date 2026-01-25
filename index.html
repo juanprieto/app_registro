@@ -53,6 +53,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
+
+
+
+    
 <script>
 const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
@@ -62,38 +66,33 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // PASO 3 — Cargar registros de la semana
 async function cargarSemana(fechaBase) {
-    try {
-        const fecha = new Date(fechaBase);
+    const fecha = new Date(fechaBase);
 
-        const lunes = new Date(fecha);
-        lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
+    const lunes = new Date(fecha);
+    lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
 
-        const domingo = new Date(lunes);
-        domingo.setDate(lunes.getDate() + 6);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
 
-        const f1 = lunes.toISOString().split("T")[0];
-        const f2 = domingo.toISOString().split("T")[0];
+    const f1 = lunes.toISOString().split("T")[0];
+    const f2 = domingo.toISOString().split("T")[0];
 
-        const { data, error } = await client
-            .from("registros_diarios")
-            .select(`
-                *,
-                pacientes ( nombre )
-            `)
-            .gte("fecha", f1)
-            .lte("fecha", f2)
-            .order("fecha", { ascending: true });
+    const { data, error } = await client
+        .from("registros_diarios")
+        .select(`
+            *,
+            pacientes ( nombre )
+        `)
+        .gte("fecha", f1)
+        .lte("fecha", f2)
+        .order("fecha", { ascending: true });
 
-        if (error) {
-            console.error("Error cargando semana:", error);
-            return [];
-        }
-
-        return data || [];
-    } catch (e) {
-        console.error("Error inesperado en cargarSemana:", e);
+    if (error) {
+        console.error("Error cargando semana:", error);
         return [];
     }
+
+    return data || [];
 }
 
 
@@ -102,7 +101,6 @@ function agruparPorDia(registros) {
     const dias = {};
 
     registros.forEach(r => {
-        if (!r.fecha) return;
         if (!dias[r.fecha]) dias[r.fecha] = [];
         dias[r.fecha].push(r);
     });
@@ -114,11 +112,6 @@ function agruparPorDia(registros) {
 // PASO 5 — Mostrar calendario semanal
 function mostrarCalendarioSemanal(diasSemana) {
     const cont = document.getElementById("calendario");
-    if (!cont) {
-        console.error("No existe el div con id 'calendario'");
-        return;
-    }
-
     cont.innerHTML = "";
 
     const diasOrden = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
@@ -141,8 +134,6 @@ function mostrarCalendarioSemanal(diasSemana) {
 
     // Fila de días
     const fila = document.createElement("tr");
-
-    // Fechas ordenadas
     const fechas = Object.keys(diasSemana).sort();
 
     diasOrden.forEach((_, i) => {
@@ -160,35 +151,37 @@ function mostrarCalendarioSemanal(diasSemana) {
             titulo.style.marginBottom = "6px";
             celda.appendChild(titulo);
 
-          diasSemana[fecha].forEach(r => {
-    const p = document.createElement("div");
-    p.style.background = "#eef5d0";
-    p.style.padding = "4px";
-    p.style.marginBottom = "4px";
-    p.style.borderRadius = "4px";
+            diasSemana[fecha].forEach(r => {
+                const p = document.createElement("div");
+                p.style.background = "#eef5d0";
+                p.style.padding = "4px";
+                p.style.marginBottom = "4px";
+                p.style.borderRadius = "4px";
 
-    const asistencia = r.asistencia ? "SÍ" : "NO";
-    const control = r.control ? "SÍ" : "NO";
+                const nombre = r.pacientes?.nombre || "Sin nombre";
+                const asistencia = r.asistencia ? "SÍ" : "NO";
+                const control = r.control ? "SÍ" : "NO";
 
-    const nombre = r.pacientes?.nombre || "Sin nombre";
+                p.textContent =
+                    `${nombre} — ` +
+                    `Asistencia: ${asistencia} — ` +
+                    `Control: ${control}`;
 
-    p.textContent =
-        `${nombre} — ` +
-        `Asistencia: ${asistencia} — ` +
-        `Control: ${control}`;
+                celda.appendChild(p);
+            });
+        }
 
-    celda.appendChild(p);
-});
-
+        fila.appendChild(celda);
+    });
 
     tabla.appendChild(fila);
     cont.appendChild(tabla);
 }
 
 
-// PASO 6 — Botón para ver la semana
+// PASO 6 — Ver semana
 async function verSemana() {
-    const fechaISO = document.getElementById("fecha")?.value;
+    const fechaISO = document.getElementById("fecha").value;
 
     if (!fechaISO) {
         alert("Selecciona una fecha primero");
@@ -204,7 +197,7 @@ async function verSemana() {
 // Navegación entre semanas
 function semanaAnterior() {
     const input = document.getElementById("fecha");
-    if (!input || !input.value) return alert("Selecciona una fecha primero");
+    if (!input.value) return alert("Selecciona una fecha primero");
 
     const fecha = new Date(input.value);
     fecha.setDate(fecha.getDate() - 7);
@@ -215,7 +208,7 @@ function semanaAnterior() {
 
 function semanaSiguiente() {
     const input = document.getElementById("fecha");
-    if (!input || !input.value) return alert("Selecciona una fecha primero");
+    if (!input.value) return alert("Selecciona una fecha primero");
 
     const fecha = new Date(input.value);
     fecha.setDate(fecha.getDate() + 7);
@@ -224,6 +217,8 @@ function semanaSiguiente() {
     verSemana();
 }
 </script>
+
+
 
 
 
