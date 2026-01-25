@@ -59,38 +59,41 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    
+
 // PASO 3 — Cargar registros de la semana
 async function cargarSemana(fechaBase) {
-    const fecha = new Date(fechaBase);
+    try {
+        const fecha = new Date(fechaBase);
 
-    // Calcular lunes
-    const lunes = new Date(fecha);
-    lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
+        const lunes = new Date(fecha);
+        lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
 
-    // Calcular domingo
-    const domingo = new Date(lunes);
-    domingo.setDate(lunes.getDate() + 6);
+        const domingo = new Date(lunes);
+        domingo.setDate(lunes.getDate() + 6);
 
-    const f1 = lunes.toISOString().split("T")[0];
-    const f2 = domingo.toISOString().split("T")[0];
+        const f1 = lunes.toISOString().split("T")[0];
+        const f2 = domingo.toISOString().split("T")[0];
 
-    const { data, error } = await client
-        .from("registros_diarios")
-        .select(`
-            *,
-            pacientes ( nombre )
-        `)
-        .gte("fecha", f1)
-        .lte("fecha", f2)
-        .order("fecha", { ascending: true });
+        const { data, error } = await client
+            .from("registros_diarios")
+            .select(`
+                *,
+                pacientes ( nombre )
+            `)
+            .gte("fecha", f1)
+            .lte("fecha", f2)
+            .order("fecha", { ascending: true });
 
-    if (error) {
-        console.error("Error cargando semana:", error);
+        if (error) {
+            console.error("Error cargando semana:", error);
+            return [];
+        }
+
+        return data || [];
+    } catch (e) {
+        console.error("Error inesperado en cargarSemana:", e);
         return [];
     }
-
-    return data;
 }
 
 
@@ -99,9 +102,8 @@ function agruparPorDia(registros) {
     const dias = {};
 
     registros.forEach(r => {
-        if (!dias[r.fecha]) {
-            dias[r.fecha] = [];
-        }
+        if (!r.fecha) return;
+        if (!dias[r.fecha]) dias[r.fecha] = [];
         dias[r.fecha].push(r);
     });
 
@@ -112,6 +114,11 @@ function agruparPorDia(registros) {
 // PASO 5 — Mostrar calendario semanal
 function mostrarCalendarioSemanal(diasSemana) {
     const cont = document.getElementById("calendario");
+    if (!cont) {
+        console.error("No existe el div con id 'calendario'");
+        return;
+    }
+
     cont.innerHTML = "";
 
     const diasOrden = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
@@ -135,7 +142,8 @@ function mostrarCalendarioSemanal(diasSemana) {
     // Fila de días
     const fila = document.createElement("tr");
 
-    const fechas = Object.keys(diasSemana); // Fechas reales de la semana
+    // Fechas ordenadas
+    const fechas = Object.keys(diasSemana).sort();
 
     diasOrden.forEach((_, i) => {
         const celda = document.createElement("td");
@@ -152,29 +160,32 @@ function mostrarCalendarioSemanal(diasSemana) {
             titulo.style.marginBottom = "6px";
             celda.appendChild(titulo);
 
-          diasSemana[fecha].forEach(r => {
-    const p = document.createElement("div");
-    p.style.background = "#eef5d0";
-    p.style.padding = "4px";
-    p.style.marginBottom = "4px";
-    p.style.borderRadius = "4px";
+            diasSemana[fecha].forEach(r => {
+                const p = document.createElement("div");
+                p.style.background = "#eef5d0";
+                p.style.padding = "4px";
+                p.style.marginBottom = "4px";
+                p.style.borderRadius = "4px";
 
-    const control = r.control ? "SÍ" : "NO";
-    const mañana = r.mañana ? "SÍ" : "NO";
-    const tarde = r.tarde ? "SÍ" : "NO";
+                const nombre = r.pacientes?.nombre || "Sin nombre";
 
-    p.textContent =
-        `${r.pacientes.nombre} — ` +
-        `Control: ${control} — ` +
-        `Mañana: ${mañana} — ` +
-        `Tarde: ${tarde}`;
+                // OJO: aquí supongo que en la tabla los campos se llaman 'control', 'manana', 'tarde'
+                const control = r.control ? "SÍ" : "NO";
+                const manana = r.manana ? "SÍ" : "NO";
+                const tarde = r.tarde ? "SÍ" : "NO";
 
-    celda.appendChild(p);
-});
+                p.textContent =
+                    `${nombre} — ` +
+                    `Control: ${control} — ` +
+                    `Mañana: ${manana} — ` +
+                    `Tarde: ${tarde}`;
 
+                celda.appendChild(p);
+            });
+        }
 
-            
-        
+        fila.appendChild(celda);
+    });
 
     tabla.appendChild(fila);
     cont.appendChild(tabla);
@@ -183,7 +194,7 @@ function mostrarCalendarioSemanal(diasSemana) {
 
 // PASO 6 — Botón para ver la semana
 async function verSemana() {
-    const fechaISO = document.getElementById("fecha").value;
+    const fechaISO = document.getElementById("fecha")?.value;
 
     if (!fechaISO) {
         alert("Selecciona una fecha primero");
@@ -194,12 +205,15 @@ async function verSemana() {
     const dias = agruparPorDia(registros);
     mostrarCalendarioSemanal(dias);
 }
-    function semanaAnterior() {
+
+
+// Navegación entre semanas
+function semanaAnterior() {
     const input = document.getElementById("fecha");
-    if (!input.value) return alert("Selecciona una fecha primero");
+    if (!input || !input.value) return alert("Selecciona una fecha primero");
 
     const fecha = new Date(input.value);
-    fecha.setDate(fecha.getDate() - 7); // restar 7 días
+    fecha.setDate(fecha.getDate() - 7);
 
     input.value = fecha.toISOString().split("T")[0];
     verSemana();
@@ -207,17 +221,16 @@ async function verSemana() {
 
 function semanaSiguiente() {
     const input = document.getElementById("fecha");
-    if (!input.value) return alert("Selecciona una fecha primero");
+    if (!input || !input.value) return alert("Selecciona una fecha primero");
 
     const fecha = new Date(input.value);
-    fecha.setDate(fecha.getDate() + 7); // sumar 7 días
+    fecha.setDate(fecha.getDate() + 7);
 
     input.value = fecha.toISOString().split("T")[0];
     verSemana();
 }
-
-
 </script>
+
 
 
 <body>
