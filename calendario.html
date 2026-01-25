@@ -56,15 +56,6 @@ let filtros = {
     paciente: "todos"
 };
 
-// ---- UTILIDAD FECHA LOCAL YYYY-MM-DD ----
-function formatearFechaLocal(fecha) {
-    const d = new Date(fecha);
-    const año = d.getFullYear();
-    const mes = String(d.getMonth() + 1).padStart(2, "0");
-    const dia = String(d.getDate()).padStart(2, "0");
-    return `${año}-${mes}-${dia}`;
-}
-
 // Cargar lista de pacientes
 async function cargarPacientes() {
     const { data } = await client
@@ -120,7 +111,7 @@ function limpiarFiltros() {
     verSemana();
 }
 
-// Cargar semana (solo lunes-viernes)
+// Cargar semana
 async function cargarSemana(fechaBase) {
     const fecha = new Date(fechaBase);
 
@@ -130,8 +121,8 @@ async function cargarSemana(fechaBase) {
     const viernes = new Date(lunes);
     viernes.setDate(lunes.getDate() + 4);
 
-    const f1 = formatearFechaLocal(lunes);
-    const f2 = formatearFechaLocal(viernes);
+    const f1 = lunes.toISOString().split("T")[0];
+    const f2 = viernes.toISOString().split("T")[0];
 
     const { data } = await client
         .from("registros_diarios")
@@ -143,15 +134,14 @@ async function cargarSemana(fechaBase) {
     return data || [];
 }
 
-// Agrupar por día (solo lunes-viernes)
+// Agrupar por día
 function agrupar(registros) {
     const dias = {};
     registros.forEach(r => {
-        const clave = r.fecha; // ya viene como YYYY-MM-DD
-        const d = new Date(clave).getDay();
-        if (d >= 1 && d <= 5) {
-            if (!dias[clave]) dias[clave] = [];
-            dias[clave].push(r);
+        const d = new Date(r.fecha).getDay();
+        if (d >= 1 && d <= 5) { // solo lunes-viernes
+            if (!dias[r.fecha]) dias[r.fecha] = [];
+            dias[r.fecha].push(r);
         }
     });
     return dias;
@@ -167,7 +157,6 @@ function mostrar(diasSemana) {
     tabla.style.width = "100%";
     tabla.style.borderCollapse = "collapse";
 
-    // Cabecera
     const head = document.createElement("tr");
     diasOrden.forEach(d => {
         const th = document.createElement("th");
@@ -179,73 +168,65 @@ function mostrar(diasSemana) {
     });
     tabla.appendChild(head);
 
-    // GENERAR FECHAS REALES LUNES–VIERNES (LOCAL)
-    const fechas = [];
-    const base = new Date(fechaActual);
-    const lunes = new Date(base);
-    lunes.setDate(base.getDate() - base.getDay() + 1);
-
-    for (let i = 0; i < 5; i++) {
-        const d = new Date(lunes);
-        d.setDate(lunes.getDate() + i);
-        fechas.push(formatearFechaLocal(d));
-    }
-
     const fila = document.createElement("tr");
+    const fechas = Object.keys(diasSemana).sort();
 
-    fechas.forEach(fecha => {
+    diasOrden.forEach((_, i) => {
         const celda = document.createElement("td");
         celda.style.border = "1px solid #ccc";
         celda.style.padding = "8px";
         celda.style.verticalAlign = "top";
 
-        const titulo = document.createElement("div");
-        titulo.textContent = fecha;
-        titulo.style.fontWeight = "bold";
-        titulo.style.marginBottom = "6px";
-        celda.appendChild(titulo);
+        const fecha = fechas[i];
+        if (fecha) {
+            const titulo = document.createElement("div");
+            titulo.textContent = fecha;
+            titulo.style.fontWeight = "bold";
+            titulo.style.marginBottom = "6px";
+            celda.appendChild(titulo);
 
-        const registros = diasSemana[fecha] || [];
+            diasSemana[fecha].forEach(r => {
 
-        registros.forEach(r => {
+                // FILTRO POR PACIENTE
+                if (filtros.paciente !== "todos" && r.paciente_id != filtros.paciente) return;
 
-            // FILTRO PACIENTE
-            if (filtros.paciente !== "todos" && r.paciente_id != filtros.paciente) return;
+                // FILTROS OR reales
+                const filtrosActivos = [];
 
-            // FILTROS OR reales
-            const activos = [];
-            if (filtros.mañana) activos.push(r.mañana);
-            if (filtros.tarde) activos.push(r.tarde);
-            if (filtros.control) activos.push(r.control);
+                if (filtros.mañana) filtrosActivos.push(r.mañana);
+                if (filtros.tarde) filtrosActivos.push(r.tarde);
+                if (filtros.control) filtrosActivos.push(r.control);
 
-            if (activos.length > 0 && !activos.includes(true)) return;
+                if (filtrosActivos.length > 0 && !filtrosActivos.includes(true)) return;
 
-            const p = document.createElement("div");
-            p.style.background = "#eef5d0";
-            p.style.padding = "4px";
-            p.style.marginBottom = "6px";
-            p.style.borderRadius = "4px";
+                const p = document.createElement("div");
+                p.style.background = "#eef5d0";
+                p.style.padding = "4px";
+                p.style.marginBottom = "6px";
+                p.style.borderRadius = "4px";
 
-            const nombre = r.pacientes?.nombre || "Sin nombre";
-            const mañana = r.mañana ? "SÍ" : "NO";
-            const tarde = r.tarde ? "SÍ" : "NO";
-            const control = r.control ? "SÍ" : "NO";
+                const nombre = r.pacientes?.nombre || "Sin nombre";
+                const mañana = r.mañana ? "SÍ" : "NO";
+                const tarde = r.tarde ? "SÍ" : "NO";
+                const control = r.control ? "SÍ" : "NO";
 
-            let texto = nombre;
-            let detalles = [];
+                // Construcción dinámica del texto
+                let texto = nombre;
+                let detalles = [];
 
-            if (filtros.mañana) detalles.push(`Mañana: ${mañana}`);
-            if (filtros.tarde) detalles.push(`Tarde: ${tarde}`);
-            if (filtros.control) detalles.push(`Control: ${control}`);
+                if (filtros.mañana) detalles.push(`Mañana: ${mañana}`);
+                if (filtros.tarde) detalles.push(`Tarde: ${tarde}`);
+                if (filtros.control) detalles.push(`Control: ${control}`);
 
-            if (detalles.length > 0) {
-                texto += " — " + detalles.join(" — ");
-            }
+                if (detalles.length > 0) {
+                    texto += " — " + detalles.join(" — ");
+                }
 
-            p.textContent = texto;
+                p.textContent = texto;
 
-            celda.appendChild(p);
-        });
+                celda.appendChild(p);
+            });
+        }
 
         fila.appendChild(celda);
     });
@@ -277,8 +258,6 @@ verSemana();
 
 </body>
 </html>
-
-
 
 
 
