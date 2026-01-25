@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <title>Calendario Semanal</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+.filtro-activo {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+</style>
 </head>
 
 <body>
@@ -18,9 +26,9 @@
         <option value="todos">Todos</option>
     </select>
 
-    <button onclick="toggleFiltro('mañana')">Mañana</button>
-    <button onclick="toggleFiltro('tarde')">Tarde</button>
-    <button onclick="toggleFiltro('control')">Control</button>
+    <button id="btn_mañana" onclick="toggleFiltro('mañana')">Mañana</button>
+    <button id="btn_tarde" onclick="toggleFiltro('tarde')">Tarde</button>
+    <button id="btn_control" onclick="toggleFiltro('control')">Control</button>
 
 </div>
 
@@ -73,6 +81,15 @@ cargarPacientes();
 // Activar/desactivar filtros
 function toggleFiltro(campo) {
     filtros[campo] = !filtros[campo];
+
+    const boton = document.getElementById("btn_" + campo);
+
+    if (filtros[campo]) {
+        boton.classList.add("filtro-activo");
+    } else {
+        boton.classList.remove("filtro-activo");
+    }
+
     verSemana();
 }
 
@@ -166,7 +183,19 @@ function mostrar(diasSemana) {
                 const tarde = r.tarde ? "SÍ" : "NO";
                 const control = r.control ? "SÍ" : "NO";
 
-                p.textContent = `${nombre} — Mañana: ${mañana} — Tarde: ${tarde} — Control: ${control}`;
+                // Construcción dinámica del texto
+                let texto = nombre;
+                let detalles = [];
+
+                if (filtros.mañana) detalles.push(`Mañana: ${mañana}`);
+                if (filtros.tarde) detalles.push(`Tarde: ${tarde}`);
+                if (filtros.control) detalles.push(`Control: ${control}`);
+
+                if (detalles.length > 0) {
+                    texto += " — " + detalles.join(" — ");
+                }
+
+                p.textContent = texto;
 
                 celda.appendChild(p);
             });
@@ -202,4 +231,5 @@ verSemana();
 
 </body>
 </html>
+
 
