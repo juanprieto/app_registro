@@ -365,6 +365,48 @@ if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
 
     return nuevo.id;
 }
+        // 🔹 Obtener o crear paciente en Supabase
+async function obtenerPacienteId(nombre) {
+    if (!nombre) return null;
+
+    // Buscar si ya existe
+    const { data, error } = await client
+        .from("pacientes")
+        .select("id")
+        .eq("nombre", nombre)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Error buscando paciente:", error);
+        return null;
+    }
+
+    if (data) return data.id;
+
+    // Crear si no existe
+    const { data: nuevo, error: errorInsert } = await client
+        .from("pacientes")
+        .insert({ nombre, activo: true })
+        .select()
+        .single();
+
+    if (errorInsert) {
+        console.error("Error creando paciente:", errorInsert);
+        return null;
+    }
+
+    return nuevo.id;
+}
+
+// 🔹 Guardar paciente al salir del input
+async function guardarPacienteDesdeFila(input) {
+    const nombre = input.value.trim();
+    if (!nombre) return;
+
+    const id = await obtenerPacienteId(nombre);
+    input.closest("tr").dataset.pacienteId = id;
+}
+
 
 async function exportarExcel() {
     const fISO = document.getElementById('fecha').value;
