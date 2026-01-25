@@ -529,6 +529,40 @@ setTimeout(() => {
 }, 500);
 
 }
+<script>
+
+    ...todas tus funciones anteriores...
+
+    async function exportarExcel() {
+        ...tu función completa...
+    }
+
+    // ⬇️ AQUÍ MISMO, JUSTO DEBAJO
+    function finalizarDia() {
+        console.log("Cerrando día…");
+
+        // 1. Limpiar tabla
+        const tbody = document.getElementById("tbody");
+        if (tbody) tbody.innerHTML = "";
+
+        // 2. Limpiar observaciones
+        const obs = document.getElementById("observaciones");
+        if (obs) obs.value = "";
+
+        // 3. Resetear arrays internos si existen
+        if (typeof pacientes !== "undefined") pacientes = [];
+        if (typeof registros !== "undefined") registros = [];
+
+        // 4. Resetear flags de control
+        window.diaAbierto = false;
+        window.puedeAbrirNuevoDia = true;
+
+        alert("Día finalizado correctamente.");
+    }
+
+</script>
+</body>
+</html>
 
 
 
