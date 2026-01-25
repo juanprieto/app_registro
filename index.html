@@ -521,13 +521,13 @@ async function exportarExcel() {
     // Descargar usando FileSaver (compatible con Android)
     saveAs(blob, `Registro_${fISO}.xlsx`);
 
-    // 🔹 8. Preguntar si limpiar pantalla
-    setTimeout(() => {
-        if (confirm("¿Finalizar día y limpiar pantalla?")) {
-            localStorage.removeItem(STORAGE_KEY);
-            location.reload();
-        }
-    }, 500);
+  // 🔹 8. Preguntar si limpiar pantalla
+setTimeout(() => {
+    if (confirm("¿Finalizar día y limpiar pantalla?")) {
+        finalizarDia();
+    }
+}, 500);
+
 }
 
 
