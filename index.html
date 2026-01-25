@@ -148,25 +148,36 @@ let filaActiva = null;
 
 window.addEventListener('DOMContentLoaded', () => {
     const memoria = localStorage.getItem(STORAGE_KEY);
+
     if (memoria) {
+        // Hay un día guardado → restaurar
         const data = JSON.parse(memoria);
         document.getElementById('fecha').value = data.fecha;
         data.filas.forEach(f => restaurarFila(f));
         document.getElementById('bloqueoInicio').style.display = 'none';
     } else {
+        // No hay día guardado → preguntar fecha
         document.getElementById('fechaConfirmar').valueAsDate = new Date();
         document.getElementById('bloqueoInicio').style.display = 'flex';
-        cargarListaDefault();
+        // ❗ NO cargamos lista aquí
     }
 });
 
+
 function confirmarFechaInicial() {
     const fVal = document.getElementById('fechaConfirmar').value;
-    if(!fVal) return alert("Selecciona fecha");
+    if (!fVal) return alert("Selecciona fecha");
+
     document.getElementById('fecha').value = fVal;
+
+    // Ahora sí cargamos la lista base
+    cargarListaDefault();
+
     document.getElementById('bloqueoInicio').style.display = 'none';
     autoGuardar();
 }
+
+
 
 function pintarCeldaCheck(el) {
     const td = el.parentElement;
