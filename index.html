@@ -117,77 +117,15 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             <h3 style="color:rgb(167, 188, 75)">Test de Tóxicos</h3>
             <p id="modalPaciente"></p>
             <div id="controlesInputs">
-            <p>COC:
-                <select id="m_COC">
-                    <option value="2"></option>
-                    <option value="0">NEGATIVO</option>
-                    <option value="1">POSITIVO</option>
-                    <option value="2">NO REALIZADO</option>
-                </select>
-            </p>
-
-            <p>OH:
-                <select id="m_OH">
-                    <option value="2"></option>
-                    <option value="0">NEGATIVO</option>
-                    <option value="1">POSITIVO</option>
-                    <option value="2">NO REALIZADO</option>
-                </select>
-            </p>
-
-            <p>THC:
-                <select id="m_THC">
-                    <option value="2"></option>
-                    <option value="0">NEGATIVO</option>
-                    <option value="1">POSITIVO</option>
-                    <option value="2">NO REALIZADO</option>
-                </select>
-            </p>
-
-            <p>BZD:
-                <select id="m_BZD">
-                    <option value="2"></option>
-                    <option value="0">NEGATIVO</option>
-                    <option value="1">POSITIVO</option>
-                    <option value="2">NO REALIZADO</option>
-                </select>
-            </p>
-
-            <p>OPI:
-                <select id="m_OPI">
-                    <option value="2"></option>
-                    <option value="0">NEGATIVO</option>
-                    <option value="1">POSITIVO</option>
-                    <option value="2">NO REALIZADO</option>
-                </select>
-            </p>
-
-            <p>KETA:
-                <select id="m_KETA">
-                    <option value="2"></option>
-                    <option value="0">NEGATIVO</option>
-                    <option value="1">POSITIVO</option>
-                    <option value="2">NO REALIZADO</option>
-                </select>
-            </p>
-
-            <p>AMP:
-                <select id="m_AMP">
-                    <option value="2"></option>
-                    <option value="0">NEGATIVO</option>
-                    <option value="1">POSITIVO</option>
-                    <option value="2">NO REALIZADO</option>
-                </select>
-            </p>
-
-            <p>MTD:
-                <select id="m_MTD">
-                    <option value="2"></option>
-                    <option value="0">NEGATIVO</option>
-                    <option value="1">POSITIVO</option>
-                    <option value="2">NO REALIZADO</option>
-                </select>
-            </p>
+            <p>COC: <select id="m_COC"><option value=""></option><option value="NEG">NEGATIVO</option><option value="POS">POSITIVO</option></select></p>
+            <p>OH: <select id="m_OH"><option value=""></option><option value="NEG">NEGATIVO</option><option value="POS">POSITIVO</option></select></p>
+            <p>THC: <select id="m_THC"><option value=""></option><option value="NEG">NEGATIVO</option><option value="POS">POSITIVO</option></select></p>
+            <p>BZD: <select id="m_BZD"><option value=""></option><option value="NEG">NEGATIVO</option><option value="POS">POSITIVO</option></select></p>
+            <p>OPI: <select id="m_OPI"><option value=""></option><option value="NEG">NEGATIVO</option><option value="POS">POSITIVO</option></select></p>
+            <p>KETA: <select id="m_KETA"><option value=""></option><option value="NEG">NEGATIVO</option><option value="POS">POSITIVO</option></select></p>
+            <p>AMP: <select id="m_AMP"><option value=""></option><option value="NEG">NEGATIVO</option><option value="POS">POSITIVO</option></select></p>
+            <p>MTD: <select id="m_MTD"><option value=""></option><option value="NEG">NEGATIVO</option><option value="POS">POSITIVO</option></select></p>
+  
                 
             </div>
             <br>
@@ -427,48 +365,6 @@ if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
 
     return nuevo.id;
 }
-        // 🔹 Obtener o crear paciente en Supabase
-async function obtenerPacienteId(nombre) {
-    if (!nombre) return null;
-
-    // Buscar si ya existe
-    const { data, error } = await client
-        .from("pacientes")
-        .select("id")
-        .eq("nombre", nombre)
-        .maybeSingle();
-
-    if (error) {
-        console.error("Error buscando paciente:", error);
-        return null;
-    }
-
-    if (data) return data.id;
-
-    // Crear si no existe
-    const { data: nuevo, error: errorInsert } = await client
-        .from("pacientes")
-        .insert({ nombre, activo: true })
-        .select()
-        .single();
-
-    if (errorInsert) {
-        console.error("Error creando paciente:", errorInsert);
-        return null;
-    }
-
-    return nuevo.id;
-}
-
-// 🔹 Guardar paciente al salir del input
-async function guardarPacienteDesdeFila(input) {
-    const nombre = input.value.trim();
-    if (!nombre) return;
-
-    const id = await obtenerPacienteId(nombre);
-    input.closest("tr").dataset.pacienteId = id;
-}
-
 
 async function exportarExcel() {
     const fISO = document.getElementById('fecha').value;
@@ -489,20 +385,18 @@ async function exportarExcel() {
         };
 
         return {
-    "FECHA": fBonita,
-    "PACIENTE": tr.cells[0].querySelector('input').value,
-    "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
-    "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
-    "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
-    "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
-    "COC": check("COC"), "OH": check("OH"), "THC": check("THC"), "BZD": check("BZD"),
-    "OPI": check("OPI"), "KETA": check("KETA"), "AMP": check("AMP"), "MTD": check("MTD"),
-    "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
-    "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
-    "RIESGO": tr.cells[8].querySelector('select').value,
-    "OBSERVACIONES": document.getElementById("observaciones")?.value || ""
-};
-
+            "FECHA": fBonita,
+            "PACIENTE": tr.cells[0].querySelector('input').value,
+            "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
+            "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
+            "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
+            "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
+            "COC": check("COC"), "OH": check("OH"), "THC": check("THC"), "BZD": check("BZD"),
+            "OPI": check("OPI"), "KETA": check("KETA"), "AMP": check("AMP"), "MTD": check("MTD"),
+            "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
+            "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
+            "RIESGO": tr.cells[8].querySelector('select').value
+        };
     });
 
     // 🔹 2. Obtener todos los nombres de pacientes
@@ -591,5 +485,8 @@ async function exportarExcel() {
     </script>
 </body>
 </html>
+
+   
+
 
    
