@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Calendario Semanal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<h2>Calendario semanal</h2>
+
+<button onclick="semanaAnterior()">⬅️ Semana anterior</button>
+<button onclick="semanaSiguiente()">➡️ Semana siguiente</button>
+
+<div id="calendario" style="margin-top:20px;"></div>
+
+<script>
+const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Fecha interna del calendario
+let fechaActual = new Date();
+
+// Cargar semana
+async function cargarSemana(fechaBase) {
+    const fecha = new Date(fechaBase);
+
+    const lunes = new Date(fecha);
+    lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
+
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+
+    const f1 = lunes.toISOString().split("T")[0];
+    const f2 = domingo.toISOString().split("T")[0];
+
+    const { data, error } = await client
+        .from("registros_diarios")
+        .select("*, pacientes(nombre)")
+        .gte("fecha", f1)
+        .lte("fecha", f2)
+        .order("fecha", { ascending: true });
+
+    return data || [];
+}
+
+// Agrupar por día
+function agrupar(registros) {
+    const dias = {};
+    registros.forEach(r => {
+        if (!dias[r.fecha]) dias[r.fecha] = [];
+        dias[r.fecha].push(r);
+    });
+    return dias;
+}
+
+// Mostrar calendario
+function mostrar(diasSemana) {
+    const cont = document.getElementById("calendario");
+    cont.innerHTML = "";
+
+    const diasOrden = ["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
+    const tabla = document.createElement("table");
+    tabla.style.width = "100%";
+    tabla.style.borderCollapse = "collapse";
+
+    const head = document.createElement("tr");
+    diasOrden.forEach(d => {
+        const th = document.createElement("th");
+        th.textContent = d.toUpperCase();
+        th.style.border = "1px solid #ccc";
+        th.style.padding = "8px";
+        th.style.background = "#f0f0f0";
+        head.appendChild(th);
+    });
+    tabla.appendChild(head);
+
+    const fila = document.createElement("tr");
+    const fechas = Object.keys(diasSemana).sort();
+
+    diasOrden.forEach((_, i) => {
+        const celda = document.createElement("td");
+        celda.style.border = "1px solid #ccc";
+        celda.style.padding = "8px";
+        celda.style.verticalAlign = "top";
+
+        const fecha = fechas[i];
+        if (fecha) {
+            const titulo = document.createElement("div");
+            titulo.textContent = fecha;
+            titulo.style.fontWeight = "bold";
+            titulo.style.marginBottom = "6px";
+            celda.appendChild(titulo);
+
+            diasSemana[fecha].forEach(r => {
+                const p = document.createElement("div");
+                p.style.background = "#eef5d0";
+                p.style.padding = "4px";
+                p.style.marginBottom = "4px";
+                p.style.borderRadius = "4px";
+
+                const nombre = r.pacientes?.nombre || "Sin nombre";
+                const asistencia = r.asistencia ? "SÍ" : "NO";
+                const control = r.control ? "SÍ" : "NO";
+
+                p.textContent = `${nombre} — Asistencia: ${asistencia} — Control: ${control}`;
+                celda.appendChild(p);
+            });
+        }
+
+        fila.appendChild(celda);
+    });
+
+    tabla.appendChild(fila);
+    cont.appendChild(tabla);
+}
+
+// Navegación
+async function verSemana() {
+    const registros = await cargarSemana(fechaActual);
+    const dias = agrupar(registros);
+    mostrar(dias);
+}
+
+function semanaAnterior() {
+    fechaActual.setDate(fechaActual.getDate() - 7);
+    verSemana();
+}
+
+function semanaSiguiente() {
+    fechaActual.setDate(fechaActual.getDate() + 7);
+    verSemana();
+}
+
+// Cargar al abrir
+verSemana();
+</script>
+
+</body>
+</html>
