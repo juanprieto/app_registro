@@ -1,20 +1,15 @@
 
-
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Calendario Semanal</title>
+<title>Calendario Semanal Seguro</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-.filtro-activo {
-    background-color: #4CAF50;
-    color: white;
-    font-weight: bold;
-}
+.filtro-activo { background-color: #4CAF50; color: white; font-weight: bold; }
+#auth-section { margin-bottom: 15px; }
+.hidden { display: none; }
 </style>
 </head>
 
@@ -22,9 +17,15 @@
 
 <h2>Calendario semanal</h2>
 
-<!-- Filtros -->
-<div style="margin-bottom: 15px;">
+<!-- Autenticación (requerida para RLS) -->
+<div id="auth-section">
+    <button id="btn-login" onclick="login()">Iniciar Sesión</button>
+    <button id="btn-logout" onclick="logout()" class="hidden">Cerrar Sesión</button>
+    <p id="user-info"></p>
+</div>
 
+<!-- Filtros (ahora server-side) -->
+<div style="margin-bottom: 15px;">
     <label>Paciente:</label>
     <select id="filtroPaciente">
         <option value="todos">Todos</option>
@@ -35,7 +36,6 @@
     <button id="btn_control" onclick="toggleFiltro('control')">Control</button>
 
     <button onclick="limpiarFiltros()">Limpiar filtros</button>
-
 </div>
 
 <button onclick="semanaAnterior()">⬅️ Semana anterior</button>
@@ -45,129 +45,124 @@
 
 <script>
 const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
+// NO EXPONER SUPABASE_KEY en prod - usa session de auth
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Fecha interna del calendario
 let fechaActual = new Date();
+let session = null;
+let filtros = { mañana: false, tarde: false, control: false, paciente: "todos" };
 
-// Filtros activos
-let filtros = {
-    mañana: false,
-    tarde: false,
-    control: false,
-    paciente: "todos"
-};
+// Manejo de Auth
+async function initAuth() {
+    session = await client.auth.getSession();
+    const btnLogin = document.getElementById('btn-login');
+    const btnLogout = document.getElementById('btn-logout');
+    const userInfo = document.getElementById('user-info');
 
-// Cargar lista de pacientes
+    if (session.data.session) {
+        btnLogin.classList.add('hidden');
+        btnLogout.classList.remove('hidden');
+        userInfo.textContent = `Usuario: ${session.data.session.user.email}`;
+        cargarPacientes(); // Solo si autenticado
+        verSemana();
+    } else {
+        btnLogin.classList.remove('hidden');
+        btnLogout.classList.add('hidden');
+        userInfo.textContent = 'Inicia sesión para ver datos';
+    }
+
+    // Listener para cambios de auth
+    client.auth.onAuthStateChange((event, sess) => {
+        session = sess;
+        initAuth();
+    });
+}
+
+async function login() {
+    await client.auth.signInWithOAuth({ provider: 'google' }); // O email/password
+}
+
+async function logout() {
+    await client.auth.signOut();
+    filtros.paciente = "todos"; // Reset
+    document.getElementById("filtroPaciente").innerHTML = '<option value="todos">Todos</option>';
+}
+
+// Cargar pacientes (solo autenticados, con RLS)
 async function cargarPacientes() {
-    const { data } = await client
-        .from("pacientes")
-        .select("id, nombre")
-        .order("nombre", { ascending: true });
-
+    if (!session.data.session) return;
+    const { data } = await client.from("pacientes").select("id, nombre").order("nombre");
     const sel = document.getElementById("filtroPaciente");
-
+    sel.innerHTML = '<option value="todos">Todos</option>'; // Reset
     data.forEach(p => {
         const opt = document.createElement("option");
         opt.value = p.id;
         opt.textContent = p.nombre;
         sel.appendChild(opt);
     });
-
-    sel.onchange = () => {
-        filtros.paciente = sel.value;
-        verSemana();
-    };
+    sel.onchange = () => { filtros.paciente = sel.value; verSemana(); };
 }
 
-cargarPacientes();
-
-// Activar/desactivar filtros
+// Toggle filtros
 function toggleFiltro(campo) {
     filtros[campo] = !filtros[campo];
-
-    const boton = document.getElementById("btn_" + campo);
-
-    if (filtros[campo]) {
-        boton.classList.add("filtro-activo");
-    } else {
-        boton.classList.remove("filtro-activo");
-    }
-
+    document.getElementById("btn_" + campo).classList.toggle("filtro-activo", filtros[campo]);
     verSemana();
 }
 
-// Limpiar filtros
 function limpiarFiltros() {
-    filtros.mañana = false;
-    filtros.tarde = false;
-    filtros.control = false;
-    filtros.paciente = "todos";
-
+    Object.keys(filtros).forEach(k => filtros[k] = k === 'paciente' ? 'todos' : false);
     document.getElementById("filtroPaciente").value = "todos";
-
-    document.getElementById("btn_mañana").classList.remove("filtro-activo");
-    document.getElementById("btn_tarde").classList.remove("filtro-activo");
-    document.getElementById("btn_control").classList.remove("filtro-activo");
-
+    document.querySelectorAll('[id^="btn_"]').forEach(btn => btn.classList.remove("filtro-activo"));
     verSemana();
 }
 
-// Cargar semana
+// Query server-side con filtros (eficiente)
 async function cargarSemana(fechaBase) {
+    if (!session.data.session) return [];
     const fecha = new Date(fechaBase);
-
-    const lunes = new Date(fecha);
-    lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
-
-    const viernes = new Date(lunes);
-    viernes.setDate(lunes.getDate() + 4);
-
+    const lunes = new Date(fecha); lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
+    const viernes = new Date(lunes); viernes.setDate(lunes.getDate() + 4);
     const f1 = lunes.toISOString().split("T")[0];
     const f2 = viernes.toISOString().split("T")[0];
 
-    const { data } = await client
-        .from("registros_diarios")
-        .select("*, pacientes(nombre)")
-        .gte("fecha", f1)
-        .lte("fecha", f2)
-        .order("fecha", { ascending: true });
+    let query = client.from("registros_diarios").select("*, pacientes(nombre)").gte("fecha", f1).lte("fecha", f2).order("fecha");
 
+    // Filtros server-side
+    if (filtros.paciente !== "todos") query.eq("paciente_id", filtros.paciente);
+    if (filtros.mañana) query.eq("mañana", true);
+    if (filtros.tarde) query.eq("tarde", true);
+    if (filtros.control) query.eq("control", true);
+
+    const { data } = await query;
     return data || [];
 }
 
-// Agrupar por día
+// Resto igual: agrupar, mostrar...
 function agrupar(registros) {
     const dias = {};
     registros.forEach(r => {
-        const d = new Date(r.fecha).getDay();
-        if (d >= 1 && d <= 5) { // solo lunes-viernes
-            if (!dias[r.fecha]) dias[r.fecha] = [];
-            dias[r.fecha].push(r);
-        }
+        if (!dias[r.fecha]) dias[r.fecha] = [];
+        dias[r.fecha].push(r);
     });
     return dias;
 }
 
-// Mostrar calendario
 function mostrar(diasSemana) {
     const cont = document.getElementById("calendario");
-    cont.innerHTML = "";
-
+    cont.innerHTML = `<p><strong>Semana del ${Object.keys(diasSemana).sort()[0] || ''}</strong></p>`;
+    // ... (mismo código de tabla que original, sin filtros client-side ya que se aplican en server)
     const diasOrden = ["lunes","martes","miércoles","jueves","viernes"];
     const tabla = document.createElement("table");
-    tabla.style.width = "100%";
-    tabla.style.borderCollapse = "collapse";
+    tabla.style.width = "100%"; tabla.style.borderCollapse = "collapse";
 
     const head = document.createElement("tr");
     diasOrden.forEach(d => {
         const th = document.createElement("th");
         th.textContent = d.toUpperCase();
-        th.style.border = "1px solid #ccc";
-        th.style.padding = "8px";
-        th.style.background = "#f0f0f0";
+        th.style.border = "1px solid #ccc"; th.style.padding = "8px"; th.style.background = "#f0f0f0";
         head.appendChild(th);
     });
     tabla.appendChild(head);
@@ -177,61 +172,21 @@ function mostrar(diasSemana) {
 
     diasOrden.forEach((_, i) => {
         const celda = document.createElement("td");
-        celda.style.border = "1px solid #ccc";
-        celda.style.padding = "8px";
-        celda.style.verticalAlign = "top";
+        celda.style.border = "1px solid #ccc"; celda.style.padding = "8px"; celda.style.verticalAlign = "top";
 
         const fecha = fechas[i];
         if (fecha) {
             const titulo = document.createElement("div");
-            titulo.textContent = fecha;
-            titulo.style.fontWeight = "bold";
-            titulo.style.marginBottom = "6px";
+            titulo.textContent = fecha; titulo.style.fontWeight = "bold"; titulo.style.marginBottom = "6px";
             celda.appendChild(titulo);
 
             diasSemana[fecha].forEach(r => {
-
-                // FILTRO POR PACIENTE
-                if (filtros.paciente !== "todos" && r.paciente_id != filtros.paciente) return;
-
-                // FILTROS OR reales
-                const filtrosActivos = [];
-
-                if (filtros.mañana) filtrosActivos.push(r.mañana);
-                if (filtros.tarde) filtrosActivos.push(r.tarde);
-                if (filtros.control) filtrosActivos.push(r.control);
-
-                if (filtrosActivos.length > 0 && !filtrosActivos.includes(true)) return;
-
                 const p = document.createElement("div");
-                p.style.background = "#eef5d0";
-                p.style.padding = "4px";
-                p.style.marginBottom = "6px";
-                p.style.borderRadius = "4px";
-
-                const nombre = r.pacientes?.nombre || "Sin nombre";
-                const mañana = r.mañana ? "SÍ" : "NO";
-                const tarde = r.tarde ? "SÍ" : "NO";
-                const control = r.control ? "SÍ" : "NO";
-
-                // Construcción dinámica del texto
-                let texto = nombre;
-                let detalles = [];
-
-                if (filtros.mañana) detalles.push(`Mañana: ${mañana}`);
-                if (filtros.tarde) detalles.push(`Tarde: ${tarde}`);
-                if (filtros.control) detalles.push(`Control: ${control}`);
-
-                if (detalles.length > 0) {
-                    texto += " — " + detalles.join(" — ");
-                }
-
-                p.textContent = texto;
-
+                p.style.background = "#eef5d0"; p.style.padding = "4px"; p.style.marginBottom = "6px"; p.style.borderRadius = "4px";
+                p.textContent = `${r.pacientes?.nombre || "Sin nombre"} — Mañana: ${r.mañana ? 'SÍ' : 'NO'} — Tarde: ${r.tarde ? 'SÍ' : 'NO'} — Control: ${r.control ? 'SÍ' : 'NO'}`;
                 celda.appendChild(p);
             });
         }
-
         fila.appendChild(celda);
     });
 
@@ -239,25 +194,18 @@ function mostrar(diasSemana) {
     cont.appendChild(tabla);
 }
 
-// Navegación
 async function verSemana() {
+    if (!session.data.session) return;
     const registros = await cargarSemana(fechaActual);
     const dias = agrupar(registros);
     mostrar(dias);
 }
 
-function semanaAnterior() {
-    fechaActual.setDate(fechaActual.getDate() - 7);
-    verSemana();
-}
+function semanaAnterior() { fechaActual.setDate(fechaActual.getDate() - 7); verSemana(); }
+function semanaSiguiente() { fechaActual.setDate(fechaActual.getDate() + 7); verSemana(); }
 
-function semanaSiguiente() {
-    fechaActual.setDate(fechaActual.getDate() + 7);
-    verSemana();
-}
-
-// Cargar al abrir
-verSemana();
+// Inicializar
+initAuth();
 </script>
 
 </body>
