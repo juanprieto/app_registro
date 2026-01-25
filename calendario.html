@@ -30,6 +30,8 @@
     <button id="btn_tarde" onclick="toggleFiltro('tarde')">Tarde</button>
     <button id="btn_control" onclick="toggleFiltro('control')">Control</button>
 
+    <button onclick="limpiarFiltros()">Limpiar filtros</button>
+
 </div>
 
 <button onclick="semanaAnterior()">⬅️ Semana anterior</button>
@@ -89,6 +91,22 @@ function toggleFiltro(campo) {
     } else {
         boton.classList.remove("filtro-activo");
     }
+
+    verSemana();
+}
+
+// Limpiar filtros
+function limpiarFiltros() {
+    filtros.mañana = false;
+    filtros.tarde = false;
+    filtros.control = false;
+    filtros.paciente = "todos";
+
+    document.getElementById("filtroPaciente").value = "todos";
+
+    document.getElementById("btn_mañana").classList.remove("filtro-activo");
+    document.getElementById("btn_tarde").classList.remove("filtro-activo");
+    document.getElementById("btn_control").classList.remove("filtro-activo");
 
     verSemana();
 }
@@ -166,11 +184,21 @@ function mostrar(diasSemana) {
 
             diasSemana[fecha].forEach(r => {
 
-                // FILTROS
+                // FILTRO POR PACIENTE
                 if (filtros.paciente !== "todos" && r.paciente_id != filtros.paciente) return;
-                if (filtros.mañana && !r.mañana) return;
-                if (filtros.tarde && !r.tarde) return;
-                if (filtros.control && !r.control) return;
+
+                // FILTROS OR (mañana, tarde, control)
+                const algunFiltro = filtros.mañana || filtros.tarde || filtros.control;
+
+                if (algunFiltro) {
+                    let coincide = false;
+
+                    if (filtros.mañana && r.mañana) coincide = true;
+                    if (filtros.tarde && r.tarde) coincide = true;
+                    if (filtros.control && r.control) coincide = true;
+
+                    if (!coincide) return;
+                }
 
                 const p = document.createElement("div");
                 p.style.background = "#eef5d0";
@@ -231,5 +259,6 @@ verSemana();
 
 </body>
 </html>
+
 
 
