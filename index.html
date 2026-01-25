@@ -213,6 +213,18 @@ function marcarMedicacion(cb) {
     autoGuardar();
 }
 async function guardarRegistroEnSupabase(registro) {
+    // 1. Asegurar que el paciente existe y obtener su ID
+    const pacienteId = await obtenerPacienteId(registro.nombre);
+
+    if (!pacienteId) {
+        console.error("No se pudo obtener el ID del paciente");
+        return;
+    }
+
+    // 2. Añadir el ID al registro
+    registro.paciente_id = pacienteId;
+
+    // 3. Guardar el registro en Supabase
     const { data, error } = await client
         .from("registros_diarios")
         .insert(registro);
@@ -223,22 +235,7 @@ async function guardarRegistroEnSupabase(registro) {
         console.log("Registro guardado en Supabase:", data);
     }
 }
-        async function guardarPacienteEnSupabase(nombre, activo, medicacion) {
-    const { data, error } = await client
-        .from("pacientes")
-        .insert({
-            nombre,
-            activo,
-            medicacion,
-            notas: ""
-        })
-        .select()
-        .single();
 
-    if (error) {
-        console.error("Error guardando paciente:", error);
-        return null;
-    }
 
     return data.id;
 }
