@@ -153,18 +153,21 @@ function mostrarCalendarioSemanal(diasSemana) {
             celda.appendChild(titulo);
 
             diasSemana[fecha].forEach(r => {
-                const p = document.createElement("div");
-                p.style.background = "#eef5d0";
-                p.style.padding = "4px";
-                p.style.marginBottom = "4px";
-                p.style.borderRadius = "4px";
-                p.textContent = `${r.pacientes.nombre} — A:${r.asistencia} R:${r.riesgo}`;
-                celda.appendChild(p);
-            });
-        }
+    const p = document.createElement("div");
+    p.style.background = "#eef5d0";
+    p.style.padding = "4px";
+    p.style.marginBottom = "4px";
+    p.style.borderRadius = "4px";
 
-        fila.appendChild(celda);
-    });
+    const asistencia = r.asistencia > 0 ? "SÍ" : "NO";
+    const control = r.control ? "SÍ" : "NO";
+
+    p.textContent = `${r.pacientes.nombre} — Asistencia: ${asistencia} — Control: ${control}`;
+    celda.appendChild(p);
+});
+
+            
+        
 
     tabla.appendChild(fila);
     cont.appendChild(tabla);
