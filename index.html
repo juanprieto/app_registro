@@ -59,6 +59,50 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    
+    async function cargarSemana(fechaBase) {
+    // 1. Convertimos la fecha base en objeto Date
+    const fecha = new Date(fechaBase);
+
+    // 2. Calculamos el lunes de esa semana
+    const lunes = new Date(fecha);
+    lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
+
+    // 3. Calculamos el domingo
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+
+    // 4. Formateamos a YYYY-MM-DD
+    const f1 = lunes.toISOString().split("T")[0];
+    const f2 = domingo.toISOString().split("T")[0];
+
+    // 5. Pedimos a Supabase los registros de esa semana
+    const { data, error } = await client
+        .from("registros_diarios")
+        .select("*")
+        .gte("fecha", f1)
+        .lte("fecha", f2);
+
+    if (error) {
+        console.error("Error cargando semana:", error);
+        return;
+    }
+
+    return data;
+}
+function agruparPorDia(registros) {
+    const dias = {};
+
+    registros.forEach(r => {
+        if (!dias[r.fecha]) {
+            dias[r.fecha] = [];
+        }
+        dias[r.fecha].push(r);
+    });
+
+    return dias;
+}
+
 </script>
 
 <body>
