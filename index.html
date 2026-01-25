@@ -134,433 +134,356 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         </div>
     </div>
 
-<script>
-const LISTA_BASE = [
-  "Alan Mollica","Amadeu Andres","Anastasia Valls","Antonio Gutierrez","Carlos Ezquerra",
-  "Carlos Palomar","Cesar Gavilan","Concha Rodriguez","Dani Urgelles","Eduard de la Torre",
-  "Eva Alvarez","Ferran Serrano","Francesc Ordeig","Ignasi Martin (Nacho)","Ivan Pueyo",
-  "Jacinto Texido","Javier Sanz","Jordi Homs","Jordi Navarro","Jordi Ortuno","Jordi Perez",
-  "Juanma Reboll","Laury Gallardo","Marc Garrell","Marc Gonzalez","Maria Munoz","Mario Shefer",
-  "Massinissa Ait-Ahmed","Oscar Leal","Pol Ribot","Puri Galiot","Rosa Tella","Sara Alguacil",
-  "Sergio Funes","Vicente Vega","Vicky Iglesias"
+    <script>
+        const LISTA_BASE = ["Alan Mollica", "Amadeu Andres", "Anastasia Valls", "Antonio Gutierrez", "Carlos Ezquerra", "Carlos Palomar", "Cesar Gavilan", "Concha Rodriguez", "Dani Urgelles", "Eduard de la Torre", "Eva Alvarez", "Ferran Serrano", "Francesc Ordeig", "Ignasi Martin (Nacho)", "Ivan Pueyo", "Jacinto Texido", "Javier Sanz", "Jordi Homs", "Jordi Navarro", "Jordi Ortuno", "Jordi Perez", "Juanma Reboll", "Laury Gallardo", "Marc Garrell", "Marc Gonzalez", "Maria Munoz", "Mario Shefer", "Massinissa Ait-Ahmed", "Oscar Leal", "Pol Ribot", "Puri Galiot", "Rosa Tella", "Sara Alguacil", "Sergio Funes", "Vicente Vega", "Vicky Iglesias"];
+        // Pacientes que deben tomar medicación
+        const PACIENTES_CON_MEDICACION = [
+    "Anastasia Valls","Antonio Gutierrez", 
+    "Alan Mollica","Concha Rodriguez", 
+    "Dani Urgelles","Francesc Ordeig", "Ivan Pueyo", 
+    "Jordi Homs", "Marc Gonzalez",
+    "Massinissa Ait-Ahmed", 
 ];
 
-const PACIENTES_CON_MEDICACION = [
-  "Anastasia Valls","Antonio Gutierrez","Alan Mollica","Concha Rodriguez",
-  "Dani Urgelles","Francesc Ordeig","Ivan Pueyo","Jordi Homs",
-  "Marc Gonzalez","Massinissa Ait-Ahmed"
-];
+        const STORAGE_KEY = 'asistencia_v7_base64';
+        let filaActiva = null;
 
-const STORAGE_KEY = 'asistencia_v7_base64';
-let filaActiva = null;
+        window.addEventListener('DOMContentLoaded', () => {
+            const memoria = localStorage.getItem(STORAGE_KEY);
+            if (memoria) {
+                const data = JSON.parse(memoria);
+                document.getElementById('fecha').value = data.fecha;
+                data.filas.forEach(f => restaurarFila(f));
+                document.getElementById('bloqueoInicio').style.display = 'none';
+            } else {
+                document.getElementById('fechaConfirmar').valueAsDate = new Date();
+                document.getElementById('bloqueoInicio').style.display = 'flex';
+                cargarListaDefault();
+            }
+        });
 
-/* ---------------------------------------------------------
-   🔹 AL ABRIR LA APP
---------------------------------------------------------- */
-window.addEventListener('DOMContentLoaded', () => {
-  const memoria = localStorage.getItem(STORAGE_KEY);
+        function confirmarFechaInicial() {
+            const fVal = document.getElementById('fechaConfirmar').value;
+            if(!fVal) return alert("Selecciona fecha");
+            document.getElementById('fecha').value = fVal;
+            document.getElementById('bloqueoInicio').style.display = 'none';
+            autoGuardar();
+        }
 
-  if (memoria) {
-    // Restaurar día anterior
-    const data = JSON.parse(memoria);
-    document.getElementById('fecha').value = data.fecha;
-    data.filas.forEach(f => restaurarFila(f));
-    document.getElementById('bloqueoInicio').style.display = 'none';
-  } else {
-    // Preguntar fecha
-    document.getElementById('fechaConfirmar').valueAsDate = new Date();
-    document.getElementById('bloqueoInicio').style.display = 'flex';
-  }
-});
+        function pintarCeldaCheck(el) {
+            const td = el.parentElement;
+            td.className = el.checked ? 'bg-verde' : 'bg-amarillo';
+            autoGuardar();
+        }
 
-/* ---------------------------------------------------------
-   🔹 CONFIRMAR FECHA INICIAL
---------------------------------------------------------- */
-function confirmarFechaInicial() {
-  const fVal = document.getElementById('fechaConfirmar').value;
-  if (!fVal) return alert("Selecciona fecha");
+        function pintarCeldaEscala(select) {
+            const td = select.parentElement;
+            td.classList.remove('bg-verde', 'bg-amarillo', 'bg-naranja', 'bg-rojo');
+            const val = select.value;
+            if(val == "0") td.classList.add('bg-verde');
+            else if(val == "1") td.classList.add('bg-amarillo');
+            else if(val == "2") td.classList.add('bg-naranja');
+            else if(val == "3") td.classList.add('bg-rojo');
+            autoGuardar();
+        }
 
-  document.getElementById('fecha').value = fVal;
-
-  cargarListaDefault();
-
-  document.getElementById('bloqueoInicio').style.display = 'none';
-
-  // Mostrar interfaz
-  mostrarInterfaz();
-
-  autoGuardar();
-}
-
-/* ---------------------------------------------------------
-   🔹 MOSTRAR / OCULTAR INTERFAZ
---------------------------------------------------------- */
-function ocultarInterfaz() {
-  document.querySelector("h1").style.display = "none";
-  document.querySelectorAll(".logo-container")[1].style.display = "none";
-  document.querySelector(".btn-export").style.display = "none";
-  document.querySelector("div[style*='margin-bottom']").style.display = "none";
-  document.querySelector("table").style.display = "none";
-  document.querySelector("div[style*='Observaciones']").style.display = "none";
-}
-
-function mostrarInterfaz() {
-  document.querySelector("h1").style.display = "";
-  document.querySelectorAll(".logo-container")[1].style.display = "";
-  document.querySelector(".btn-export").style.display = "";
-  document.querySelector("div[style*='margin-bottom']").style.display = "";
-  document.querySelector("table").style.display = "";
-  document.querySelector("div[style*='Observaciones']").style.display = "";
-}
-
-/* ---------------------------------------------------------
-   🔹 PINTAR CELDAS
---------------------------------------------------------- */
-function pintarCeldaCheck(el) {
-  const td = el.parentElement;
-  td.className = el.checked ? 'bg-verde' : 'bg-amarillo';
-  autoGuardar();
-}
-
-function pintarCeldaEscala(select) {
-  const td = select.parentElement;
-  td.classList.remove('bg-verde','bg-amarillo','bg-naranja','bg-rojo');
-  const val = select.value;
-  if (val == "0") td.classList.add('bg-verde');
-  else if (val == "1") td.classList.add('bg-amarillo');
-  else if (val == "2") td.classList.add('bg-naranja');
-  else if (val == "3") td.classList.add('bg-rojo');
-  autoGuardar();
-}
-
-function pintarCeldaResultado(td) {
-  const texto = td.textContent;
-  td.classList.remove('bg-verde','bg-rojo');
-  if (texto === "-") return;
-  if (texto.includes("POS")) td.classList.add('bg-rojo');
-  else td.classList.add('bg-verde');
-}
-
-/* ---------------------------------------------------------
-   🔹 MEDICACIÓN
---------------------------------------------------------- */
+        function pintarCeldaResultado(td) {
+            const texto = td.textContent;
+            td.classList.remove('bg-verde', 'bg-rojo');
+            if(texto === "-") return;
+            if(texto.includes("POS")) td.classList.add('bg-rojo');
+            else td.classList.add('bg-verde');
+        }
 function marcarMedicacion(cb) {
-  const td = cb.parentElement;
-  const nombre = cb.closest("tr").cells[0].querySelector("input").value.trim();
+    const td = cb.parentElement;
+    const nombre = cb.closest("tr").cells[0].querySelector("input").value.trim();
 
-  if (cb.checked) {
-    td.classList.remove("bg-rojo");
-    td.classList.add("bg-verde");
-  } else {
-    if (PACIENTES_CON_MEDICACION.includes(nombre)) {
-      td.classList.remove("bg-verde");
-      td.classList.add("bg-rojo");
+    if (cb.checked) {
+        td.classList.remove("bg-rojo");
+        td.classList.add("bg-verde");
     } else {
-      td.classList.remove("bg-verde","bg-rojo");
+        if (PACIENTES_CON_MEDICACION.includes(nombre)) {
+            td.classList.remove("bg-verde");
+            td.classList.add("bg-rojo");
+        } else {
+            td.classList.remove("bg-verde", "bg-rojo");
+        }
     }
-  }
-  autoGuardar();
+
+    autoGuardar();
+}
+async function guardarRegistroEnSupabase(registro) {
+    const { data, error } = await client
+        .from("registros_diarios")
+        .insert(registro);
+
+    if (error) {
+        console.error("Error guardando en Supabase:", error);
+    } else {
+        console.log("Registro guardado en Supabase:", data);
+    }
 }
 
-/* ---------------------------------------------------------
-   🔹 AGREGAR PACIENTE
---------------------------------------------------------- */
-function agregarPaciente(nombre = '') {
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><input type="text" value="${nombre}" onblur="guardarPacienteDesdeFila(this)"></td>
-    <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
-    <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
-    <td>
-      <input type="checkbox" onchange="toggleMotivo(this)">
-      <select class="motivo-select" onchange="pintarCeldaEscala(this)">
-        <option value="0">Hoy no toca</option>
-        <option value="1">No justifica</option>
-        <option value="2">No quiere venir</option>
-        <option value="3">Recaído</option>
-      </select>
-    </td>
-    <td class="bg-amarillo"><input type="checkbox" onchange="abrirModal(this); pintarCeldaCheck(this);"></td>
-    <td style="font-size:10px;">-</td>
-    <td><input type="checkbox" onchange="autoGuardar()"></td>
-    <td><input type="checkbox" class="medicacion" onchange="marcarMedicacion(this)"></td>
-    <td class="bg-verde">
-      <select onchange="pintarCeldaEscala(this)">
-        <option value="0">BIEN</option>
-        <option value="1">REGULAR</option>
-        <option value="2">MAL</option>
-        <option value="3">RECAÍDA</option>
-      </select>
-    </td>
-  `;
-  document.getElementById('tbody').appendChild(tr);
 
-  const nombrePaciente = nombre.trim();
-  const celdaMed = tr.cells[7];
-  if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
-    celdaMed.classList.add("bg-rojo");
-  }
+        function agregarPaciente(nombre = '') {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" value="${nombre}" oninput="autoGuardar()"></td>
+                <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
+                <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
+                <td><input type="checkbox" onchange="toggleMotivo(this)">
+                    <select class="motivo-select" onchange="pintarCeldaEscala(this)">
+                        <option value="0">Hoy no toca</option><option value="1">No justifica</option><option value="2">No quiere venir</option><option value="3">Recaído</option>
+                    </select>
+                </td>
+                <td class="bg-amarillo"><input type="checkbox" onchange="abrirModal(this); pintarCeldaCheck(this);"></td>
+                <td style="font-size:10px;">-</td>
+                <td><input type="checkbox" onchange="autoGuardar()"></td>
+                <td><input type="checkbox" class="medicacion" onchange="marcarMedicacion(this)"></td>
+
+                <td class="bg-verde"><select onchange="pintarCeldaEscala(this)"><option value="0">BIEN</option><option value="1">REGULAR</option><option value="2">MAL</option><option value="3">RECAÍDA</option>
+                    </select>
+                </td>
+            `;
+            document.getElementById('tbody').appendChild(tr);
+            // --- Colorear casilla MED si el paciente debe medicarse ---
+            const nombrePaciente = nombre.trim();
+            const celdaMed = tr.cells[7];
+
+if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
+    celdaMed.classList.add("bg-rojo"); // rojo claro
 }
 
-/* ---------------------------------------------------------
-   🔹 RESTAURAR FILA
---------------------------------------------------------- */
-function restaurarFila(f) {
-  agregarPaciente(f.pac);
-  const tr = document.getElementById('tbody').lastElementChild;
+        }
 
-  const cM = tr.cells[1].querySelector('input'); cM.checked = f.m; pintarCeldaCheck(cM);
-  const cT = tr.cells[2].querySelector('input'); cT.checked = f.t; pintarCeldaCheck(cT);
+        function restaurarFila(f) {
+            agregarPaciente(f.pac);
+            const tr = document.getElementById('tbody').lastElementChild;
+            const cM = tr.cells[1].querySelector('input'); cM.checked = f.m; pintarCeldaCheck(cM);
+            const cT = tr.cells[2].querySelector('input'); cT.checked = f.t; pintarCeldaCheck(cT);
+            const selNV = tr.cells[3].querySelector('select');
+            if(f.nv) { 
+                tr.cells[3].querySelector('input').checked = true; 
+                selNV.classList.add('visible'); 
+                selNV.value = f.mot; 
+                pintarCeldaEscala(selNV);
+            }
+            const cC = tr.cells[4].querySelector('input'); cC.checked = f.c; pintarCeldaCheck(cC);
+            tr.cells[5].textContent = f.res; pintarCeldaResultado(tr.cells[5]);
+            tr.cells[6].querySelector('input').checked = f.rs;
+            tr.cells[7].querySelector('input').checked = f.md;
+            const selR = tr.cells[8].querySelector('select');
+            selR.value = f.rg;
+            pintarCeldaEscala(selR);
+        }
 
-  const selNV = tr.cells[3].querySelector('select');
-  if (f.nv) {
-    tr.cells[3].querySelector('input').checked = true;
-    selNV.classList.add('visible');
-    selNV.value = f.mot;
-    pintarCeldaEscala(selNV);
-  }
+        function cargarListaDefault() {
+            document.getElementById('tbody').innerHTML = '';
+            LISTA_BASE.sort().forEach(n => agregarPaciente(n));
+        }
 
-  const cC = tr.cells[4].querySelector('input'); cC.checked = f.c; pintarCeldaCheck(cC);
+        function autoGuardar() {
+            const f = document.getElementById('fecha').value;
+            if(!f) return;
+            const filas = Array.from(document.querySelectorAll('#tbody tr')).map(tr => ({
+                pac: tr.cells[0].querySelector('input').value,
+                m: tr.cells[1].querySelector('input').checked,
+                t: tr.cells[2].querySelector('input').checked,
+                nv: tr.cells[3].querySelector('input').checked,
+                mot: tr.cells[3].querySelector('select').value,
+                c: tr.cells[4].querySelector('input').checked,
+                res: tr.cells[5].textContent,
+                rs: tr.cells[6].querySelector('input').checked,
+                md: tr.cells[7].querySelector('input').checked,
+                rg: tr.cells[8].querySelector('select').value
+            }));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ fecha: f, filas: filas }));
+        }
 
-  tr.cells[5].textContent = f.res;
-  pintarCeldaResultado(tr.cells[5]);
+        function toggleMotivo(cb) { 
+            const sel = cb.nextElementSibling;
+            sel.classList.toggle('visible', cb.checked);
+            if(!cb.checked) cb.parentElement.className = '';
+            else pintarCeldaEscala(sel);
+            autoGuardar(); 
+        }
 
-  tr.cells[6].querySelector('input').checked = f.rs;
-  tr.cells[7].querySelector('input').checked = f.md;
+        function abrirModal(cb) {
+            filaActiva = cb.closest('tr');
+            document.getElementById('modalPaciente').textContent = filaActiva.cells[0].querySelector('input').value;
+            const IDs = ['m_COC', 'm_OH', 'm_THC', 'm_BZD', 'm_OPI', 'm_KETA', 'm_AMP', 'm_MTD'];
+            IDs.forEach(id => document.getElementById(id).value = "");
+            document.getElementById('modalControles').style.display = 'block';
+        }
 
-  const selR = tr.cells[8].querySelector('select');
-  selR.value = f.rg;
-  pintarCeldaEscala(selR);
+        function cerrarModal() { document.getElementById('modalControles').style.display = 'none'; }
+
+        function guardarControles() {
+            const IDs = ['m_COC', 'm_OH', 'm_THC', 'm_BZD', 'm_OPI', 'm_KETA', 'm_AMP', 'm_MTD'];
+            let res = IDs.map(id => {
+                const v = document.getElementById(id).value;
+                return v ? `${id.replace('m_','')}:${v}` : null;
+            }).filter(x => x).join(', ');
+            filaActiva.cells[5].textContent = res || '-';
+            pintarCeldaResultado(filaActiva.cells[5]);
+            cerrarModal();
+            autoGuardar();
+        }
+        async function obtenerPacienteId(nombre) {
+    // 1. Buscar paciente por nombre
+    const { data, error } = await client
+        .from("pacientes")
+        .select("id")
+        .eq("nombre", nombre)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Error buscando paciente:", error);
+        return null;
+    }
+
+    // 2. Si existe, devolver su id
+    if (data) {
+        return data.id;
+    }
+
+    // 3. Si no existe, crearlo automáticamente
+    const { data: nuevo, error: errorInsert } = await client
+        .from("pacientes")
+        .insert({
+            nombre: nombre,
+            activo: true,
+            medicacion: false
+        })
+        .select()
+        .single();
+
+    if (errorInsert) {
+        console.error("Error creando paciente:", errorInsert);
+        return null;
+    }
+
+    return nuevo.id;
 }
 
-/* ---------------------------------------------------------
-   🔹 CARGAR LISTA BASE
---------------------------------------------------------- */
-function cargarListaDefault() {
-  document.getElementById('tbody').innerHTML = '';
-  LISTA_BASE.sort().forEach(n => agregarPaciente(n));
-}
-
-/* ---------------------------------------------------------
-   🔹 AUTO GUARDAR
---------------------------------------------------------- */
-function autoGuardar() {
-  const f = document.getElementById('fecha').value;
-  if (!f) return;
-
-  const filas = Array.from(document.querySelectorAll('#tbody tr')).map(tr => ({
-    pac: tr.cells[0].querySelector('input').value,
-    m: tr.cells[1].querySelector('input').checked,
-    t: tr.cells[2].querySelector('input').checked,
-    nv: tr.cells[3].querySelector('input').checked,
-    mot: tr.cells[3].querySelector('select').value,
-    c: tr.cells[4].querySelector('input').checked,
-    res: tr.cells[5].textContent,
-    rs: tr.cells[6].querySelector('input').checked,
-    md: tr.cells[7].querySelector('input').checked,
-    rg: tr.cells[8].querySelector('select').value
-  }));
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ fecha: f, filas }));
-}
-
-/* ---------------------------------------------------------
-   🔹 MOTIVO NO VINO
---------------------------------------------------------- */
-function toggleMotivo(cb) {
-  const sel = cb.nextElementSibling;
-  sel.classList.toggle('visible', cb.checked);
-  if (!cb.checked) cb.parentElement.className = '';
-  else pintarCeldaEscala(sel);
-  autoGuardar();
-}
-
-/* ---------------------------------------------------------
-   🔹 MODAL CONTROLES
---------------------------------------------------------- */
-function abrirModal(cb) {
-  filaActiva = cb.closest('tr');
-  document.getElementById('modalPaciente').textContent =
-    filaActiva.cells[0].querySelector('input').value;
-
-  ['m_COC','m_OH','m_THC','m_BZD','m_OPI','m_KETA','m_AMP','m_MTD']
-    .forEach(id => document.getElementById(id).value = "");
-
-  document.getElementById('modalControles').style.display = 'block';
-}
-
-function cerrarModal() {
-  document.getElementById('modalControles').style.display = 'none';
-}
-
-function guardarControles() {
-  const IDs = ['m_COC','m_OH','m_THC','m_BZD','m_OPI','m_KETA','m_AMP','m_MTD'];
-
-  let res = IDs.map(id => {
-    const v = document.getElementById(id).value;
-    return v ? `${id.replace('m_','')}:${v}` : null;
-  }).filter(x => x).join(', ');
-
-  filaActiva.cells[5].textContent = res || '-';
-  pintarCeldaResultado(filaActiva.cells[5]);
-  cerrarModal();
-  autoGuardar();
-}
-
-/* ---------------------------------------------------------
-   🔹 OBTENER / CREAR PACIENTE EN SUPABASE
---------------------------------------------------------- */
-async function obtenerPacienteId(nombre) {
-  const { data, error } = await client
-    .from("pacientes")
-    .select("id")
-    .eq("nombre", nombre)
-    .maybeSingle();
-
-  if (error) return null;
-  if (data) return data.id;
-
-  const { data: nuevo } = await client
-    .from("pacientes")
-    .insert({
-      nombre,
-      activo: true,
-      medicacion: false
-    })
-    .select()
-    .single();
-
-  return nuevo?.id || null;
-}
-
-/* ---------------------------------------------------------
-   🔹 EXPORTAR + GUARDAR + FINALIZAR
---------------------------------------------------------- */
 async function exportarExcel() {
-  const fISO = document.getElementById('fecha').value;
-  if (!fISO) return alert("Falta la fecha");
+    const fISO = document.getElementById('fecha').value;
+    const [y, m, d] = fISO.split('-');
+    const fBonita = `${d}/${m}/${y}`;
 
-  const [y, m, d] = fISO.split('-');
-  const fBonita = `${d}/${m}/${y}`;
+    if (!confirm(`¿Exportar informe de fecha ${fBonita}?`)) return;
 
-  if (!confirm(`¿Exportar informe de fecha ${fBonita}?`)) return;
+    // 🔹 1. Extraer datos de la tabla
+    const data = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
+        const res = tr.cells[5].textContent;
 
-  const data = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
-    const res = tr.cells[5].textContent;
+        const check = (sust) => {
+            if (!res || res === "-") return 1;
+            if (res.includes(`${sust}:POS`)) return 2;
+            if (res.includes(`${sust}:NEG`)) return 0;
+            return 1;
+        };
 
-    const check = (sust) => {
-      if (!res || res === "-") return 1;
-      if (res.includes(`${sust}:POS`)) return 2;
-      if (res.includes(`${sust}:NEG`)) return 0;
-      return 1;
-    };
+        return {
+            "FECHA": fBonita,
+            "PACIENTE": tr.cells[0].querySelector('input').value,
+            "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
+            "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
+            "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
+            "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
+            "COC": check("COC"), "OH": check("OH"), "THC": check("THC"), "BZD": check("BZD"),
+            "OPI": check("OPI"), "KETA": check("KETA"), "AMP": check("AMP"), "MTD": check("MTD"),
+            "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
+            "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
+            "RIESGO": tr.cells[8].querySelector('select').value
+        };
+    });
 
-    return {
-      FECHA: fBonita,
-      PACIENTE: tr.cells[0].querySelector('input').value,
-      ASISTENCIA: tr.cells[3].querySelector('input').checked
-        ? tr.cells[3].querySelector('select').value
-        : 0,
-      MAÑANA: tr.cells[1].querySelector('input').checked ? "SI" : "NO",
-      TARDE: tr.cells[2].querySelector('input').checked ? "SI" : "NO",
-      CONTROL: tr.cells[4].querySelector('input').checked ? "SI" : "NO",
-      COC: check("COC"), OH: check("OH"), THC: check("THC"), BZD: check("BZD"),
-      OPI: check("OPI"), KETA: check("KETA"), AMP: check("AMP"), MTD: check("MTD"),
-      RESCATE: tr.cells[6].querySelector('input').checked ? "SI" : "NO",
-      MEDICACIÓN: tr.cells[7].querySelector('input').checked ? "SI" : "NO",
-      RIESGO: tr.cells[8].querySelector('select').value
-    };
-  });
+    // 🔹 2. Obtener todos los nombres de pacientes
+    const nombres = data.map(f => f.PACIENTE);
 
-  const nombres = data.map(f => f.PACIENTE);
+    // 🔹 3. Obtener IDs de pacientes en una sola llamada
+    const { data: pacientes, error: errorPac } = await client
+        .from("pacientes")
+        .select("id, nombre")
+        .in("nombre", nombres);
 
-  const { data: pacientes, error: errorPac } = await client
-    .from("pacientes")
-    .select("id, nombre")
-    .in("nombre", nombres);
-
-  if (errorPac) {
-    alert("Error obteniendo IDs de pacientes");
-    console.error(errorPac);
-    return;
-  }
-
-  const mapaPacientes = {};
-  (pacientes || []).forEach(p => mapaPacientes[p.nombre] = p.id);
-
-  const registros = data.map(fila => ({
-    fecha: fISO,
-    paciente_id: mapaPacientes[fila.PACIENTE],
-    asistencia: fila.ASISTENCIA,
-    mañana: fila.MAÑANA === "SI",
-    tarde: fila.TARDE === "SI",
-    control: fila.CONTROL === "SI",
-    sustancias: {
-      COC: fila.COC, OH: fila.OH, THC: fila.THC, BZD: fila.BZD,
-      OPI: fila.OPI, KETA: fila.KETA, AMP: fila.AMP, MTD: fila.MTD
-    },
-    rescate: fila.RESCATE === "SI",
-    medicacion: fila["MEDICACIÓN"] === "SI",
-    riesgo: fila.RIESGO,
-    observaciones: document.getElementById("observaciones")?.value || ""
-  }));
-
-  const { error: errorInsert } = await client
-    .from("registros_diarios")
-    .insert(registros);
-
-  if (errorInsert) {
-    alert("Error guardando registros en Supabase");
-    console.error(errorInsert);
-    return;
-  }
-
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Tesis");
-
-  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-  const blob = new Blob([excelBuffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  });
-
-  saveAs(blob, `Registro_${fISO}.xlsx`);
-
-  setTimeout(() => {
-    if (confirm("¿Finalizar día y limpiar pantalla?")) {
-      finalizarDia();
+    if (errorPac) {
+        alert("Error obteniendo IDs de pacientes");
+        console.error(errorPac);
+        return;
     }
-  }, 500);
+
+    // 🔹 4. Crear diccionario nombre → id
+    const mapaPacientes = {};
+    pacientes.forEach(p => mapaPacientes[p.nombre] = p.id);
+
+    // 🔹 5. Preparar registros para inserción masiva
+    const registros = data.map(fila => ({
+        fecha: fISO,
+        paciente_id: mapaPacientes[fila.PACIENTE],
+        asistencia: fila.ASISTENCIA,
+        mañana: fila.MAÑANA === "SI",
+        tarde: fila.TARDE === "SI",
+        control: fila.CONTROL === "SI",
+        sustancias: {
+            COC: fila.COC,
+            OH: fila.OH,
+            THC: fila.THC,
+            BZD: fila.BZD,
+            OPI: fila.OPI,
+            KETA: fila.KETA,
+            AMP: fila.AMP,
+            MTD: fila.MTD
+        },
+        rescate: fila.RESCATE === "SI",
+        medicacion: fila["MEDICACIÓN"] === "SI",
+        riesgo: fila.RIESGO,
+        observaciones: document.getElementById("observaciones")?.value || ""
+    }));
+
+    // 🔹 6. Insertar TODO en una sola llamada
+    const { error: errorInsert } = await client
+        .from("registros_diarios")
+        .insert(registros);
+
+    if (errorInsert) {
+        alert("Error guardando registros en Supabase");
+        console.error(errorInsert);
+        return;
+    }
+
+    // 🔹 7. Exportar Excel compatible con Android/Samsung
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Tesis");
+
+    // Generar el archivo como ArrayBuffer
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+    // Convertir a Blob
+    const blob = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+
+    // Descargar usando FileSaver (compatible con Android)
+    saveAs(blob, `Registro_${fISO}.xlsx`);
+
+    // 🔹 8. Preguntar si limpiar pantalla
+    setTimeout(() => {
+        if (confirm("¿Finalizar día y limpiar pantalla?")) {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+    }, 500);
 }
 
-/* ---------------------------------------------------------
-   🔹 FINALIZAR DÍA
---------------------------------------------------------- */
-function finalizarDia() {
-  console.log("Cerrando día…");
 
-  // Limpiar tabla
-  const tbody = document.getElementById("tbody");
-  if (tbody) tbody.innerHTML = "";
 
-  // Limpiar observaciones
-  const obs = document.getElementById("observaciones");
-  if (obs) obs.value = "";
 
-  // Borrar memoria
-  localStorage.removeItem(STORAGE_KEY);
-
-  // Ocultar interfaz
-  ocultarInterfaz();
-
-  // Mostrar panel de inicio
-  document.getElementById('fechaConfirmar').valueAsDate = new Date();
-  document.getElementById('bloqueoInicio').style.display = 'flex';
-
-  alert("Día finalizado correctamente.");
-}
-</script>
-
+        
+    </script>
 </body>
 </html>
+
    
