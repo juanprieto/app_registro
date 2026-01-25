@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -121,11 +118,11 @@ async function cargarSemana(fechaBase) {
     const lunes = new Date(fecha);
     lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
 
-    const domingo = new Date(lunes);
-    domingo.setDate(lunes.getDate() + 6);
+    const viernes = new Date(lunes);
+    viernes.setDate(lunes.getDate() + 4);
 
     const f1 = lunes.toISOString().split("T")[0];
-    const f2 = domingo.toISOString().split("T")[0];
+    const f2 = viernes.toISOString().split("T")[0];
 
     const { data } = await client
         .from("registros_diarios")
@@ -141,8 +138,11 @@ async function cargarSemana(fechaBase) {
 function agrupar(registros) {
     const dias = {};
     registros.forEach(r => {
-        if (!dias[r.fecha]) dias[r.fecha] = [];
-        dias[r.fecha].push(r);
+        const d = new Date(r.fecha).getDay();
+        if (d >= 1 && d <= 5) { // solo lunes-viernes
+            if (!dias[r.fecha]) dias[r.fecha] = [];
+            dias[r.fecha].push(r);
+        }
     });
     return dias;
 }
@@ -190,18 +190,14 @@ function mostrar(diasSemana) {
                 // FILTRO POR PACIENTE
                 if (filtros.paciente !== "todos" && r.paciente_id != filtros.paciente) return;
 
-                // FILTROS OR (mañana, tarde, control)
-                const algunFiltro = filtros.mañana || filtros.tarde || filtros.control;
+                // FILTROS OR reales
+                const filtrosActivos = [];
 
-                if (algunFiltro) {
-                    let coincide = false;
+                if (filtros.mañana) filtrosActivos.push(r.mañana);
+                if (filtros.tarde) filtrosActivos.push(r.tarde);
+                if (filtros.control) filtrosActivos.push(r.control);
 
-                    if (filtros.mañana && r.mañana) coincide = true;
-                    if (filtros.tarde && r.tarde) coincide = true;
-                    if (filtros.control && r.control) coincide = true;
-
-                    if (!coincide) return;
-                }
+                if (filtrosActivos.length > 0 && !filtrosActivos.includes(true)) return;
 
                 const p = document.createElement("div");
                 p.style.background = "#eef5d0";
@@ -262,6 +258,7 @@ verSemana();
 
 </body>
 </html>
+
 
 
 
