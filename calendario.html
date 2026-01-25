@@ -169,7 +169,16 @@ function mostrar(diasSemana) {
     tabla.appendChild(head);
 
     const fila = document.createElement("tr");
-    const fechas = Object.keys(diasSemana).sort();
+   const fechas = [];
+const base = new Date(fechaActual);
+const lunes = new Date(base);
+lunes.setDate(base.getDate() - base.getDay() + 1);
+
+for (let i = 0; i < 5; i++) {
+    const d = new Date(lunes);
+    d.setDate(lunes.getDate() + i);
+    fechas.push(d.toISOString().split("T")[0]);
+}
 
     diasOrden.forEach((_, i) => {
         const celda = document.createElement("td");
