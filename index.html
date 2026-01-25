@@ -500,6 +500,7 @@ async function exportarExcel() {
             "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
             "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
             "RIESGO": tr.cells[8].querySelector('select').value
+            "OBSERVACIONES": document.getElementById("observaciones")?.value || ""
         };
     });
 
