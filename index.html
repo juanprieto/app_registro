@@ -489,19 +489,20 @@ async function exportarExcel() {
         };
 
         return {
-            "FECHA": fBonita,
-            "PACIENTE": tr.cells[0].querySelector('input').value,
-            "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
-            "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
-            "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
-            "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
-            "COC": check("COC"), "OH": check("OH"), "THC": check("THC"), "BZD": check("BZD"),
-            "OPI": check("OPI"), "KETA": check("KETA"), "AMP": check("AMP"), "MTD": check("MTD"),
-            "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
-            "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
-            "RIESGO": tr.cells[8].querySelector('select').value
-            "OBSERVACIONES": document.getElementById("observaciones")?.value || ""
-        };
+    "FECHA": fBonita,
+    "PACIENTE": tr.cells[0].querySelector('input').value,
+    "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
+    "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
+    "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
+    "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
+    "COC": check("COC"), "OH": check("OH"), "THC": check("THC"), "BZD": check("BZD"),
+    "OPI": check("OPI"), "KETA": check("KETA"), "AMP": check("AMP"), "MTD": check("MTD"),
+    "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
+    "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
+    "RIESGO": tr.cells[8].querySelector('select').value,
+    "OBSERVACIONES": document.getElementById("observaciones")?.value || ""
+};
+
     });
 
     // 🔹 2. Obtener todos los nombres de pacientes
