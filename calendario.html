@@ -1,6 +1,3 @@
-
-calendario
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,6 +9,20 @@ calendario
 <body>
 
 <h2>Calendario semanal</h2>
+
+<!-- Filtros -->
+<div style="margin-bottom: 15px;">
+
+    <label>Paciente:</label>
+    <select id="filtroPaciente">
+        <option value="todos">Todos</option>
+    </select>
+
+    <button onclick="toggleFiltro('mañana')">Mañana</button>
+    <button onclick="toggleFiltro('tarde')">Tarde</button>
+    <button onclick="toggleFiltro('control')">Control</button>
+
+</div>
 
 <button onclick="semanaAnterior()">⬅️ Semana anterior</button>
 <button onclick="semanaSiguiente()">➡️ Semana siguiente</button>
@@ -27,6 +38,44 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // Fecha interna del calendario
 let fechaActual = new Date();
 
+// Filtros activos
+let filtros = {
+    mañana: false,
+    tarde: false,
+    control: false,
+    paciente: "todos"
+};
+
+// Cargar lista de pacientes
+async function cargarPacientes() {
+    const { data } = await client
+        .from("pacientes")
+        .select("id, nombre")
+        .order("nombre", { ascending: true });
+
+    const sel = document.getElementById("filtroPaciente");
+
+    data.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.nombre;
+        sel.appendChild(opt);
+    });
+
+    sel.onchange = () => {
+        filtros.paciente = sel.value;
+        verSemana();
+    };
+}
+
+cargarPacientes();
+
+// Activar/desactivar filtros
+function toggleFiltro(campo) {
+    filtros[campo] = !filtros[campo];
+    verSemana();
+}
+
 // Cargar semana
 async function cargarSemana(fechaBase) {
     const fecha = new Date(fechaBase);
@@ -40,7 +89,7 @@ async function cargarSemana(fechaBase) {
     const f1 = lunes.toISOString().split("T")[0];
     const f2 = domingo.toISOString().split("T")[0];
 
-    const { data, error } = await client
+    const { data } = await client
         .from("registros_diarios")
         .select("*, pacientes(nombre)")
         .gte("fecha", f1)
@@ -99,18 +148,25 @@ function mostrar(diasSemana) {
             celda.appendChild(titulo);
 
             diasSemana[fecha].forEach(r => {
+
+                // FILTROS
+                if (filtros.paciente !== "todos" && r.paciente_id != filtros.paciente) return;
+                if (filtros.mañana && !r.mañana) return;
+                if (filtros.tarde && !r.tarde) return;
+                if (filtros.control && !r.control) return;
+
                 const p = document.createElement("div");
                 p.style.background = "#eef5d0";
                 p.style.padding = "4px";
-                p.style.marginBottom = "4px";
+                p.style.marginBottom = "6px";
                 p.style.borderRadius = "4px";
 
                 const nombre = r.pacientes?.nombre || "Sin nombre";
-               const mañana = r.mañana ? "SÍ" : "NO";
+                const mañana = r.mañana ? "SÍ" : "NO";
                 const tarde = r.tarde ? "SÍ" : "NO";
                 const control = r.control ? "SÍ" : "NO";
 
-p.textContent = `${nombre} — Mañana: ${mañana} — Tarde: ${tarde} — Control: ${control}`;
+                p.textContent = `${nombre} — Mañana: ${mañana} — Tarde: ${tarde} — Control: ${control}`;
 
                 celda.appendChild(p);
             });
@@ -146,3 +202,4 @@ verSemana();
 
 </body>
 </html>
+
