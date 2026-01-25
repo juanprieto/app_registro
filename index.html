@@ -134,359 +134,419 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         </div>
     </div>
 
-   <script>
-const LISTA_BASE = ["Alan Mollica", "Amadeu Andres", "Anastasia Valls", "Antonio Gutierrez", "Carlos Ezquerra", "Carlos Palomar", "Cesar Gavilan", "Concha Rodriguez", "Dani Urgelles", "Eduard de la Torre", "Eva Alvarez", "Ferran Serrano", "Francesc Ordeig", "Ignasi Martin (Nacho)", "Ivan Pueyo", "Jacinto Texido", "Javier Sanz", "Jordi Homs", "Jordi Navarro", "Jordi Ortuno", "Jordi Perez", "Juanma Reboll", "Laury Gallardo", "Marc Garrell", "Marc Gonzalez", "Maria Munoz", "Mario Shefer", "Massinissa Ait-Ahmed", "Oscar Leal", "Pol Ribot", "Puri Galiot", "Rosa Tella", "Sara Alguacil", "Sergio Funes", "Vicente Vega", "Vicky Iglesias"];
+ <script>
+const LISTA_BASE = [
+  "Alan Mollica","Amadeu Andres","Anastasia Valls","Antonio Gutierrez","Carlos Ezquerra",
+  "Carlos Palomar","Cesar Gavilan","Concha Rodriguez","Dani Urgelles","Eduard de la Torre",
+  "Eva Alvarez","Ferran Serrano","Francesc Ordeig","Ignasi Martin (Nacho)","Ivan Pueyo",
+  "Jacinto Texido","Javier Sanz","Jordi Homs","Jordi Navarro","Jordi Ortuno","Jordi Perez",
+  "Juanma Reboll","Laury Gallardo","Marc Garrell","Marc Gonzalez","Maria Munoz","Mario Shefer",
+  "Massinissa Ait-Ahmed","Oscar Leal","Pol Ribot","Puri Galiot","Rosa Tella","Sara Alguacil",
+  "Sergio Funes","Vicente Vega","Vicky Iglesias"
+];
 
 const PACIENTES_CON_MEDICACION = [
-    "Anastasia Valls","Antonio Gutierrez","Alan Mollica","Concha Rodriguez",
-    "Dani Urgelles","Francesc Ordeig","Ivan Pueyo","Jordi Homs",
-    "Marc Gonzalez","Massinissa Ait-Ahmed"
+  "Anastasia Valls","Antonio Gutierrez","Alan Mollica","Concha Rodriguez",
+  "Dani Urgelles","Francesc Ordeig","Ivan Pueyo","Jordi Homs",
+  "Marc Gonzalez","Massinissa Ait-Ahmed"
 ];
 
 const STORAGE_KEY = 'asistencia_v7_base64';
 let filaActiva = null;
 
+// 🔹 Al abrir la página
 window.addEventListener('DOMContentLoaded', () => {
-    const memoria = localStorage.getItem(STORAGE_KEY);
+  const memoria = localStorage.getItem(STORAGE_KEY);
 
-    if (memoria) {
-        // Hay un día guardado → restaurar
-        const data = JSON.parse(memoria);
-        document.getElementById('fecha').value = data.fecha;
-        data.filas.forEach(f => restaurarFila(f));
-        document.getElementById('bloqueoInicio').style.display = 'none';
-    } else {
-        // No hay día guardado → preguntar fecha
-        document.getElementById('fechaConfirmar').valueAsDate = new Date();
-        document.getElementById('bloqueoInicio').style.display = 'flex';
-        // ❗ NO cargamos lista aquí
-    }
+  if (memoria) {
+    // Hay día guardado → restaurar
+    const data = JSON.parse(memoria);
+    document.getElementById('fecha').value = data.fecha;
+    data.filas.forEach(f => restaurarFila(f));
+    document.getElementById('bloqueoInicio').style.display = 'none';
+  } else {
+    // No hay día → preguntar fecha
+    document.getElementById('fechaConfirmar').valueAsDate = new Date();
+    document.getElementById('bloqueoInicio').style.display = 'flex';
+    // NO cargamos lista aquí
+  }
 });
 
-
+// 🔹 Confirmar fecha inicial
 function confirmarFechaInicial() {
-    const fVal = document.getElementById('fechaConfirmar').value;
-    if (!fVal) return alert("Selecciona fecha");
+  const fVal = document.getElementById('fechaConfirmar').value;
+  if (!fVal) return alert("Selecciona fecha");
 
-    document.getElementById('fecha').value = fVal;
+  document.getElementById('fecha').value = fVal;
 
-    // Ahora sí cargamos la lista base
-    cargarListaDefault();
+  // Ahora sí cargamos la lista base
+  cargarListaDefault();
 
-    document.getElementById('bloqueoInicio').style.display = 'none';
-    autoGuardar();
+  document.getElementById('bloqueoInicio').style.display = 'none';
+  autoGuardar();
 }
 
-
-
+// 🔹 Pintar celdas
 function pintarCeldaCheck(el) {
-    const td = el.parentElement;
-    td.className = el.checked ? 'bg-verde' : 'bg-amarillo';
-    autoGuardar();
+  const td = el.parentElement;
+  td.className = el.checked ? 'bg-verde' : 'bg-amarillo';
+  autoGuardar();
 }
 
 function pintarCeldaEscala(select) {
-    const td = select.parentElement;
-    td.classList.remove('bg-verde','bg-amarillo','bg-naranja','bg-rojo');
-    const val = select.value;
-    if(val=="0") td.classList.add('bg-verde');
-    else if(val=="1") td.classList.add('bg-amarillo');
-    else if(val=="2") td.classList.add('bg-naranja');
-    else if(val=="3") td.classList.add('bg-rojo');
-    autoGuardar();
+  const td = select.parentElement;
+  td.classList.remove('bg-verde','bg-amarillo','bg-naranja','bg-rojo');
+  const val = select.value;
+  if (val == "0") td.classList.add('bg-verde');
+  else if (val == "1") td.classList.add('bg-amarillo');
+  else if (val == "2") td.classList.add('bg-naranja');
+  else if (val == "3") td.classList.add('bg-rojo');
+  autoGuardar();
 }
 
 function pintarCeldaResultado(td) {
-    const texto = td.textContent;
-    td.classList.remove('bg-verde','bg-rojo');
-    if(texto === "-") return;
-    if(texto.includes("POS")) td.classList.add('bg-rojo');
-    else td.classList.add('bg-verde');
+  const texto = td.textContent;
+  td.classList.remove('bg-verde','bg-rojo');
+  if (texto === "-") return;
+  if (texto.includes("POS")) td.classList.add('bg-rojo');
+  else td.classList.add('bg-verde');
 }
 
+// 🔹 Medicación
 function marcarMedicacion(cb) {
-    const td = cb.parentElement;
-    const nombre = cb.closest("tr").cells[0].querySelector("input").value.trim();
+  const td = cb.parentElement;
+  const nombre = cb.closest("tr").cells[0].querySelector("input").value.trim();
 
-    if (cb.checked) {
-        td.classList.remove("bg-rojo");
-        td.classList.add("bg-verde");
+  if (cb.checked) {
+    td.classList.remove("bg-rojo");
+    td.classList.add("bg-verde");
+  } else {
+    if (PACIENTES_CON_MEDICACION.includes(nombre)) {
+      td.classList.remove("bg-verde");
+      td.classList.add("bg-rojo");
     } else {
-        if (PACIENTES_CON_MEDICACION.includes(nombre)) {
-            td.classList.remove("bg-verde");
-            td.classList.add("bg-rojo");
-        } else {
-            td.classList.remove("bg-verde","bg-rojo");
-        }
+      td.classList.remove("bg-verde","bg-rojo");
     }
-    autoGuardar();
+  }
+  autoGuardar();
 }
 
+// 🔹 Guardar registro individual en Supabase (si lo usas)
 async function guardarRegistroEnSupabase(registro) {
-    const pacienteId = await obtenerPacienteId(registro.nombre);
-    if (!pacienteId) return;
+  const pacienteId = await obtenerPacienteId(registro.nombre);
+  if (!pacienteId) return;
 
-    registro.paciente_id = pacienteId;
+  registro.paciente_id = pacienteId;
 
-    const { error } = await client
-        .from("registros_diarios")
-        .insert(registro);
+  const { error } = await client
+    .from("registros_diarios")
+    .insert(registro);
 
-    if (error) console.error("Error guardando en Supabase:", error);
+  if (error) console.error("Error guardando en Supabase:", error);
 }
 
+// 🔹 Guardar/crear paciente al salir del input
 async function guardarPacienteDesdeFila(input) {
-    const tr = input.closest("tr");
-    const nombre = input.value.trim();
-    if (!nombre) return;
+  const tr = input.closest("tr");
+  const nombre = input.value.trim();
+  if (!nombre) return;
 
-    const id = await obtenerPacienteId(nombre);
-    tr.dataset.pacienteId = id;
+  const id = await obtenerPacienteId(nombre);
+  tr.dataset.pacienteId = id;
 }
 
-function agregarPaciente(nombre='') {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td><input type="text" value="${nombre}" onblur="guardarPacienteDesdeFila(this)"></td>
-        <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
-        <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
-        <td>
-            <input type="checkbox" onchange="toggleMotivo(this)">
-            <select class="motivo-select" onchange="pintarCeldaEscala(this)">
-                <option value="0">Hoy no toca</option>
-                <option value="1">No justifica</option>
-                <option value="2">No quiere venir</option>
-                <option value="3">Recaído</option>
-            </select>
-        </td>
-        <td class="bg-amarillo"><input type="checkbox" onchange="abrirModal(this); pintarCeldaCheck(this);"></td>
-        <td style="font-size:10px;">-</td>
-        <td><input type="checkbox" onchange="autoGuardar()"></td>
-        <td><input type="checkbox" class="medicacion" onchange="marcarMedicacion(this)"></td>
-        <td class="bg-verde">
-            <select onchange="pintarCeldaEscala(this)">
-                <option value="0">BIEN</option>
-                <option value="1">REGULAR</option>
-                <option value="2">MAL</option>
-                <option value="3">RECAÍDA</option>
-            </select>
-        </td>
-    `;
-    document.getElementById('tbody').appendChild(tr);
+// 🔹 Añadir fila de paciente
+function agregarPaciente(nombre = '') {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>
+      <input type="text" value="${nombre}" onblur="guardarPacienteDesdeFila(this)">
+    </td>
+    <td class="bg-amarillo">
+      <input type="checkbox" onchange="pintarCeldaCheck(this)">
+    </td>
+    <td class="bg-amarillo">
+      <input type="checkbox" onchange="pintarCeldaCheck(this)">
+    </td>
+    <td>
+      <input type="checkbox" onchange="toggleMotivo(this)">
+      <select class="motivo-select" onchange="pintarCeldaEscala(this)">
+        <option value="0">Hoy no toca</option>
+        <option value="1">No justifica</option>
+        <option value="2">No quiere venir</option>
+        <option value="3">Recaído</option>
+      </select>
+    </td>
+    <td class="bg-amarillo">
+      <input type="checkbox" onchange="abrirModal(this); pintarCeldaCheck(this);">
+    </td>
+    <td style="font-size:10px;">-</td>
+    <td>
+      <input type="checkbox" onchange="autoGuardar()">
+    </td>
+    <td>
+      <input type="checkbox" class="medicacion" onchange="marcarMedicacion(this)">
+    </td>
+    <td class="bg-verde">
+      <select onchange="pintarCeldaEscala(this)">
+        <option value="0">BIEN</option>
+        <option value="1">REGULAR</option>
+        <option value="2">MAL</option>
+        <option value="3">RECAÍDA</option>
+      </select>
+    </td>
+  `;
+  document.getElementById('tbody').appendChild(tr);
 
-    const nombrePaciente = nombre.trim();
-    const celdaMed = tr.cells[7];
-    if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
-        celdaMed.classList.add("bg-rojo");
-    }
+  const nombrePaciente = nombre.trim();
+  const celdaMed = tr.cells[7];
+  if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
+    celdaMed.classList.add("bg-rojo");
+  }
 }
 
+// 🔹 Restaurar fila desde localStorage
 function restaurarFila(f) {
-    agregarPaciente(f.pac);
-    const tr = document.getElementById('tbody').lastElementChild;
+  agregarPaciente(f.pac);
+  const tr = document.getElementById('tbody').lastElementChild;
 
-    const cM = tr.cells[1].querySelector('input'); cM.checked = f.m; pintarCeldaCheck(cM);
-    const cT = tr.cells[2].querySelector('input'); cT.checked = f.t; pintarCeldaCheck(cT);
+  const cM = tr.cells[1].querySelector('input'); cM.checked = f.m; pintarCeldaCheck(cM);
+  const cT = tr.cells[2].querySelector('input'); cT.checked = f.t; pintarCeldaCheck(cT);
 
-    const selNV = tr.cells[3].querySelector('select');
-    if(f.nv) {
-        tr.cells[3].querySelector('input').checked = true;
-        selNV.classList.add('visible');
-        selNV.value = f.mot;
-        pintarCeldaEscala(selNV);
-    }
+  const selNV = tr.cells[3].querySelector('select');
+  if (f.nv) {
+    tr.cells[3].querySelector('input').checked = true;
+    selNV.classList.add('visible');
+    selNV.value = f.mot;
+    pintarCeldaEscala(selNV);
+  }
 
-    const cC = tr.cells[4].querySelector('input'); cC.checked = f.c; pintarCeldaCheck(cC);
+  const cC = tr.cells[4].querySelector('input'); cC.checked = f.c; pintarCeldaCheck(cC);
 
-    tr.cells[5].textContent = f.res;
-    pintarCeldaResultado(tr.cells[5]);
+  tr.cells[5].textContent = f.res;
+  pintarCeldaResultado(tr.cells[5]);
 
-    tr.cells[6].querySelector('input').checked = f.rs;
-    tr.cells[7].querySelector('input').checked = f.md;
+  tr.cells[6].querySelector('input').checked = f.rs;
+  tr.cells[7].querySelector('input').checked = f.md;
 
-    const selR = tr.cells[8].querySelector('select');
-    selR.value = f.rg;
-    pintarCeldaEscala(selR);
+  const selR = tr.cells[8].querySelector('select');
+  selR.value = f.rg;
+  pintarCeldaEscala(selR);
 }
 
+// 🔹 Cargar lista base
 function cargarListaDefault() {
-    document.getElementById('tbody').innerHTML = '';
-    LISTA_BASE.sort().forEach(n => agregarPaciente(n));
+  document.getElementById('tbody').innerHTML = '';
+  LISTA_BASE.sort().forEach(n => agregarPaciente(n));
 }
 
+// 🔹 Auto-guardar en localStorage
 function autoGuardar() {
-    const f = document.getElementById('fecha').value;
-    if(!f) return;
+  const f = document.getElementById('fecha').value;
+  if (!f) return;
 
-    const filas = Array.from(document.querySelectorAll('#tbody tr')).map(tr => ({
-        pac: tr.cells[0].querySelector('input').value,
-        m: tr.cells[1].querySelector('input').checked,
-        t: tr.cells[2].querySelector('input').checked,
-        nv: tr.cells[3].querySelector('input').checked,
-        mot: tr.cells[3].querySelector('select').value,
-        c: tr.cells[4].querySelector('input').checked,
-        res: tr.cells[5].textContent,
-        rs: tr.cells[6].querySelector('input').checked,
-        md: tr.cells[7].querySelector('input').checked,
-        rg: tr.cells[8].querySelector('select').value
-    }));
+  const filas = Array.from(document.querySelectorAll('#tbody tr')).map(tr => ({
+    pac: tr.cells[0].querySelector('input').value,
+    m: tr.cells[1].querySelector('input').checked,
+    t: tr.cells[2].querySelector('input').checked,
+    nv: tr.cells[3].querySelector('input').checked,
+    mot: tr.cells[3].querySelector('select').value,
+    c: tr.cells[4].querySelector('input').checked,
+    res: tr.cells[5].textContent,
+    rs: tr.cells[6].querySelector('input').checked,
+    md: tr.cells[7].querySelector('input').checked,
+    rg: tr.cells[8].querySelector('select').value
+  }));
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fecha: f, filas }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ fecha: f, filas }));
 }
 
+// 🔹 Motivo “no vino”
 function toggleMotivo(cb) {
-    const sel = cb.nextElementSibling;
-    sel.classList.toggle('visible', cb.checked);
-    if(!cb.checked) cb.parentElement.className = '';
-    else pintarCeldaEscala(sel);
-    autoGuardar();
+  const sel = cb.nextElementSibling;
+  sel.classList.toggle('visible', cb.checked);
+  if (!cb.checked) cb.parentElement.className = '';
+  else pintarCeldaEscala(sel);
+  autoGuardar();
 }
 
+// 🔹 Modal controles
 function abrirModal(cb) {
-    filaActiva = cb.closest('tr');
-    document.getElementById('modalPaciente').textContent =
-        filaActiva.cells[0].querySelector('input').value;
+  filaActiva = cb.closest('tr');
+  document.getElementById('modalPaciente').textContent =
+    filaActiva.cells[0].querySelector('input').value;
 
-    ['m_COC','m_OH','m_THC','m_BZD','m_OPI','m_KETA','m_AMP','m_MTD']
-        .forEach(id => document.getElementById(id).value = "");
+  ['m_COC','m_OH','m_THC','m_BZD','m_OPI','m_KETA','m_AMP','m_MTD']
+    .forEach(id => document.getElementById(id).value = "");
 
-    document.getElementById('modalControles').style.display = 'block';
+  document.getElementById('modalControles').style.display = 'block';
 }
 
 function cerrarModal() {
-    document.getElementById('modalControles').style.display = 'none';
+  document.getElementById('modalControles').style.display = 'none';
 }
 
 function guardarControles() {
-    const IDs = ['m_COC','m_OH','m_THC','m_BZD','m_OPI','m_KETA','m_AMP','m_MTD'];
+  const IDs = ['m_COC','m_OH','m_THC','m_BZD','m_OPI','m_KETA','m_AMP','m_MTD'];
 
-    let res = IDs.map(id => {
-        const v = document.getElementById(id).value;
-        return v ? `${id.replace('m_','')}:${v}` : null;
-    }).filter(x => x).join(', ');
+  let res = IDs.map(id => {
+    const v = document.getElementById(id).value;
+    return v ? `${id.replace('m_','')}:${v}` : null;
+  }).filter(x => x).join(', ');
 
-    filaActiva.cells[5].textContent = res || '-';
-    pintarCeldaResultado(filaActiva.cells[5]);
-    cerrarModal();
-    autoGuardar();
+  filaActiva.cells[5].textContent = res || '-';
+  pintarCeldaResultado(filaActiva.cells[5]);
+  cerrarModal();
+  autoGuardar();
 }
 
+// 🔹 Obtener/crear paciente en Supabase
 async function obtenerPacienteId(nombre) {
-    const { data, error } = await client
-        .from("pacientes")
-        .select("id")
-        .eq("nombre", nombre)
-        .maybeSingle();
+  const { data, error } = await client
+    .from("pacientes")
+    .select("id")
+    .eq("nombre", nombre)
+    .maybeSingle();
 
-    if (error) return null;
-    if (data) return data.id;
+  if (error) {
+    console.error("Error buscando paciente:", error);
+    return null;
+  }
+  if (data) return data.id;
 
-    const { data: nuevo } = await client
-        .from("pacientes")
-        .insert({
-            nombre,
-            activo: true,
-            medicacion: false
-        })
-        .select()
-        .single();
+  const { data: nuevo, error: errorInsert } = await client
+    .from("pacientes")
+    .insert({
+      nombre,
+      activo: true,
+      medicacion: false
+    })
+    .select()
+    .single();
 
-    return nuevo?.id || null;
+  if (errorInsert) {
+    console.error("Error creando paciente:", errorInsert);
+    return null;
+  }
+
+  return nuevo.id;
 }
 
+// 🔹 Exportar + guardar en Supabase + cerrar día
 async function exportarExcel() {
-    const fISO = document.getElementById('fecha').value;
-    const [y, m, d] = fISO.split('-');
-    const fBonita = `${d}/${m}/${y}`;
+  const fISO = document.getElementById('fecha').value;
+  if (!fISO) return alert("Falta la fecha");
 
-    if (!confirm(`¿Exportar informe de fecha ${fBonita}?`)) return;
+  const [y, m, d] = fISO.split('-');
+  const fBonita = `${d}/${m}/${y}`;
 
-    const data = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
-        const res = tr.cells[5].textContent;
+  if (!confirm(`¿Exportar informe de fecha ${fBonita}?`)) return;
 
-        const check = sust => {
-            if (!res || res === "-") return 1;
-            if (res.includes(`${sust}:POS`)) return 2;
-            if (res.includes(`${sust}:NEG`)) return 0;
-            return 1;
-        };
+  const data = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
+    const res = tr.cells[5].textContent;
 
-        return {
-            FECHA: fBonita,
-            PACIENTE: tr.cells[0].querySelector('input').value,
-            ASISTENCIA: tr.cells[3].querySelector('input').checked
-                ? tr.cells[3].querySelector('select').value
-                : 0,
-            MAÑANA: tr.cells[1].querySelector('input').checked ? "SI" : "NO",
-            TARDE: tr.cells[2].querySelector('input').checked ? "SI" : "NO",
-            CONTROL: tr.cells[4].querySelector('input').checked ? "SI" : "NO",
-            COC: check("COC"), OH: check("OH"), THC: check("THC"),
-            BZD: check("BZD"), OPI: check("OPI"), KETA: check("KETA"),
-            AMP: check("AMP"), MTD: check("MTD"),
-            RESCATE: tr.cells[6].querySelector('input').checked ? "SI" : "NO",
-            MEDICACIÓN: tr.cells[7].querySelector('input').checked ? "SI" : "NO",
-            RIESGO: tr.cells[8].querySelector('select').value
-        };
-    });
+    const check = (sust) => {
+      if (!res || res === "-") return 1;
+      if (res.includes(`${sust}:POS`)) return 2;
+      if (res.includes(`${sust}:NEG`)) return 0;
+      return 1;
+    };
 
-    const nombres = data.map(f => f.PACIENTE);
+    return {
+      FECHA: fBonita,
+      PACIENTE: tr.cells[0].querySelector('input').value,
+      ASISTENCIA: tr.cells[3].querySelector('input').checked
+        ? tr.cells[3].querySelector('select').value
+        : 0,
+      MAÑANA: tr.cells[1].querySelector('input').checked ? "SI" : "NO",
+      TARDE: tr.cells[2].querySelector('input').checked ? "SI" : "NO",
+      CONTROL: tr.cells[4].querySelector('input').checked ? "SI" : "NO",
+      COC: check("COC"), OH: check("OH"), THC: check("THC"), BZD: check("BZD"),
+      OPI: check("OPI"), KETA: check("KETA"), AMP: check("AMP"), MTD: check("MTD"),
+      RESCATE: tr.cells[6].querySelector('input').checked ? "SI" : "NO",
+      MEDICACIÓN: tr.cells[7].querySelector('input').checked ? "SI" : "NO",
+      RIESGO: tr.cells[8].querySelector('select').value
+    };
+  });
 
-    const { data: pacientes } = await client
-        .from("pacientes")
-        .select("id, nombre")
-        .in("nombre", nombres);
+  const nombres = data.map(f => f.PACIENTE);
 
-    const mapaPacientes = {};
-    pacientes?.forEach(p => mapaPacientes[p.nombre] = p.id);
+  const { data: pacientes, error: errorPac } = await client
+    .from("pacientes")
+    .select("id, nombre")
+    .in("nombre", nombres);
 
-    const registros = data.map(fila => ({
-        fecha: fISO,
-        paciente_id: mapaPacientes[fila.PACIENTE],
-        asistencia: fila.ASISTENCIA,
-        mañana: fila.MAÑANA === "SI",
-        tarde: fila.TARDE === "SI",
-        control: fila.CONTROL === "SI",
-        sustancias: {
-            COC: fila.COC, OH: fila.OH, THC: fila.THC, BZD: fila.BZD,
-            OPI: fila.OPI, KETA: fila.KETA, AMP: fila.AMP, MTD: fila.MTD
-        },
-        rescate: fila.RESCATE === "SI",
-        medicacion: fila["MEDICACIÓN"] === "SI",
-        riesgo: fila.RIESGO,
-        observaciones: document.getElementById("observaciones")?.value || ""
-    }));
+  if (errorPac) {
+    alert("Error obteniendo IDs de pacientes");
+    console.error(errorPac);
+    return;
+  }
 
-    await client.from("registros_diarios").insert(registros);
+  const mapaPacientes = {};
+  (pacientes || []).forEach(p => mapaPacientes[p.nombre] = p.id);
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Tesis");
+  const registros = data.map(fila => ({
+    fecha: fISO,
+    paciente_id: mapaPacientes[fila.PACIENTE],
+    asistencia: fila.ASISTENCIA,
+    mañana: fila.MAÑANA === "SI",
+    tarde: fila.TARDE === "SI",
+    control: fila.CONTROL === "SI",
+    sustancias: {
+      COC: fila.COC, OH: fila.OH, THC: fila.THC, BZD: fila.BZD,
+      OPI: fila.OPI, KETA: fila.KETA, AMP: fila.AMP, MTD: fila.MTD
+    },
+    rescate: fila.RESCATE === "SI",
+    medicacion: fila["MEDICACIÓN"] === "SI",
+    riesgo: fila.RIESGO,
+    observaciones: document.getElementById("observaciones")?.value || ""
+  }));
 
-    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([excelBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    });
+  const { error: errorInsert } = await client
+    .from("registros_diarios")
+    .insert(registros);
 
-    saveAs(blob, `Registro_${fISO}.xlsx`);
+  if (errorInsert) {
+    alert("Error guardando registros en Supabase");
+    console.error(errorInsert);
+    return;
+  }
 
-    setTimeout(() => {
-        if (confirm("¿Finalizar día y limpiar pantalla?")) {
-            finalizarDia();
-        }
-    }, 500);
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Tesis");
+
+  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([excelBuffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+
+  saveAs(blob, `Registro_${fISO}.xlsx`);
+
+  setTimeout(() => {
+    if (confirm("¿Finalizar día y limpiar pantalla?")) {
+      finalizarDia();
+    }
+  }, 500);
 }
 
+// 🔹 Finalizar día
 function finalizarDia() {
-    const tbody = document.getElementById("tbody");
-    if (tbody) tbody.innerHTML = "";
+  const tbody = document.getElementById("tbody");
+  if (tbody) tbody.innerHTML = "";
 
-    const obs = document.getElementById("observaciones");
-    if (obs) obs.value = "";
+  const obs = document.getElementById("observaciones");
+  if (obs) obs.value = "";
 
-    localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(STORAGE_KEY);
 
-    alert("Día finalizado correctamente.");
+  alert("Día finalizado correctamente.");
+
+  // Volvemos al flujo inicial: preguntar fecha de nuevo
+  document.getElementById('fechaConfirmar').valueAsDate = new Date();
+  document.getElementById('bloqueoInicio').style.display = 'flex';
 }
 </script>
-
+</body>
+</html>
    
