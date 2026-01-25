@@ -1,3 +1,4 @@
+   
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -53,174 +54,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
-
-
-
-    
 <script>
 const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-
-// PASO 3 — Cargar registros de la semana
-async function cargarSemana(fechaBase) {
-    const fecha = new Date(fechaBase);
-
-    const lunes = new Date(fecha);
-    lunes.setDate(fecha.getDate() - fecha.getDay() + 1);
-
-    const domingo = new Date(lunes);
-    domingo.setDate(lunes.getDate() + 6);
-
-    const f1 = lunes.toISOString().split("T")[0];
-    const f2 = domingo.toISOString().split("T")[0];
-
-    const { data, error } = await client
-        .from("registros_diarios")
-        .select(`
-            *,
-            pacientes ( nombre )
-        `)
-        .gte("fecha", f1)
-        .lte("fecha", f2)
-        .order("fecha", { ascending: true });
-
-    if (error) {
-        console.error("Error cargando semana:", error);
-        return [];
-    }
-
-    return data || [];
-}
-
-
-// PASO 4 — Agrupar registros por día
-function agruparPorDia(registros) {
-    const dias = {};
-
-    registros.forEach(r => {
-        if (!dias[r.fecha]) dias[r.fecha] = [];
-        dias[r.fecha].push(r);
-    });
-
-    return dias;
-}
-
-
-// PASO 5 — Mostrar calendario semanal
-function mostrarCalendarioSemanal(diasSemana) {
-    const cont = document.getElementById("calendario");
-    cont.innerHTML = "";
-
-    const diasOrden = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
-
-    const tabla = document.createElement("table");
-    tabla.style.width = "100%";
-    tabla.style.borderCollapse = "collapse";
-
-    // Cabecera
-    const head = document.createElement("tr");
-    diasOrden.forEach(d => {
-        const th = document.createElement("th");
-        th.textContent = d.toUpperCase();
-        th.style.border = "1px solid #ccc";
-        th.style.padding = "8px";
-        th.style.background = "#f0f0f0";
-        head.appendChild(th);
-    });
-    tabla.appendChild(head);
-
-    // Fila de días
-    const fila = document.createElement("tr");
-    const fechas = Object.keys(diasSemana).sort();
-
-    diasOrden.forEach((_, i) => {
-        const celda = document.createElement("td");
-        celda.style.border = "1px solid #ccc";
-        celda.style.padding = "8px";
-        celda.style.verticalAlign = "top";
-
-        const fecha = fechas[i];
-
-        if (fecha) {
-            const titulo = document.createElement("div");
-            titulo.textContent = fecha;
-            titulo.style.fontWeight = "bold";
-            titulo.style.marginBottom = "6px";
-            celda.appendChild(titulo);
-
-            diasSemana[fecha].forEach(r => {
-                const p = document.createElement("div");
-                p.style.background = "#eef5d0";
-                p.style.padding = "4px";
-                p.style.marginBottom = "4px";
-                p.style.borderRadius = "4px";
-
-                const nombre = r.pacientes?.nombre || "Sin nombre";
-                const asistencia = r.asistencia ? "SÍ" : "NO";
-                const control = r.control ? "SÍ" : "NO";
-
-                p.textContent =
-                    `${nombre} — ` +
-                    `Asistencia: ${asistencia} — ` +
-                    `Control: ${control}`;
-
-                celda.appendChild(p);
-            });
-        }
-
-        fila.appendChild(celda);
-    });
-
-    tabla.appendChild(fila);
-    cont.appendChild(tabla);
-}
-
-
-// PASO 6 — Ver semana
-async function verSemana() {
-    const fechaISO = document.getElementById("fecha").value;
-
-    if (!fechaISO) {
-        alert("Selecciona una fecha primero");
-        return;
-    }
-
-    const registros = await cargarSemana(fechaISO);
-    const dias = agruparPorDia(registros);
-    mostrarCalendarioSemanal(dias);
-}
-
-
-// Navegación entre semanas
-function semanaAnterior() {
-    const input = document.getElementById("fecha");
-    if (!input.value) return alert("Selecciona una fecha primero");
-
-    const fecha = new Date(input.value);
-    fecha.setDate(fecha.getDate() - 7);
-
-    input.value = fecha.toISOString().split("T")[0];
-    verSemana();
-}
-
-function semanaSiguiente() {
-    const input = document.getElementById("fecha");
-    if (!input.value) return alert("Selecciona una fecha primero");
-
-    const fecha = new Date(input.value);
-    fecha.setDate(fecha.getDate() + 7);
-
-    input.value = fecha.toISOString().split("T")[0];
-    verSemana();
-}
 </script>
-
-
-
-
 
 <body>
 
@@ -268,14 +108,6 @@ function semanaSiguiente() {
               placeholder="Escribe aquí notas para el cambio de turno, incidencias, avisos, recordatorios..."
               style="width: 100%; height: 120px; font-size: 15px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; resize: vertical;"></textarea>
 </div>
-   
-    <button onclick="verSemana()">📅 Ver semana</button>
-    <button onclick="semanaAnterior()">⬅️ Semana anterior</button>
-    <button onclick="semanaSiguiente()">➡️ Semana siguiente</button>
-
-
-    <div id="calendario"></div>
-
 
     <button class="btn-export" onclick="exportarExcel()">💾 EXPORTAR Y FINALIZAR DÍA</button>
    
