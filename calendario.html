@@ -134,12 +134,12 @@ async function cargarSemana(fechaBase) {
     return data || [];
 }
 
-// Agrupar por día
+// Agrupar por día (solo lunes-viernes)
 function agrupar(registros) {
     const dias = {};
     registros.forEach(r => {
         const d = new Date(r.fecha).getDay();
-        if (d >= 1 && d <= 5) { // solo lunes-viernes
+        if (d >= 1 && d <= 5) {
             if (!dias[r.fecha]) dias[r.fecha] = [];
             dias[r.fecha].push(r);
         }
@@ -157,6 +157,7 @@ function mostrar(diasSemana) {
     tabla.style.width = "100%";
     tabla.style.borderCollapse = "collapse";
 
+    // Cabecera
     const head = document.createElement("tr");
     diasOrden.forEach(d => {
         const th = document.createElement("th");
@@ -168,74 +169,73 @@ function mostrar(diasSemana) {
     });
     tabla.appendChild(head);
 
+    // GENERAR FECHAS REALES LUNES–VIERNES
+    const fechas = [];
+    const base = new Date(fechaActual);
+    const lunes = new Date(base);
+    lunes.setDate(base.getDate() - base.getDay() + 1);
+
+    for (let i = 0; i < 5; i++) {
+        const d = new Date(lunes);
+        d.setDate(lunes.getDate() + i);
+        fechas.push(d.toISOString().split("T")[0]);
+    }
+
     const fila = document.createElement("tr");
-   const fechas = [];
-const base = new Date(fechaActual);
-const lunes = new Date(base);
-lunes.setDate(base.getDate() - base.getDay() + 1);
 
-for (let i = 0; i < 5; i++) {
-    const d = new Date(lunes);
-    d.setDate(lunes.getDate() + i);
-    fechas.push(d.toISOString().split("T")[0]);
-}
-
-    diasOrden.forEach((_, i) => {
+    fechas.forEach(fecha => {
         const celda = document.createElement("td");
         celda.style.border = "1px solid #ccc";
         celda.style.padding = "8px";
         celda.style.verticalAlign = "top";
 
-        const fecha = fechas[i];
-        if (fecha) {
-            const titulo = document.createElement("div");
-            titulo.textContent = fecha;
-            titulo.style.fontWeight = "bold";
-            titulo.style.marginBottom = "6px";
-            celda.appendChild(titulo);
+        const titulo = document.createElement("div");
+        titulo.textContent = fecha;
+        titulo.style.fontWeight = "bold";
+        titulo.style.marginBottom = "6px";
+        celda.appendChild(titulo);
 
-            diasSemana[fecha].forEach(r => {
+        const registros = diasSemana[fecha] || [];
 
-                // FILTRO POR PACIENTE
-                if (filtros.paciente !== "todos" && r.paciente_id != filtros.paciente) return;
+        registros.forEach(r => {
 
-                // FILTROS OR reales
-                const filtrosActivos = [];
+            // FILTRO PACIENTE
+            if (filtros.paciente !== "todos" && r.paciente_id != filtros.paciente) return;
 
-                if (filtros.mañana) filtrosActivos.push(r.mañana);
-                if (filtros.tarde) filtrosActivos.push(r.tarde);
-                if (filtros.control) filtrosActivos.push(r.control);
+            // FILTROS OR reales
+            const activos = [];
+            if (filtros.mañana) activos.push(r.mañana);
+            if (filtros.tarde) activos.push(r.tarde);
+            if (filtros.control) activos.push(r.control);
 
-                if (filtrosActivos.length > 0 && !filtrosActivos.includes(true)) return;
+            if (activos.length > 0 && !activos.includes(true)) return;
 
-                const p = document.createElement("div");
-                p.style.background = "#eef5d0";
-                p.style.padding = "4px";
-                p.style.marginBottom = "6px";
-                p.style.borderRadius = "4px";
+            const p = document.createElement("div");
+            p.style.background = "#eef5d0";
+            p.style.padding = "4px";
+            p.style.marginBottom = "6px";
+            p.style.borderRadius = "4px";
 
-                const nombre = r.pacientes?.nombre || "Sin nombre";
-                const mañana = r.mañana ? "SÍ" : "NO";
-                const tarde = r.tarde ? "SÍ" : "NO";
-                const control = r.control ? "SÍ" : "NO";
+            const nombre = r.pacientes?.nombre || "Sin nombre";
+            const mañana = r.mañana ? "SÍ" : "NO";
+            const tarde = r.tarde ? "SÍ" : "NO";
+            const control = r.control ? "SÍ" : "NO";
 
-                // Construcción dinámica del texto
-                let texto = nombre;
-                let detalles = [];
+            let texto = nombre;
+            let detalles = [];
 
-                if (filtros.mañana) detalles.push(`Mañana: ${mañana}`);
-                if (filtros.tarde) detalles.push(`Tarde: ${tarde}`);
-                if (filtros.control) detalles.push(`Control: ${control}`);
+            if (filtros.mañana) detalles.push(`Mañana: ${mañana}`);
+            if (filtros.tarde) detalles.push(`Tarde: ${tarde}`);
+            if (filtros.control) detalles.push(`Control: ${control}`);
 
-                if (detalles.length > 0) {
-                    texto += " — " + detalles.join(" — ");
-                }
+            if (detalles.length > 0) {
+                texto += " — " + detalles.join(" — ");
+            }
 
-                p.textContent = texto;
+            p.textContent = texto;
 
-                celda.appendChild(p);
-            });
-        }
+            celda.appendChild(p);
+        });
 
         fila.appendChild(celda);
     });
@@ -267,6 +267,7 @@ verSemana();
 
 </body>
 </html>
+
 
 
 
