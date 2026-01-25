@@ -134,7 +134,7 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         </div>
     </div>
 
- <script>
+<script>
 const LISTA_BASE = [
   "Alan Mollica","Amadeu Andres","Anastasia Valls","Antonio Gutierrez","Carlos Ezquerra",
   "Carlos Palomar","Cesar Gavilan","Concha Rodriguez","Dani Urgelles","Eduard de la Torre",
@@ -154,39 +154,68 @@ const PACIENTES_CON_MEDICACION = [
 const STORAGE_KEY = 'asistencia_v7_base64';
 let filaActiva = null;
 
-// 🔹 Al abrir la página
+/* ---------------------------------------------------------
+   🔹 AL ABRIR LA APP
+--------------------------------------------------------- */
 window.addEventListener('DOMContentLoaded', () => {
   const memoria = localStorage.getItem(STORAGE_KEY);
 
   if (memoria) {
-    // Hay día guardado → restaurar
+    // Restaurar día anterior
     const data = JSON.parse(memoria);
     document.getElementById('fecha').value = data.fecha;
     data.filas.forEach(f => restaurarFila(f));
     document.getElementById('bloqueoInicio').style.display = 'none';
   } else {
-    // No hay día → preguntar fecha
+    // Preguntar fecha
     document.getElementById('fechaConfirmar').valueAsDate = new Date();
     document.getElementById('bloqueoInicio').style.display = 'flex';
-    // NO cargamos lista aquí
   }
 });
 
-// 🔹 Confirmar fecha inicial
+/* ---------------------------------------------------------
+   🔹 CONFIRMAR FECHA INICIAL
+--------------------------------------------------------- */
 function confirmarFechaInicial() {
   const fVal = document.getElementById('fechaConfirmar').value;
   if (!fVal) return alert("Selecciona fecha");
 
   document.getElementById('fecha').value = fVal;
 
-  // Ahora sí cargamos la lista base
   cargarListaDefault();
 
   document.getElementById('bloqueoInicio').style.display = 'none';
+
+  // Mostrar interfaz
+  mostrarInterfaz();
+
   autoGuardar();
 }
 
-// 🔹 Pintar celdas
+/* ---------------------------------------------------------
+   🔹 MOSTRAR / OCULTAR INTERFAZ
+--------------------------------------------------------- */
+function ocultarInterfaz() {
+  document.querySelector("h1").style.display = "none";
+  document.querySelectorAll(".logo-container")[1].style.display = "none";
+  document.querySelector(".btn-export").style.display = "none";
+  document.querySelector("div[style*='margin-bottom']").style.display = "none";
+  document.querySelector("table").style.display = "none";
+  document.querySelector("div[style*='Observaciones']").style.display = "none";
+}
+
+function mostrarInterfaz() {
+  document.querySelector("h1").style.display = "";
+  document.querySelectorAll(".logo-container")[1].style.display = "";
+  document.querySelector(".btn-export").style.display = "";
+  document.querySelector("div[style*='margin-bottom']").style.display = "";
+  document.querySelector("table").style.display = "";
+  document.querySelector("div[style*='Observaciones']").style.display = "";
+}
+
+/* ---------------------------------------------------------
+   🔹 PINTAR CELDAS
+--------------------------------------------------------- */
 function pintarCeldaCheck(el) {
   const td = el.parentElement;
   td.className = el.checked ? 'bg-verde' : 'bg-amarillo';
@@ -212,7 +241,9 @@ function pintarCeldaResultado(td) {
   else td.classList.add('bg-verde');
 }
 
-// 🔹 Medicación
+/* ---------------------------------------------------------
+   🔹 MEDICACIÓN
+--------------------------------------------------------- */
 function marcarMedicacion(cb) {
   const td = cb.parentElement;
   const nombre = cb.closest("tr").cells[0].querySelector("input").value.trim();
@@ -231,43 +262,15 @@ function marcarMedicacion(cb) {
   autoGuardar();
 }
 
-// 🔹 Guardar registro individual en Supabase (si lo usas)
-async function guardarRegistroEnSupabase(registro) {
-  const pacienteId = await obtenerPacienteId(registro.nombre);
-  if (!pacienteId) return;
-
-  registro.paciente_id = pacienteId;
-
-  const { error } = await client
-    .from("registros_diarios")
-    .insert(registro);
-
-  if (error) console.error("Error guardando en Supabase:", error);
-}
-
-// 🔹 Guardar/crear paciente al salir del input
-async function guardarPacienteDesdeFila(input) {
-  const tr = input.closest("tr");
-  const nombre = input.value.trim();
-  if (!nombre) return;
-
-  const id = await obtenerPacienteId(nombre);
-  tr.dataset.pacienteId = id;
-}
-
-// 🔹 Añadir fila de paciente
+/* ---------------------------------------------------------
+   🔹 AGREGAR PACIENTE
+--------------------------------------------------------- */
 function agregarPaciente(nombre = '') {
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td>
-      <input type="text" value="${nombre}" onblur="guardarPacienteDesdeFila(this)">
-    </td>
-    <td class="bg-amarillo">
-      <input type="checkbox" onchange="pintarCeldaCheck(this)">
-    </td>
-    <td class="bg-amarillo">
-      <input type="checkbox" onchange="pintarCeldaCheck(this)">
-    </td>
+    <td><input type="text" value="${nombre}" onblur="guardarPacienteDesdeFila(this)"></td>
+    <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
+    <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
     <td>
       <input type="checkbox" onchange="toggleMotivo(this)">
       <select class="motivo-select" onchange="pintarCeldaEscala(this)">
@@ -277,16 +280,10 @@ function agregarPaciente(nombre = '') {
         <option value="3">Recaído</option>
       </select>
     </td>
-    <td class="bg-amarillo">
-      <input type="checkbox" onchange="abrirModal(this); pintarCeldaCheck(this);">
-    </td>
+    <td class="bg-amarillo"><input type="checkbox" onchange="abrirModal(this); pintarCeldaCheck(this);"></td>
     <td style="font-size:10px;">-</td>
-    <td>
-      <input type="checkbox" onchange="autoGuardar()">
-    </td>
-    <td>
-      <input type="checkbox" class="medicacion" onchange="marcarMedicacion(this)">
-    </td>
+    <td><input type="checkbox" onchange="autoGuardar()"></td>
+    <td><input type="checkbox" class="medicacion" onchange="marcarMedicacion(this)"></td>
     <td class="bg-verde">
       <select onchange="pintarCeldaEscala(this)">
         <option value="0">BIEN</option>
@@ -305,7 +302,9 @@ function agregarPaciente(nombre = '') {
   }
 }
 
-// 🔹 Restaurar fila desde localStorage
+/* ---------------------------------------------------------
+   🔹 RESTAURAR FILA
+--------------------------------------------------------- */
 function restaurarFila(f) {
   agregarPaciente(f.pac);
   const tr = document.getElementById('tbody').lastElementChild;
@@ -334,13 +333,17 @@ function restaurarFila(f) {
   pintarCeldaEscala(selR);
 }
 
-// 🔹 Cargar lista base
+/* ---------------------------------------------------------
+   🔹 CARGAR LISTA BASE
+--------------------------------------------------------- */
 function cargarListaDefault() {
   document.getElementById('tbody').innerHTML = '';
   LISTA_BASE.sort().forEach(n => agregarPaciente(n));
 }
 
-// 🔹 Auto-guardar en localStorage
+/* ---------------------------------------------------------
+   🔹 AUTO GUARDAR
+--------------------------------------------------------- */
 function autoGuardar() {
   const f = document.getElementById('fecha').value;
   if (!f) return;
@@ -361,7 +364,9 @@ function autoGuardar() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ fecha: f, filas }));
 }
 
-// 🔹 Motivo “no vino”
+/* ---------------------------------------------------------
+   🔹 MOTIVO NO VINO
+--------------------------------------------------------- */
 function toggleMotivo(cb) {
   const sel = cb.nextElementSibling;
   sel.classList.toggle('visible', cb.checked);
@@ -370,7 +375,9 @@ function toggleMotivo(cb) {
   autoGuardar();
 }
 
-// 🔹 Modal controles
+/* ---------------------------------------------------------
+   🔹 MODAL CONTROLES
+--------------------------------------------------------- */
 function abrirModal(cb) {
   filaActiva = cb.closest('tr');
   document.getElementById('modalPaciente').textContent =
@@ -400,7 +407,9 @@ function guardarControles() {
   autoGuardar();
 }
 
-// 🔹 Obtener/crear paciente en Supabase
+/* ---------------------------------------------------------
+   🔹 OBTENER / CREAR PACIENTE EN SUPABASE
+--------------------------------------------------------- */
 async function obtenerPacienteId(nombre) {
   const { data, error } = await client
     .from("pacientes")
@@ -408,13 +417,10 @@ async function obtenerPacienteId(nombre) {
     .eq("nombre", nombre)
     .maybeSingle();
 
-  if (error) {
-    console.error("Error buscando paciente:", error);
-    return null;
-  }
+  if (error) return null;
   if (data) return data.id;
 
-  const { data: nuevo, error: errorInsert } = await client
+  const { data: nuevo } = await client
     .from("pacientes")
     .insert({
       nombre,
@@ -424,15 +430,12 @@ async function obtenerPacienteId(nombre) {
     .select()
     .single();
 
-  if (errorInsert) {
-    console.error("Error creando paciente:", errorInsert);
-    return null;
-  }
-
-  return nuevo.id;
+  return nuevo?.id || null;
 }
 
-// 🔹 Exportar + guardar en Supabase + cerrar día
+/* ---------------------------------------------------------
+   🔹 EXPORTAR + GUARDAR + FINALIZAR
+--------------------------------------------------------- */
 async function exportarExcel() {
   const fISO = document.getElementById('fecha').value;
   if (!fISO) return alert("Falta la fecha");
@@ -530,23 +533,34 @@ async function exportarExcel() {
   }, 500);
 }
 
-// 🔹 Finalizar día
+/* ---------------------------------------------------------
+   🔹 FINALIZAR DÍA
+--------------------------------------------------------- */
 function finalizarDia() {
+  console.log("Cerrando día…");
+
+  // Limpiar tabla
   const tbody = document.getElementById("tbody");
   if (tbody) tbody.innerHTML = "";
 
+  // Limpiar observaciones
   const obs = document.getElementById("observaciones");
   if (obs) obs.value = "";
 
+  // Borrar memoria
   localStorage.removeItem(STORAGE_KEY);
 
-  alert("Día finalizado correctamente.");
+  // Ocultar interfaz
+  ocultarInterfaz();
 
-  // Volvemos al flujo inicial: preguntar fecha de nuevo
+  // Mostrar panel de inicio
   document.getElementById('fechaConfirmar').valueAsDate = new Date();
   document.getElementById('bloqueoInicio').style.display = 'flex';
+
+  alert("Día finalizado correctamente.");
 }
 </script>
+
 </body>
 </html>
    
