@@ -2,211 +2,283 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>Calendario Semanal (Safari Fix)</title>
+<title>Calendario Semanal</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* Mismo CSS */
-.filtro-activo { background-color: #4CAF50; color: white; font-weight: bold; }
-#auth-section { margin-bottom: 15px; }
-.hidden { display: none; }
-.dia-semana { font-weight: bold; margin-bottom: 6px; }
-#refresh-btn { background: orange; margin-left: 10px; }
+.filtro-activo {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Calendario semanal <button id="refresh-btn" onclick="forceRefresh()" title="Safari Fix">🔄 Refrescar</button></h2>
+<h2>Calendario semanal</h2>
 
-<!-- Resto igual: auth, filtros, botones... -->
-<div id="auth-section">
-    <button id="btn-login" onclick="login()">Iniciar Sesión</button>
-    <button id="btn-logout" onclick="logout()" class="hidden">Cerrar Sesión</button>
-    <p id="user-info"></p>
-</div>
-
+<!-- Filtros -->
 <div style="margin-bottom: 15px;">
+
     <label>Paciente:</label>
-    <select id="filtroPaciente"><option value="todos">Todos</option></select>
+    <select id="filtroPaciente">
+        <option value="todos">Todos</option>
+    </select>
+
     <button id="btn_mañana" onclick="toggleFiltro('mañana')">Mañana</button>
     <button id="btn_tarde" onclick="toggleFiltro('tarde')">Tarde</button>
     <button id="btn_control" onclick="toggleFiltro('control')">Control</button>
-    <button onclick="limpiarFiltros()">Limpiar</button>
+
+    <button onclick="limpiarFiltros()">Limpiar filtros</button>
+
 </div>
 
-<button onclick="semanaAnterior()">⬅️ Anterior</button>
-<span id="rango-semana"></span>
-<button onclick="semanaSiguiente()">Siguiente ➡️</button>
+<button onclick="semanaAnterior()">⬅️ Semana anterior</button>
+<button onclick="semanaSiguiente()">➡️ Semana siguiente</button>
 
-<div id="calendario"></div>
+<div id="calendario" style="margin-top:20px;"></div>
 
 <script>
-// Cache-bust URL para Safari
-const CACHE_BUST = `?v=${Date.now()}`;
 const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Fecha interna del calendario
 let fechaActual = new Date();
-let session = null;
-let isRefreshing = false;
-let pollInterval = null;
-const DIAS_SEMANA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
 
-// **FIX SAFARI: Refresh forzado**
-function forceRefresh() {
-    if (isRefreshing) return;
-    isRefreshing = true;
-    document.getElementById('calendario').innerHTML = '<p>Refrescando...</p>';
-    
-    // Limpiar localStorage Safari
-    localStorage.removeItem('supabase.auth.token');
-    
-    // Recrear client y re-autenticar
-    initAuth().then(() => {
-        setTimeout(() => {
-            verSemana();
-            isRefreshing = false;
-        }, 500);
-    });
+// Filtros activos
+let filtros = {
+    mañana: false,
+    tarde: false,
+    control: false,
+    paciente: "todos"
+};
+
+// ---- UTILIDADES DE FECHA ----
+function formatearFechaLocal(fecha) {
+    const d = new Date(fecha);
+    const año = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, "0");
+    const dia = String(d.getDate()).padStart(2, "0");
+    return `${año}-${mes}-${dia}`;
 }
 
-// **FIX SAFARI: Polling fallback para session**
-async function checkSession() {
-    const {  { session: newSession } } = await client.auth.getSession();
-    if (newSession !== session) {
-        session = newSession;
-        initAuth();
-    }
+function obtenerLunes(fecha) {
+    const d = new Date(fecha);
+    const dia = d.getDay(); // 0=domingo, 1=lunes...
+    const diferencia = (dia === 0) ? -6 : (1 - dia);
+    d.setDate(d.getDate() + diferencia);
+    return d;
 }
 
-// Auth con polling Safari
-async function initAuth() {
-    const {  { session: sess } } = await client.auth.refreshSession();
-    session = sess;
-    
-    const btnLogin = document.getElementById('btn-login');
-    const btnLogout = document.getElementById('btn-logout');
-    const userInfo = document.getElementById('user-info');
-
-    if (session) {
-        btnLogin.classList.add('hidden');
-        btnLogout.classList.remove('hidden');
-        userInfo.textContent = `Usuario: ${session.user.email}`;
-        
-        // Polling cada 30s solo en Safari
-        if (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome')) {
-            if (pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(checkSession, 30000);
-        }
-        
-        cargarPacientes();
-        verSemana();
-    } else {
-        btnLogin.classList.remove('hidden');
-        btnLogout.classList.add('hidden');
-        userInfo.textContent = 'Inicia sesión';
-        if (pollInterval) clearInterval(pollInterval);
-    }
-
-    // Listener mejorado
-    client.auth.onAuthStateChange(async (event, sess) => {
-        session = sess;
-        await initAuth();
-    });
-}
-
-// Resto de funciones iguales (cargarPacientes, toggleFiltro, etc.)
+// Cargar lista de pacientes
 async function cargarPacientes() {
-    if (!session) return;
-    const { data } = await client.from("pacientes").select("id, nombre").order("nombre");
+    const { data } = await client
+        .from("pacientes")
+        .select("id, nombre")
+        .order("nombre", { ascending: true });
+
     const sel = document.getElementById("filtroPaciente");
-    sel.innerHTML = '<option value="todos">Todos</option>';
-    data?.forEach(p => {
+
+    data.forEach(p => {
         const opt = document.createElement("option");
-        opt.value = p.id; opt.textContent = p.nombre;
+        opt.value = p.id;
+        opt.textContent = p.nombre;
         sel.appendChild(opt);
     });
-    sel.onchange = () => { filtros.paciente = sel.value; verSemana(); };
+
+    sel.onchange = () => {
+        filtros.paciente = sel.value;
+        verSemana();
+    };
 }
 
+cargarPacientes();
+
+// Activar/desactivar filtros
 function toggleFiltro(campo) {
     filtros[campo] = !filtros[campo];
-    document.getElementById("btn_" + campo).classList.toggle("filtro-activo", filtros[campo]);
-    verSemana();
-}
 
-function limpiarFiltros() {
-    Object.keys(filtros).forEach(k => filtros[k] = k === 'paciente' ? 'todos' : false);
-    document.getElementById("filtroPaciente").value = "todos";
-    document.querySelectorAll('[id^="btn_"]').forEach(btn => btn.classList.remove("filtro-activo"));
-    verSemana();
-}
+    const boton = document.getElementById("btn_" + campo);
 
-function calcularFechasSemana(fechaBase) {
-    const fecha = new Date(fechaBase);
-    const diaSemana = fecha.getDay() === 0 ? 7 : fecha.getDay();
-    const lunes = new Date(fecha);
-    lunes.setDate(fecha.getDate() - (diaSemana - 1));
-    const fechas = [];
-    for (let i = 0; i < 7; i++) {
-        const f = new Date(lunes);
-        f.setDate(lunes.getDate() + i);
-        fechas.push(f.toISOString().split('T')[0]);
+    if (filtros[campo]) {
+        boton.classList.add("filtro-activo");
+    } else {
+        boton.classList.remove("filtro-activo");
     }
-    return fechas;
+
+    verSemana();
 }
 
+// Limpiar filtros
+function limpiarFiltros() {
+    filtros.mañana = false;
+    filtros.tarde = false;
+    filtros.control = false;
+    filtros.paciente = "todos";
+
+    document.getElementById("filtroPaciente").value = "todos";
+
+    document.getElementById("btn_mañana").classList.remove("filtro-activo");
+    document.getElementById("btn_tarde").classList.remove("filtro-activo");
+    document.getElementById("btn_control").classList.remove("filtro-activo");
+
+    verSemana();
+}
+
+// Cargar semana (solo lunes-viernes)
 async function cargarSemana(fechaBase) {
-    if (!session) return [];
-    const fechasSemana = calcularFechasSemana(fechaBase);
-    const f1 = fechasSemana[0];
-    const f2 = fechasSemana[6];
+    const lunes = obtenerLunes(fechaBase);
+    const viernes = new Date(lunes);
+    viernes.setDate(lunes.getDate() + 4);
 
-    let query = client.from("registros_diarios").select("*, pacientes(nombre)").gte("fecha", f1).lte("fecha", f2).order("fecha");
+    const f1 = formatearFechaLocal(lunes);
+    const f2 = formatearFechaLocal(viernes);
 
-    if (filtros.paciente !== "todos") query.eq("paciente_id", filtros.paciente);
-    if (filtros.mañana) query.eq("mañana", true);
-    if (filtros.tarde) query.eq("tarde", true);
-    if (filtros.control) query.eq("control", true);
+    const { data } = await client
+        .from("registros_diarios")
+        .select("*, pacientes(nombre)")
+        .gte("fecha", f1)
+        .lte("fecha", f2)
+        .order("fecha", { ascending: true });
 
-    const { data } = await query;
     return data || [];
 }
 
-// mostrar() igual que antes...
-// (omitido por brevedad, usa el mismo de la versión anterior)
+// Agrupar por día (solo lunes-viernes)
+function agrupar(registros) {
+    const dias = {};
+    registros.forEach(r => {
+        const clave = r.fecha; // YYYY-MM-DD
+        const d = new Date(clave).getDay();
+        if (d >= 1 && d <= 5) {
+            if (!dias[clave]) dias[clave] = [];
+            dias[clave].push(r);
+        }
+    });
+    return dias;
+}
 
+// Mostrar calendario
+function mostrar(diasSemana) {
+    const cont = document.getElementById("calendario");
+    cont.innerHTML = "";
+
+    const diasOrden = ["lunes","martes","miércoles","jueves","viernes"];
+    const tabla = document.createElement("table");
+    tabla.style.width = "100%";
+    tabla.style.borderCollapse = "collapse";
+
+    // Cabecera
+    const head = document.createElement("tr");
+    diasOrden.forEach(d => {
+        const th = document.createElement("th");
+        th.textContent = d.toUpperCase();
+        th.style.border = "1px solid #ccc";
+        th.style.padding = "8px";
+        th.style.background = "#f0f0f0";
+        head.appendChild(th);
+    });
+    tabla.appendChild(head);
+
+    // Fechas reales lunes–viernes de la semana actual
+    const lunes = obtenerLunes(fechaActual);
+    const fechas = [];
+    for (let i = 0; i < 5; i++) {
+        const d = new Date(lunes);
+        d.setDate(lunes.getDate() + i);
+        fechas.push(formatearFechaLocal(d));
+    }
+
+    const fila = document.createElement("tr");
+
+    fechas.forEach(fecha => {
+        const celda = document.createElement("td");
+        celda.style.border = "1px solid #ccc";
+        celda.style.padding = "8px";
+        celda.style.verticalAlign = "top";
+
+        const titulo = document.createElement("div");
+        titulo.textContent = fecha;
+        titulo.style.fontWeight = "bold";
+        titulo.style.marginBottom = "6px";
+        celda.appendChild(titulo);
+
+        const registros = diasSemana[fecha] || [];
+
+        registros.forEach(r => {
+
+            // FILTRO PACIENTE
+            if (filtros.paciente !== "todos" && r.paciente_id != filtros.paciente) return;
+
+            // FILTROS OR reales
+            const activos = [];
+            if (filtros.mañana) activos.push(r.mañana);
+            if (filtros.tarde) activos.push(r.tarde);
+            if (filtros.control) activos.push(r.control);
+
+            if (activos.length > 0 && !activos.includes(true)) return;
+
+            const p = document.createElement("div");
+            p.style.background = "#eef5d0";
+            p.style.padding = "4px";
+            p.style.marginBottom = "6px";
+            p.style.borderRadius = "4px";
+
+            const nombre = r.pacientes?.nombre || "Sin nombre";
+            const mañana = r.mañana ? "SÍ" : "NO";
+            const tarde = r.tarde ? "SÍ" : "NO";
+            const control = r.control ? "SÍ" : "NO";
+
+            let texto = nombre;
+            let detalles = [];
+
+            if (filtros.mañana) detalles.push(`Mañana: ${mañana}`);
+            if (filtros.tarde) detalles.push(`Tarde: ${tarde}`);
+            if (filtros.control) detalles.push(`Control: ${control}`);
+
+            if (detalles.length > 0) {
+                texto += " — " + detalles.join(" — ");
+            }
+
+            p.textContent = texto;
+
+            celda.appendChild(p);
+        });
+
+        fila.appendChild(celda);
+    });
+
+    tabla.appendChild(fila);
+    cont.appendChild(tabla);
+}
+
+// Navegación
 async function verSemana() {
-    if (!session) return;
     const registros = await cargarSemana(fechaActual);
     const dias = agrupar(registros);
     mostrar(dias);
 }
 
-function semanaAnterior() { fechaActual.setDate(fechaActual.getDate() - 7); verSemana(); }
-function semanaSiguiente() { fechaActual.setDate(fechaActual.getDate() + 7); verSemana(); }
-
-// **IMPORTANTE: Inicializar con refresh forzado**
-window.addEventListener('load', () => {
-    setTimeout(initAuth, 100); // Delay para Safari
-});
-
-// Deshabilitar service worker Safari
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(regs => {
-        regs.forEach(reg => reg.unregister());
-    });
+function semanaAnterior() {
+    fechaActual.setDate(fechaActual.getDate() - 7);
+    verSemana();
 }
+
+function semanaSiguiente() {
+    fechaActual.setDate(fechaActual.getDate() + 7);
+    verSemana();
+}
+
+// Cargar al abrir
+verSemana();
 </script>
 
 </body>
 </html>
+
 
 
 
