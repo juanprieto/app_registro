@@ -237,9 +237,7 @@ async function guardarRegistroEnSupabase(registro) {
 }
 
 
-    return data.id;
-}
-
+ 
 async function guardarPacienteDesdeFila(input) {
     const tr = input.closest("tr");
     const nombre = input.value.trim();
@@ -529,6 +527,117 @@ setTimeout(() => {
 }, 500);
 
 }
+async function exportarExcel() {
+    const fISO = document.getElementById('fecha').value;
+    const [y, m, d] = fISO.split('-');
+    const fBonita = `${d}/${m}/${y}`;
+
+    if (!confirm(`¿Exportar informe de fecha ${fBonita}?`)) return;
+
+    // 🔹 1. Extraer datos de la tabla
+    const data = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
+        const res = tr.cells[5].textContent;
+
+        const check = (sust) => {
+            if (!res || res === "-") return 1;
+            if (res.includes(`${sust}:POS`)) return 2;
+            if (res.includes(`${sust}:NEG`)) return 0;
+            return 1;
+        };
+
+        return {
+            "FECHA": fBonita,
+            "PACIENTE": tr.cells[0].querySelector('input').value,
+            "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
+            "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
+            "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
+            "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
+            "COC": check("COC"), "OH": check("OH"), "THC": check("THC"), "BZD": check("BZD"),
+            "OPI": check("OPI"), "KETA": check("KETA"), "AMP": check("AMP"), "MTD": check("MTD"),
+            "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
+            "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
+            "RIESGO": tr.cells[8].querySelector('select').value
+        };
+    });
+
+    // 🔹 2. Obtener todos los nombres de pacientes
+    const nombres = data.map(f => f.PACIENTE);
+
+    // 🔹 3. Obtener IDs de pacientes en una sola llamada
+    const { data: pacientes, error: errorPac } = await client
+        .from("pacientes")
+        .select("id, nombre")
+        .in("nombre", nombres);
+
+    if (errorPac) {
+        alert("Error obteniendo IDs de pacientes");
+        console.error(errorPac);
+        return;
+    }
+
+    // 🔹 4. Crear diccionario nombre → id
+    const mapaPacientes = {};
+    pacientes.forEach(p => mapaPacientes[p.nombre] = p.id);
+
+    // 🔹 5. Preparar registros para inserción masiva
+    const registros = data.map(fila => ({
+        fecha: fISO,
+        paciente_id: mapaPacientes[fila.PACIENTE],
+        asistencia: fila.ASISTENCIA,
+        mañana: fila.MAÑANA === "SI",
+        tarde: fila.TARDE === "SI",
+        control: fila.CONTROL === "SI",
+        sustancias: {
+            COC: fila.COC,
+            OH: fila.OH,
+            THC: fila.THC,
+            BZD: fila.BZD,
+            OPI: fila.OPI,
+            KETA: fila.KETA,
+            AMP: fila.AMP,
+            MTD: fila.MTD
+        },
+        rescate: fila.RESCATE === "SI",
+        medicacion: fila["MEDICACIÓN"] === "SI",
+        riesgo: fila.RIESGO,
+        observaciones: document.getElementById("observaciones")?.value || ""
+    }));
+
+    // 🔹 6. Insertar TODO en una sola llamada
+    const { error: errorInsert } = await client
+        .from("registros_diarios")
+        .insert(registros);
+
+    if (errorInsert) {
+        alert("Error guardando registros en Supabase");
+        console.error(errorInsert);
+        return;
+    }
+
+    // 🔹 7. Exportar Excel compatible con Android/Samsung
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Tesis");
+
+    // Generar el archivo como ArrayBuffer
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+    // Convertir a Blob
+    const blob = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+
+    // Descargar usando FileSaver (compatible con Android)
+    saveAs(blob, `Registro_${fISO}.xlsx`);
+
+  // 🔹 8. Preguntar si limpiar pantalla
+setTimeout(() => {
+    if (confirm("¿Finalizar día y limpiar pantalla?")) {
+        finalizarDia();
+    }
+}, 500);
+
+}
 
     ...todas tus funciones anteriores...
 
@@ -566,3 +675,4 @@ setTimeout(() => {
     </script>
 </body>
 </html>
+   
