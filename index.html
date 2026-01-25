@@ -223,38 +223,84 @@ async function guardarRegistroEnSupabase(registro) {
         console.log("Registro guardado en Supabase:", data);
     }
 }
+        async function guardarPacienteEnSupabase(nombre, activo, medicacion) {
+    const { data, error } = await client
+        .from("pacientes")
+        .insert({
+            nombre,
+            activo,
+            medicacion,
+            notas: ""
+        })
+        .select()
+        .single();
 
+    if (error) {
+        console.error("Error guardando paciente:", error);
+        return null;
+    }
 
-        function agregarPaciente(nombre = '') {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><input type="text" value="${nombre}" oninput="autoGuardar()"></td>
-                <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
-                <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
-                <td><input type="checkbox" onchange="toggleMotivo(this)">
-                    <select class="motivo-select" onchange="pintarCeldaEscala(this)">
-                        <option value="0">Hoy no toca</option><option value="1">No justifica</option><option value="2">No quiere venir</option><option value="3">Recaído</option>
-                    </select>
-                </td>
-                <td class="bg-amarillo"><input type="checkbox" onchange="abrirModal(this); pintarCeldaCheck(this);"></td>
-                <td style="font-size:10px;">-</td>
-                <td><input type="checkbox" onchange="autoGuardar()"></td>
-                <td><input type="checkbox" class="medicacion" onchange="marcarMedicacion(this)"></td>
-
-                <td class="bg-verde"><select onchange="pintarCeldaEscala(this)"><option value="0">BIEN</option><option value="1">REGULAR</option><option value="2">MAL</option><option value="3">RECAÍDA</option>
-                    </select>
-                </td>
-            `;
-            document.getElementById('tbody').appendChild(tr);
-            // --- Colorear casilla MED si el paciente debe medicarse ---
-            const nombrePaciente = nombre.trim();
-            const celdaMed = tr.cells[7];
-
-if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
-    celdaMed.classList.add("bg-rojo"); // rojo claro
+    return data.id;
 }
 
-        }
+async function guardarPacienteDesdeFila(input) {
+    const tr = input.closest("tr");
+    const nombre = input.value.trim();
+    if (!nombre) return;
+
+    const activo = tr.cells[1].querySelector("input").checked;
+    const medicacion = tr.cells[7].querySelector("input").checked;
+
+    const id = await guardarPacienteEnSupabase(nombre, activo, medicacion);
+    tr.dataset.pacienteId = id;
+}
+
+
+function agregarPaciente(nombre = '') {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td><input type="text" value="${nombre}" oninput="guardarPacienteDesdeFila(this)"></td>
+        <td class="bg-amarillo"><input type="checkbox"></td>
+        <td class="bg-amarillo"><input type="checkbox"></td>
+        <td>
+            <input type="checkbox">
+            <select class="motivo-select">
+                <option value="0">Hoy no toca</option>
+                <option value="1">No justifica</option>
+                <option value="2">No quiere venir</option>
+                <option value="3">Recaído</option>
+            </select>
+        </td>
+        <td class="bg-amarillo"><input type="checkbox"></td>
+        <td style="font-size:10px;">-</td>
+        <td><input type="checkbox"></td>
+
+        <!-- ESTA ES LA CELDA DE MEDICACIÓN -->
+        <td><input type="checkbox" class="medicacion"></td>
+
+        <td class="bg-verde">
+            <select>
+                <option value="0">BIEN</option>
+                <option value="1">REGULAR</option>
+                <option value="2">MAL</option>
+                <option value="3">RECAÍDA</option>
+            </select>
+        </td>
+    `;
+
+    document.getElementById('tbody').appendChild(tr);
+
+    // Si el botón añade un nombre predefinido, guardarlo automáticamente
+    const nombrePaciente = nombre.trim();
+    if (nombrePaciente) {
+        const activo = tr.cells[1].querySelector('input').checked;
+        const medicacion = tr.cells[7].querySelector('input').checked;
+
+        guardarPacienteEnSupabase(nombrePaciente, activo, medicacion)
+            .then(id => tr.dataset.pacienteId = id);
+    }
+}
+
 
         function restaurarFila(f) {
             agregarPaciente(f.pac);
