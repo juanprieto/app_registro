@@ -187,10 +187,11 @@ function mostrar(diasSemana) {
     const lunes = obtenerLunes(fechaActual);
     const fechas = [];
     for (let i = 0; i < 5; i++) {
-        const d = new Date(lunes);
-        d.setDate(lunes.getDate() + i);
-        fechas.push(formatearFechaLocal(d));
-    }
+    const d = new Date(lunes.getTime()); // clon real
+    d.setDate(d.getDate() + i);          // avanzar desde el clon, no desde lunes
+    fechas.push(formatearFechaLocal(d));
+}
+
 
     const fila = document.createElement("tr");
 
