@@ -160,32 +160,26 @@ function mostrarCalendarioSemanal(diasSemana) {
             titulo.style.marginBottom = "6px";
             celda.appendChild(titulo);
 
-            diasSemana[fecha].forEach(r => {
-                const p = document.createElement("div");
-                p.style.background = "#eef5d0";
-                p.style.padding = "4px";
-                p.style.marginBottom = "4px";
-                p.style.borderRadius = "4px";
+          diasSemana[fecha].forEach(r => {
+    const p = document.createElement("div");
+    p.style.background = "#eef5d0";
+    p.style.padding = "4px";
+    p.style.marginBottom = "4px";
+    p.style.borderRadius = "4px";
 
-                const nombre = r.pacientes?.nombre || "Sin nombre";
+    const asistencia = r.asistencia ? "SÍ" : "NO";
+    const control = r.control ? "SÍ" : "NO";
 
-                // OJO: aquí supongo que en la tabla los campos se llaman 'control', 'manana', 'tarde'
-                const control = r.control ? "SÍ" : "NO";
-                const manana = r.manana ? "SÍ" : "NO";
-                const tarde = r.tarde ? "SÍ" : "NO";
+    const nombre = r.pacientes?.nombre || "Sin nombre";
 
-                p.textContent =
-                    `${nombre} — ` +
-                    `Control: ${control} — ` +
-                    `Mañana: ${manana} — ` +
-                    `Tarde: ${tarde}`;
+    p.textContent =
+        `${nombre} — ` +
+        `Asistencia: ${asistencia} — ` +
+        `Control: ${control}`;
 
-                celda.appendChild(p);
-            });
-        }
+    celda.appendChild(p);
+});
 
-        fila.appendChild(celda);
-    });
 
     tabla.appendChild(fila);
     cont.appendChild(tabla);
