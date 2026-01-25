@@ -184,6 +184,28 @@ async function verSemana() {
     const dias = agruparPorDia(registros);
     mostrarCalendarioSemanal(dias);
 }
+    function semanaAnterior() {
+    const input = document.getElementById("fecha");
+    if (!input.value) return alert("Selecciona una fecha primero");
+
+    const fecha = new Date(input.value);
+    fecha.setDate(fecha.getDate() - 7); // restar 7 días
+
+    input.value = fecha.toISOString().split("T")[0];
+    verSemana();
+}
+
+function semanaSiguiente() {
+    const input = document.getElementById("fecha");
+    if (!input.value) return alert("Selecciona una fecha primero");
+
+    const fecha = new Date(input.value);
+    fecha.setDate(fecha.getDate() + 7); // sumar 7 días
+
+    input.value = fecha.toISOString().split("T")[0];
+    verSemana();
+}
+
 
 </script>
 
@@ -236,6 +258,9 @@ async function verSemana() {
 </div>
    
     <button onclick="verSemana()">📅 Ver semana</button>
+    <button onclick="semanaAnterior()">⬅️ Semana anterior</button>
+    <button onclick="semanaSiguiente()">➡️ Semana siguiente</button>
+
 
     <div id="calendario"></div>
 
