@@ -56,6 +56,15 @@ let filtros = {
     paciente: "todos"
 };
 
+// ---- UTILIDAD FECHA LOCAL YYYY-MM-DD ----
+function formatearFechaLocal(fecha) {
+    const d = new Date(fecha);
+    const año = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, "0");
+    const dia = String(d.getDate()).padStart(2, "0");
+    return `${año}-${mes}-${dia}`;
+}
+
 // Cargar lista de pacientes
 async function cargarPacientes() {
     const { data } = await client
@@ -111,7 +120,7 @@ function limpiarFiltros() {
     verSemana();
 }
 
-// Cargar semana
+// Cargar semana (solo lunes-viernes)
 async function cargarSemana(fechaBase) {
     const fecha = new Date(fechaBase);
 
@@ -121,8 +130,8 @@ async function cargarSemana(fechaBase) {
     const viernes = new Date(lunes);
     viernes.setDate(lunes.getDate() + 4);
 
-    const f1 = lunes.toISOString().split("T")[0];
-    const f2 = viernes.toISOString().split("T")[0];
+    const f1 = formatearFechaLocal(lunes);
+    const f2 = formatearFechaLocal(viernes);
 
     const { data } = await client
         .from("registros_diarios")
@@ -138,10 +147,11 @@ async function cargarSemana(fechaBase) {
 function agrupar(registros) {
     const dias = {};
     registros.forEach(r => {
-        const d = new Date(r.fecha).getDay();
+        const clave = r.fecha; // ya viene como YYYY-MM-DD
+        const d = new Date(clave).getDay();
         if (d >= 1 && d <= 5) {
-            if (!dias[r.fecha]) dias[r.fecha] = [];
-            dias[r.fecha].push(r);
+            if (!dias[clave]) dias[clave] = [];
+            dias[clave].push(r);
         }
     });
     return dias;
@@ -169,7 +179,7 @@ function mostrar(diasSemana) {
     });
     tabla.appendChild(head);
 
-    // GENERAR FECHAS REALES LUNES–VIERNES
+    // GENERAR FECHAS REALES LUNES–VIERNES (LOCAL)
     const fechas = [];
     const base = new Date(fechaActual);
     const lunes = new Date(base);
@@ -178,7 +188,7 @@ function mostrar(diasSemana) {
     for (let i = 0; i < 5; i++) {
         const d = new Date(lunes);
         d.setDate(lunes.getDate() + i);
-        fechas.push(d.toISOString().split("T")[0]);
+        fechas.push(formatearFechaLocal(d));
     }
 
     const fila = document.createElement("tr");
@@ -267,6 +277,7 @@ verSemana();
 
 </body>
 </html>
+
 
 
 
