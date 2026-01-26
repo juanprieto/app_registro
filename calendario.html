@@ -56,6 +56,12 @@ let filtros = {
     paciente: "todos"
 };
 
+// ---- MAPA DE SUSTANCIAS ----
+const mapaSustancias = {
+    0: "Negativo",
+    2: "Positivo"
+};
+
 // ---- UTILIDADES DE FECHA ----
 function formatearFechaLocal(fecha) {
     const d = new Date(fecha);
@@ -71,6 +77,25 @@ function obtenerLunes(fecha) {
     const diferencia = (dia === 0) ? -6 : (1 - dia);
     d.setDate(d.getDate() + diferencia);
     return d;
+}
+
+// ---- DESCRIPCIÓN DE SUSTANCIAS ----
+function describirSustancias(json) {
+    if (!json) return "";
+
+    const resultado = [];
+
+    for (const clave in json) {
+        const valor = json[clave];
+
+        // Solo mostrar 0 y 2
+        if (valor === 0 || valor === 2) {
+            const estado = mapaSustancias[valor];
+            resultado.push(`${clave}: ${estado}`);
+        }
+    }
+
+    return resultado.join(" — ");
 }
 
 // Cargar lista de pacientes
@@ -186,12 +211,12 @@ function mostrar(diasSemana) {
     // Fechas reales lunes–viernes de la semana actual
     const lunes = obtenerLunes(fechaActual);
     const fechas = [];
-    for (let i = 0; i < 5; i++) {
-    const d = new Date(lunes.getTime()); // clon real
-    d.setDate(d.getDate() + i);          // avanzar desde el clon, no desde lunes
-    fechas.push(formatearFechaLocal(d));
-}
 
+    for (let i = 0; i < 5; i++) {
+        const d = new Date(lunes.getTime()); // CLON CORRECTO
+        d.setDate(d.getDate() + i);          // avanzar desde el clon
+        fechas.push(formatearFechaLocal(d));
+    }
 
     const fila = document.createElement("tr");
 
@@ -244,6 +269,12 @@ function mostrar(diasSemana) {
                 texto += " — " + detalles.join(" — ");
             }
 
+            // Añadir sustancias (solo 0 y 2)
+            const sustanciasTexto = describirSustancias(r.sustancias);
+            if (sustanciasTexto) {
+                texto += " — " + sustanciasTexto;
+            }
+
             p.textContent = texto;
 
             celda.appendChild(p);
@@ -279,6 +310,7 @@ verSemana();
 
 </body>
 </html>
+
 
 
 
