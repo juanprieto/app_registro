@@ -99,9 +99,12 @@ function describirSustancias(json) {
         const valor = json[clave];
 
         // Solo mostrar 0 y 2
-        if (valor === 0 || valor === 2) {
-            const estado = mapaSustancias[valor];
-            resultado.push(`${clave}: ${estado}`);
+       if (valor === 0) {
+            resultado.push(`<span class="sustancia-neg">${clave}: Negativo</span>`);
+        }
+
+        if (valor === 2) {
+            resultado.push(`<span class="sustancia-pos">${clave}: Positivo</span>`);
         }
     }
 
