@@ -246,6 +246,23 @@ function mostrar(diasSemana) {
         titulo.style.marginBottom = "6px";
         celda.appendChild(titulo);
 
+        // ← BOTÓN DE OBSERVACIONES GENERALES DEL DÍA
+const btnObsDia = document.createElement("button");
+btnObsDia.textContent = "Observaciones";
+btnObsDia.style.marginBottom = "6px";
+btnObsDia.style.display = "block";
+
+btnObsDia.onclick = () => {
+    // Buscar la observación del día (solo una)
+    const registrosDia = diasSemana[fecha] || [];
+    const obs = registrosDia.length > 0 ? (registrosDia[0].observaciones || "Sin observaciones") : "Sin observaciones";
+    alert(obs);
+};
+
+celda.appendChild(btnObsDia);
+
+        
+
         const registros = diasSemana[fecha] || [];
 
         registros.forEach(r => {
