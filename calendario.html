@@ -10,8 +10,9 @@
     background-color: #4CAF50;
     color: white;
     font-weight: bold;
-   } 
+}
 
+/* COLORES PARA SUSTANCIAS */
 .sustancia-neg {
     color: #0a730a;      /* verde oscuro */
     font-weight: bold;
@@ -20,7 +21,6 @@
 .sustancia-pos {
     color: #c00000;      /* rojo */
     font-weight: bold;
-
 }
 </style>
 </head>
@@ -67,12 +67,6 @@ let filtros = {
     paciente: "todos"
 };
 
-// ---- MAPA DE SUSTANCIAS ----
-const mapaSustancias = {
-    0: "Negativo",
-    2: "Positivo"
-};
-
 // ---- UTILIDADES DE FECHA ----
 function formatearFechaLocal(fecha) {
     const d = new Date(fecha);
@@ -90,7 +84,7 @@ function obtenerLunes(fecha) {
     return d;
 }
 
-// ---- DESCRIPCIÓN DE SUSTANCIAS ----
+// ---- FUNCIÓN PARA MOSTRAR SUSTANCIAS (solo 0 y 2) ----
 function describirSustancias(json) {
     if (!json) return "";
 
@@ -99,13 +93,16 @@ function describirSustancias(json) {
     for (const clave in json) {
         const valor = json[clave];
 
-        // Solo mostrar 0 y 2
-       if (valor === 0) {
-            resultado.push(`<span class="sustancia-neg">${clave}: Negativo</span>`);
+        if (valor === 0) {
+            resultado.push(
+                `<span class="sustancia-neg">${clave.toUpperCase()}: Negativo</span>`
+            );
         }
 
         if (valor === 2) {
-            resultado.push(`<span class="sustancia-pos">${clave}: Positivo</span>`);
+            resultado.push(
+                `<span class="sustancia-pos">${clave.toUpperCase()}: Positivo</span>`
+            );
         }
     }
 
@@ -222,13 +219,13 @@ function mostrar(diasSemana) {
     });
     tabla.appendChild(head);
 
-    // Fechas reales lunes–viernes de la semana actual
+    // Fechas reales lunes–viernes
     const lunes = obtenerLunes(fechaActual);
     const fechas = [];
 
     for (let i = 0; i < 5; i++) {
-        const d = new Date(lunes.getTime()); // CLON CORRECTO
-        d.setDate(d.getDate() + i);          // avanzar desde el clon
+        const d = new Date(lunes.getTime());
+        d.setDate(d.getDate() + i);
         fechas.push(formatearFechaLocal(d));
     }
 
@@ -246,22 +243,28 @@ function mostrar(diasSemana) {
         titulo.style.marginBottom = "6px";
         celda.appendChild(titulo);
 
-        // ← BOTÓN DE OBSERVACIONES GENERALES DEL DÍA
-const btnObsDia = document.createElement("button");
-btnObsDia.textContent = "Observaciones";
-btnObsDia.style.marginBottom = "6px";
-btnObsDia.style.display = "block";
+        // BOTÓN DE OBSERVACIONES GENERALES DEL DÍA
+        const btnObsDia = document.createElement("button");
+        btnObsDia.textContent = "Observaciones";
+        btnObsDia.style.marginBottom = "6px";
+        btnObsDia.style.display = "block";
 
-btnObsDia.onclick = () => {
-    // Buscar la observación del día (solo una)
-    const registrosDia = diasSemana[fecha] || [];
-    const obs = registrosDia.length > 0 ? (registrosDia[0].observaciones || "Sin observaciones") : "Sin observaciones";
-    alert(obs);
-};
+        btnObsDia.onclick = () => {
+            const registrosDia = diasSemana[fecha] || [];
 
-celda.appendChild(btnObsDia);
+            let obs = "Sin observaciones";
 
-        
+            for (const reg of registrosDia) {
+                if (reg.observaciones && reg.observaciones.trim() !== "") {
+                    obs = reg.observaciones;
+                    break;
+                }
+            }
+
+            alert(obs);
+        };
+
+        celda.appendChild(btnObsDia);
 
         const registros = diasSemana[fecha] || [];
 
@@ -300,10 +303,12 @@ celda.appendChild(btnObsDia);
                 texto += " — " + detalles.join(" — ");
             }
 
-            // Añadir sustancias (solo 0 y 2)
-            const sustanciasTexto = describirSustancias(r.sustancias);
-            if (sustanciasTexto) {
-                texto += " — " + sustanciasTexto;
+            // SUSTANCIAS SOLO SI EL FILTRO CONTROL ESTÁ ACTIVO
+            if (filtros.control) {
+                const sustanciasTexto = describirSustancias(r.sustancias);
+                if (sustanciasTexto) {
+                    texto += " — " + sustanciasTexto;
+                }
             }
 
             p.innerHTML = texto;
