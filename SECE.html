@@ -3,13 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>SECE</title>
 
 <link rel="icon" type="image/png" href="logo.png">
 
 <style>
-
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     max-width: 1100px;
@@ -78,7 +76,6 @@ button {
 .logo-img {
     max-width: 200px;
 }
-
 </style>
 </head>
 
@@ -90,223 +87,238 @@ button {
 
 <h1>Cuestionario SECE</h1>
 
+<!-- Z -->
 <div class="card">
-<h3>Identificación</h3>
-
-<input placeholder="Nombre">
-<input placeholder="Código usuario">
-<input placeholder="Código pulsera">
-<input type="date">
+<h3>Z. Identificación</h3>
+<input id="Z_nombre" placeholder="Z. Nombre">
+<input id="Z1" placeholder="Z1. Código Usuario">
+<input id="Z2" placeholder="Z2. Código Pulsera">
+<input id="Z3" type="date">
 </div>
 
+<!-- A -->
 <div class="card">
-<h3>Datos socioeconómicos</h3>
+<h3>A. Socioeconómico</h3>
 
-<input type="date" placeholder="Fecha nacimiento">
+<input id="A1" type="date" placeholder="A1 Fecha nacimiento">
 
-<select>
-<option>Masculino</option>
-<option>Femenino</option>
-<option>No binario</option>
+<select id="A2">
+<option value="">A2 Género</option>
+<option value="1">1 Masculino</option>
+<option value="2">2 Femenino</option>
+<option value="3">3 No binario</option>
 </select>
 
-<select>
-<option>Casado</option>
-<option>Soltero</option>
-<option>Separado</option>
-<option>Divorciado</option>
+<select id="A3">
+<option value="">A3 Estado civil</option>
+<option value="1">1 Casado</option>
+<option value="6">6 Soltero</option>
 </select>
 
-<select>
-<option>Sin pareja</option>
-<option><1 año</option>
-<option>1-3 años</option>
-<option>3-10 años</option>
-<option>+10 años</option>
+<select id="A4">
+<option value="">A4 Tiempo pareja</option>
+<option value="0">0 Sin pareja</option>
+<option value="1">1 <1 año</option>
+<option value="2">2 1-3 años</option>
+<option value="3">3 3-10 años</option>
+<option value="4">4 +10 años</option>
 </select>
 
-<select>
-<option>ESO</option>
-<option>Bachillerato</option>
-<option>FP</option>
-<option>Universidad</option>
-<option>Postgrado</option>
+<select id="A5">
+<option value="">A5 Estudios</option>
+<option value="1">ESO</option>
+<option value="6">Postgrado</option>
 </select>
 
-<select>
-<option>No estudia</option>
-<option>Estudia</option>
+<select id="A6">
+<option value="">A6 Estudia</option>
+<option value="0">No</option>
+<option value="1">Sí</option>
 </select>
 
-<input placeholder="Ocupación">
+<input id="A7" placeholder="A7 Ocupación">
 
-<select>
-<option>Baja</option>
-<option>Media</option>
-<option>Alta</option>
+<select id="A8">
+<option value="">A8 Responsabilidad</option>
+<option value="0">Baja</option>
+<option value="2">Alta</option>
 </select>
 
-<select>
-<option>Tiempo completo</option>
-<option>Parcial</option>
-<option>Paro</option>
-<option>Baja</option>
+<select id="A9">
+<option value="">A9 Situación laboral</option>
+<option value="0">Completo</option>
+<option value="2">Paro</option>
 </select>
 
-<select>
-<option>No depende</option>
-<option>Parcial</option>
-<option>Total</option>
+<select id="A10">
+<option value="">A10 Dependencia</option>
+<option value="0">No</option>
+<option value="2">Total</option>
 </select>
 
-<select>
-<option>Trabajo</option>
-<option>Paro</option>
-<option>Servicios sociales</option>
-<option>Familia</option>
-<option>Ilegal</option>
+<select id="A11">
+<option value="">A11 Ingresos fuente</option>
+<option value="1">Trabajo</option>
+<option value="9">Ilegal</option>
 </select>
 
-<select>
-<option><1000€</option>
-<option>1000-2000€</option>
-<option>2000-4000€</option>
-<option>4000€+</option>
+<select id="A12">
+<option value="">A12 Ingresos</option>
+<option value="0"><1000</option>
+<option value="3">+4000</option>
 </select>
 
-<input type="number" placeholder="Nº convivientes">
-<input type="number" placeholder="Personas a cargo">
+<input id="A13" type="number" placeholder="A13 Convivientes">
+<input id="A14" type="number" placeholder="A14 Personas a cargo">
 
-<select>
-<option>No cubre necesidades</option>
-<option>Cubre necesidades</option>
+<select id="A15">
+<option value="">A15 Cubre necesidades</option>
+<option value="0">No</option>
+<option value="1">Sí</option>
 </select>
 
-<select>
-<option>Usuario</option>
-<option>Familia</option>
-<option>Amigos</option>
-<option>Pareja</option>
+<select id="A16">
+<option value="">A16 Deriva</option>
+<option value="0">Usuario</option>
+<option value="1">Familia</option>
 </select>
 
-<select>
-<option>Usuario</option>
-<option>Familia</option>
-<option>Amigos</option>
-<option>Pareja</option>
+<select id="A17">
+<option value="">A17 Paga</option>
+<option value="0">Usuario</option>
+<option value="1">Familia</option>
 </select>
 
 </div>
 
+<!-- B -->
 <div class="card">
-<h3>Variables clínicas</h3>
+<h3>B. Clínico</h3>
 
-<input type="number" placeholder="Nº tratamientos">
-<input type="date" placeholder="Fecha primer tratamiento">
-<input type="date" placeholder="Inicio tratamiento actual">
+<input id="B1" type="number" placeholder="B1 Nº tratamientos">
+<input id="B2" type="date">
+<input id="B3" type="date">
+<input id="B4" type="number" placeholder="B4 Recaídas">
+<input id="B5" type="date">
 
-<input type="number" placeholder="Recaídas">
-<input type="date" placeholder="Último consumo">
-
-<select>
-<option>Ninguna</option>
-<option>Leve</option>
-<option>Moderada</option>
-<option>Considerable</option>
-<option>Extrema</option>
+<select id="B6">
+<option value="0">0 Ninguna</option>
+<option value="4">4 Extrema</option>
 </select>
 
-<select>
-<option>No</option>
-<option>Sí</option>
+<select id="B7">
+<option value="0">No</option>
+<option value="1">Sí</option>
 </select>
 
-<input placeholder="Antecedentes toxicológicos">
-<input placeholder="Antecedentes psiquiátricos">
+<input id="B8" placeholder="B8 Toxicológicos">
+<input id="B9" placeholder="B9 Psiquiátricos">
+<input id="B10" type="number">
 
-<input type="number" placeholder="Consultas psicológicas">
-
-<select>
-<option>No</option>
-<option>Sí</option>
+<select id="B11">
+<option value="0">No</option>
+<option value="1">Sí</option>
 </select>
 
-<select>
-<option>Ninguna</option>
-<option>Leve</option>
-<option>Moderada</option>
-<option>Considerable</option>
-<option>Extrema</option>
+<select id="B12">
+<option value="0">Ninguna</option>
+<option value="4">Extrema</option>
 </select>
 
 </div>
 
+<!-- D -->
 <div class="card">
-<h3>Problemas</h3>
+<h3>D. Problemas</h3>
 
-<select><option>Laboral</option><option>Familiar</option><option>Amistades</option><option>Pareja</option><option>Legal</option><option>Salud</option></select>
-<select><option>Laboral</option><option>Familiar</option><option>Amistades</option><option>Pareja</option><option>Legal</option><option>Salud</option></select>
+<select id="D1"><option value="0">Nada</option><option value="4">Muy grave</option></select>
+<select id="D2"><option value="0">Nada</option><option value="4">Muy grave</option></select>
+<select id="D3"><option value="0">Nada</option><option value="4">Muy grave</option></select>
+<select id="D4"><option value="0">Nada</option><option value="4">Muy grave</option></select>
+<select id="D5"><option value="0">Nada</option><option value="4">Muy grave</option></select>
+<select id="D6"><option value="0">Nada</option><option value="4">Muy grave</option></select>
+
+<input id="D7" placeholder="Problema principal">
+<input id="D8" placeholder="Problema influyente">
 
 </div>
 
+<!-- CONSUMO -->
 <div class="card">
-<h3>Consumo</h3>
+<h3>Consumo (E–N)</h3>
 
 <table>
 <tr>
 <th></th><th>THC</th><th>OH</th><th>COC</th><th>OP</th><th>KETA</th><th>BZD</th><th>MDMA</th><th>LUDO</th><th>SEXO</th><th>OTRAS</th>
 </tr>
 
-<tr><td>Inicio</td>
-<td><input></td><td><input></td><td><input></td><td><input></td>
-<td><input></td><td><input></td><td><input></td><td><input></td>
-<td><input></td><td><input></td></tr>
-
-<tr><td>Fin</td>
-<td><input></td><td><input></td><td><input></td><td><input></td>
-<td><input></td><td><input></td><td><input></td><td><input></td>
-<td><input></td><td><input></td></tr>
-
-<tr><td>Cómo</td>
-<td><select><option>Oral</option><option>Inhalada</option><option>Fumada</option><option>Inyectada</option></select></td>
-<td><select><option>Oral</option></select></td>
-<td><select><option>Inhalada</option></select></td>
-<td><select><option>Inyectada</option></select></td>
-<td><select><option>Inhalada</option></select></td>
-<td><select><option>Oral</option></select></td>
-<td><select><option>Oral</option></select></td>
-<td><select><option>Conductual</option></select></td>
-<td><select><option>Conductual</option></select></td>
-<td><select><option>Otro</option></select></td>
+<tr>
+<td>Inicio</td>
+<td><input id="E1"></td><td><input id="F1"></td><td><input id="G1"></td><td><input id="H1"></td>
+<td><input id="I1"></td><td><input id="J1"></td><td><input id="K1"></td><td><input id="L1"></td>
+<td><input id="M1"></td><td><input id="N1"></td>
 </tr>
 
-<tr><td>Frecuencia</td>
-<td><select><option>No</option><option>Diario</option></select></td>
-<td><select><option>Diario</option></select></td>
-<td><select><option>Semanal</option></select></td>
-<td><select><option>Diario</option></select></td>
-<td><select><option>Semanal</option></select></td>
-<td><select><option>Diario</option></select></td>
-<td><select><option>Mensual</option></select></td>
-<td><select><option>Frecuente</option></select></td>
-<td><select><option>Frecuente</option></select></td>
-<td><select><option>Media</option></select></td>
+<tr>
+<td>Fin</td>
+<td><input id="E2"></td><td><input id="F2"></td><td><input id="G2"></td><td><input id="H2"></td>
+<td><input id="I2"></td><td><input id="J2"></td><td><input id="K2"></td><td><input id="L2"></td>
+<td><input id="M2"></td><td><input id="N2"></td>
+</tr>
+
+<tr>
+<td>Cómo</td>
+<td><select id="E3"><option>Oral</option><option>Inhalada</option></select></td>
+<td><select id="F3"></select></td>
+<td><select id="G3"></select></td>
+<td><select id="H3"></select></td>
+<td><select id="I3"></select></td>
+<td><select id="J3"></select></td>
+<td><select id="K3"></select></td>
+<td><select id="L3"></select></td>
+<td><select id="M3"></select></td>
+<td><select id="N3"></select></td>
+</tr>
+
+<tr>
+<td>Frecuencia</td>
+<td><select id="E4"><option value="0">No</option><option value="4">Diario</option></select></td>
+<td><select id="F4"></select></td>
+<td><select id="G4"></select></td>
+<td><select id="H4"></select></td>
+<td><select id="I4"></select></td>
+<td><select id="J4"></select></td>
+<td><select id="K4"></select></td>
+<td><select id="L4"></select></td>
+<td><select id="M4"></select></td>
+<td><select id="N4"></select></td>
 </tr>
 
 </table>
-
 </div>
 
+<!-- O -->
 <div class="card">
-<h3>Sustancias problemáticas</h3>
+<h3>O. Sustancias problemáticas</h3>
 
-<input placeholder="1ª sustancia">
-<input placeholder="2ª sustancia">
-<input placeholder="3ª sustancia">
+<input id="O1" placeholder="O1 Principal">
+<input id="O2" placeholder="O2 Segunda">
+<input id="O3" placeholder="O3 Tercera">
 
 </div>
 
-<button>Guardar</button>
+<button onclick="guardar()">Guardar</button>
+
+<script>
+function guardar(){
+    const datos = {};
+    document.querySelectorAll("input, select").forEach(el=>{
+        if(el.id) datos[el.id] = el.value;
+    });
+    console.log(datos);
+    alert("Datos capturados (ver consola)");
+}
+</script>
 
 </body>
 </html>
