@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Cuestionario SECE</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px;}
+    td, th { border: 1px solid #ccc; padding: 8px; text-align: center;}
+    input, select { width: 100%; }
+  </style>
+</head>
+
+<body>
+
+<h2>Consumo</h2>
+
+<table>
+<tr>
+  <th></th>
+  <th>THC</th>
+  <th>OH</th>
+  <th>COC</th>
+  <th>OP</th>
+  <th>KETA</th>
+  <th>BZD</th>
+  <th>MDMA</th>
+  <th>LUDO</th>
+  <th>SEXO</th>
+  <th>OTRAS</th>
+</tr>
+
+<!-- INICIO -->
+<tr>
+<td>Inicio</td>
+<td><input id="thc_inicio"></td>
+<td><input id="oh_inicio"></td>
+<td><input id="coc_inicio"></td>
+<td><input id="op_inicio"></td>
+<td><input id="keta_inicio"></td>
+<td><input id="bzd_inicio"></td>
+<td><input id="mdma_inicio"></td>
+<td><input id="ludo_inicio"></td>
+<td><input id="sexo_inicio"></td>
+<td><input id="otras_inicio"></td>
+</tr>
+
+<!-- FIN -->
+<tr>
+<td>Fin</td>
+<td><input id="thc_fin"></td>
+<td><input id="oh_fin"></td>
+<td><input id="coc_fin"></td>
+<td><input id="op_fin"></td>
+<td><input id="keta_fin"></td>
+<td><input id="bzd_fin"></td>
+<td><input id="mdma_fin"></td>
+<td><input id="ludo_fin"></td>
+<td><input id="sexo_fin"></td>
+<td><input id="otras_fin"></td>
+</tr>
+
+<!-- COMO -->
+<tr>
+<td>Cómo</td>
+<td><select id="thc_como">
+<option value="1">Oral</option>
+<option value="2">Inhalada</option>
+<option value="3">Fumada</option>
+<option value="4">Inyectada</option>
+<option value="5">Otro</option>
+</select></td>
+
+<td><select id="oh_como"><option value="1">Oral</option></select></td>
+<td><select id="coc_como"><option value="2">Inhalada</option></select></td>
+<td><select id="op_como"><option value="4">Inyectada</option></select></td>
+<td><select id="keta_como"><option value="2">Inhalada</option></select></td>
+<td><select id="bzd_como"><option value="1">Oral</option></select></td>
+<td><select id="mdma_como"><option value="1">Oral</option></select></td>
+<td><select id="ludo_como"><option value="5">Conductual</option></select></td>
+<td><select id="sexo_como"><option value="5">Conductual</option></select></td>
+<td><select id="otras_como"><option value="5">Otro</option></select></td>
+</tr>
+
+<!-- FRECUENCIA -->
+<tr>
+<td>Frecuencia</td>
+
+<td><select id="thc_frecuencia">
+<option value="0">No</option>
+<option value="1">1-3/mes</option>
+<option value="2">1-2/sem</option>
+<option value="3">3-6/sem</option>
+<option value="4">Diario</option>
+</select></td>
+
+<td><select id="oh_frecuencia"><option value="4">Diario</option></select></td>
+<td><select id="coc_frecuencia"><option value="3">3-6/sem</option></select></td>
+<td><select id="op_frecuencia"><option value="4">Diario</option></select></td>
+<td><select id="keta_frecuencia"><option value="2">Semanal</option></select></td>
+<td><select id="bzd_frecuencia"><option value="4">Diario</option></select></td>
+<td><select id="mdma_frecuencia"><option value="1">Mensual</option></select></td>
+<td><select id="ludo_frecuencia"><option value="3">Frecuente</option></select></td>
+<td><select id="sexo_frecuencia"><option value="3">Frecuente</option></select></td>
+<td><select id="otras_frecuencia"><option value="2">Media</option></select></td>
+
+</tr>
+</table>
+
+<button onclick="guardar()">Guardar</button>
+
+<script>
+
+const supabaseUrl = "https://TU_URL.supabase.co";
+const supabaseKey = "TU_KEY";
+
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+function get(id){
+  return document.getElementById(id).value;
+}
+
+async function guardar(){
+
+const data = {
+
+thc_inicio: get("thc_inicio"),
+thc_fin: get("thc_fin"),
+thc_como: get("thc_como"),
+thc_frecuencia: get("thc_frecuencia"),
+
+oh_inicio: get("oh_inicio"),
+oh_fin: get("oh_fin"),
+oh_como: get("oh_como"),
+oh_frecuencia: get("oh_frecuencia"),
+
+coc_inicio: get("coc_inicio"),
+coc_fin: get("coc_fin"),
+coc_como: get("coc_como"),
+coc_frecuencia: get("coc_frecuencia"),
+
+op_inicio: get("op_inicio"),
+op_fin: get("op_fin"),
+op_como: get("op_como"),
+op_frecuencia: get("op_frecuencia"),
+
+keta_inicio: get("keta_inicio"),
+keta_fin: get("keta_fin"),
+keta_como: get("keta_como"),
+keta_frecuencia: get("keta_frecuencia"),
+
+bzd_inicio: get("bzd_inicio"),
+bzd_fin: get("bzd_fin"),
+bzd_como: get("bzd_como"),
+bzd_frecuencia: get("bzd_frecuencia"),
+
+mdma_inicio: get("mdma_inicio"),
+mdma_fin: get("mdma_fin"),
+mdma_como: get("mdma_como"),
+mdma_frecuencia: get("mdma_frecuencia"),
+
+ludo_inicio: get("ludo_inicio"),
+ludo_fin: get("ludo_fin"),
+ludo_como: get("ludo_como"),
+ludo_frecuencia: get("ludo_frecuencia"),
+
+sexo_inicio: get("sexo_inicio"),
+sexo_fin: get("sexo_fin"),
+sexo_como: get("sexo_como"),
+sexo_frecuencia: get("sexo_frecuencia"),
+
+otras_inicio: get("otras_inicio"),
+otras_fin: get("otras_fin"),
+otras_como: get("otras_como"),
+otras_frecuencia: get("otras_frecuencia")
+
+};
+
+const { error } = await supabaseClient
+.from("cuestionario_sece")
+.insert([data]);
+
+if(error){
+  alert("Error: " + error.message);
+}else{
+  alert("Guardado");
+}
+
+}
+
+</script>
+
+</body>
+</html>
