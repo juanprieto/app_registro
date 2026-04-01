@@ -1,156 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cuestionario SECE</title>
-</head>
-<body>
-
-<h2>Cuestionario Socioeconómico Clínico</h2>
-
-<form id="formulario">
-
-  <h3>Datos</h3>
-  <input type="text" id="nombre" placeholder="Nombre"><br>
-  <input type="text" id="codigo_usuario" placeholder="Código usuario"><br>
-  <input type="text" id="codigo_pulsera" placeholder="Código pulsera"><br>
-
-  <h3>Datos personales</h3>
-  <input type="date" id="fecha_nacimiento"><br>
-
-  <label>Género:</label>
-  <select id="genero">
-    <option value="1">Masculino</option>
-    <option value="2">Femenino</option>
-    <option value="3">No binario</option>
-  </select><br>
-
-  <label>Estado civil:</label>
-  <select id="estado_civil">
-    <option value="1">Casado</option>
-    <option value="6">Soltero</option>
-  </select><br>
-
-  <label>Nivel estudios:</label>
-  <select id="nivel_estudios">
-    <option value="1">ESO</option>
-    <option value="2">Bachillerato</option>
-    <option value="3">FP</option>
-  </select><br>
-
-  <h3>Laboral</h3>
-  <label>Situación laboral:</label>
-  <select id="situacion_laboral">
-    <option value="0">Tiempo completo</option>
-    <option value="2">Paro</option>
-  </select><br>
-
-  <label>Ingresos:</label>
-  <select id="ingresos">
-    <option value="0"><1000€</option>
-    <option value="1">1000-2000€</option>
-    <option value="2">2000-4000€</option>
-  </select><br>
-
-  <h3>Clínico</h3>
-  <input type="number" id="ttos_iniciados" placeholder="Nº tratamientos"><br>
-  <input type="number" id="recaidas" placeholder="Recaídas"><br>
-  <input type="date" id="tiempo_abstinencia"><br>
-
-  <label>Importancia tratamiento:</label>
-  <select id="importancia_tratamiento">
-    <option value="0">Ninguna</option>
-    <option value="4">Extrema</option>
-  </select><br>
-
-  <h3>Problema principal</h3>
-  <select id="problema_principal">
-    <option value="1">Laboral</option>
-    <option value="2">Familiar</option>
-    <option value="6">Salud</option>
-  </select><br>
-
-  <button type="submit">Guardar</button>
-
-</form>
-
+<meta charset="UTF-8">
+<title>SECE Completo</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-<script>
-const supabaseUrl = "https://TU_URL.supabase.co";
-const supabaseKey = "TU_ANON_KEY";
-
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-document.getElementById("formulario").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const data = {
-    nombre: document.getElementById("nombre").value,
-    codigo_usuario: document.getElementById("codigo_usuario").value,
-    codigo_pulsera: document.getElementById("codigo_pulsera").value,
-    fecha_nacimiento: document.getElementById("fecha_nacimiento").value,
-    genero: parseInt(document.getElementById("genero").value),
-    estado_civil: parseInt(document.getElementById("estado_civil").value),
-    nivel_estudios: parseInt(document.getElementById("nivel_estudios").value),
-    situacion_laboral: parseInt(document.getElementById("situacion_laboral").value),
-    ingresos: parseInt(document.getElementById("ingresos").value),
-    ttos_iniciados: parseInt(document.getElementById("ttos_iniciados").value),
-    recaidas: parseInt(document.getElementById("recaidas").value),
-    tiempo_abstinencia: document.getElementById("tiempo_abstinencia").value,
-    importancia_tratamiento: parseInt(document.getElementById("importancia_tratamiento").value),
-    problema_principal: parseInt(document.getElementById("problema_principal").value)
-  };
-
-  const { error } = await supabase
-    .from("cuestionario_sece")
-    .insert([data]);
-
-  if (error) {
-    alert("Error: " + error.message);
-  } else {
-    alert("Guardado correctamente");
-  }
-});
-</script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Cuestionario SECE</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px;}
-    td, th { border: 1px solid #ccc; padding: 8px; text-align: center;}
-    input, select { width: 100%; }
-  </style>
+<style>
+body { font-family: Arial; padding:20px;}
+h3 { margin-top:30px;}
+input, select { width:100%; margin-bottom:10px;}
+table { border-collapse: collapse; width:100%; margin-top:20px;}
+td, th { border:1px solid #ccc; padding:6px; text-align:center;}
+</style>
 </head>
 
 <body>
 
-<h2>Consumo</h2>
+<h2>Cuestionario SECE</h2>
+
+<!-- Z -->
+<h3>Datos</h3>
+<input id="nombre" placeholder="Nombre">
+<input id="codigo_usuario" placeholder="Código usuario">
+<input id="codigo_pulsera" placeholder="Código pulsera">
+<input type="date" id="fecha_realizacion">
+
+<!-- A -->
+<h3>Datos personales</h3>
+<input type="date" id="fecha_nacimiento">
+
+<select id="genero">
+<option value="1">Masculino</option>
+<option value="2">Femenino</option>
+<option value="3">No binario</option>
+</select>
+
+<select id="estado_civil">
+<option value="1">Casado</option>
+<option value="6">Soltero</option>
+</select>
+
+<select id="nivel_estudios">
+<option value="1">ESO</option>
+<option value="2">Bachillerato</option>
+<option value="3">FP</option>
+</select>
+
+<!-- B -->
+<h3>Clínico</h3>
+<input type="number" id="ttos_iniciados" placeholder="Tratamientos iniciados">
+<input type="number" id="recaidas" placeholder="Recaídas">
+<input type="date" id="tiempo_abstinencia">
+
+<select id="importancia_tratamiento">
+<option value="0">Ninguna</option>
+<option value="4">Extrema</option>
+</select>
+
+<!-- D -->
+<h3>Problemas</h3>
+<select id="problema_principal">
+<option value="1">Laboral</option>
+<option value="2">Familiar</option>
+<option value="3">Amistades</option>
+<option value="4">Pareja</option>
+<option value="5">Legal</option>
+<option value="6">Salud</option>
+</select>
+
+<!-- CONSUMO -->
+<h3>Consumo</h3>
 
 <table>
 <tr>
-  <th></th>
-  <th>THC</th>
-  <th>OH</th>
-  <th>COC</th>
-  <th>OP</th>
-  <th>KETA</th>
-  <th>BZD</th>
-  <th>MDMA</th>
-  <th>LUDO</th>
-  <th>SEXO</th>
-  <th>OTRAS</th>
+<th></th><th>THC</th><th>OH</th><th>COC</th><th>OP</th><th>KETA</th><th>BZD</th><th>MDMA</th><th>LUDO</th><th>SEXO</th><th>OTRAS</th>
 </tr>
 
-<!-- INICIO -->
 <tr>
 <td>Inicio</td>
 <td><input id="thc_inicio"></td>
@@ -165,7 +90,6 @@ document.getElementById("formulario").addEventListener("submit", async (e) => {
 <td><input id="otras_inicio"></td>
 </tr>
 
-<!-- FIN -->
 <tr>
 <td>Fin</td>
 <td><input id="thc_fin"></td>
@@ -180,17 +104,9 @@ document.getElementById("formulario").addEventListener("submit", async (e) => {
 <td><input id="otras_fin"></td>
 </tr>
 
-<!-- COMO -->
 <tr>
 <td>Cómo</td>
-<td><select id="thc_como">
-<option value="1">Oral</option>
-<option value="2">Inhalada</option>
-<option value="3">Fumada</option>
-<option value="4">Inyectada</option>
-<option value="5">Otro</option>
-</select></td>
-
+<td><select id="thc_como"><option value="1">Oral</option><option value="2">Inhalada</option><option value="3">Fumada</option></select></td>
 <td><select id="oh_como"><option value="1">Oral</option></select></td>
 <td><select id="coc_como"><option value="2">Inhalada</option></select></td>
 <td><select id="op_como"><option value="4">Inyectada</option></select></td>
@@ -202,20 +118,11 @@ document.getElementById("formulario").addEventListener("submit", async (e) => {
 <td><select id="otras_como"><option value="5">Otro</option></select></td>
 </tr>
 
-<!-- FRECUENCIA -->
 <tr>
 <td>Frecuencia</td>
-
-<td><select id="thc_frecuencia">
-<option value="0">No</option>
-<option value="1">1-3/mes</option>
-<option value="2">1-2/sem</option>
-<option value="3">3-6/sem</option>
-<option value="4">Diario</option>
-</select></td>
-
+<td><select id="thc_frecuencia"><option value="0">No</option><option value="4">Diario</option></select></td>
 <td><select id="oh_frecuencia"><option value="4">Diario</option></select></td>
-<td><select id="coc_frecuencia"><option value="3">3-6/sem</option></select></td>
+<td><select id="coc_frecuencia"><option value="3">Semanal</option></select></td>
 <td><select id="op_frecuencia"><option value="4">Diario</option></select></td>
 <td><select id="keta_frecuencia"><option value="2">Semanal</option></select></td>
 <td><select id="bzd_frecuencia"><option value="4">Diario</option></select></td>
@@ -223,10 +130,11 @@ document.getElementById("formulario").addEventListener("submit", async (e) => {
 <td><select id="ludo_frecuencia"><option value="3">Frecuente</option></select></td>
 <td><select id="sexo_frecuencia"><option value="3">Frecuente</option></select></td>
 <td><select id="otras_frecuencia"><option value="2">Media</option></select></td>
-
 </tr>
+
 </table>
 
+<br>
 <button onclick="guardar()">Guardar</button>
 
 <script>
@@ -236,63 +144,28 @@ const supabaseKey = "TU_KEY";
 
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-function get(id){
-  return document.getElementById(id).value;
-}
+function g(id){ return document.getElementById(id).value }
 
 async function guardar(){
 
 const data = {
+nombre: g("nombre"),
+codigo_usuario: g("codigo_usuario"),
+codigo_pulsera: g("codigo_pulsera"),
+fecha_nacimiento: g("fecha_nacimiento"),
+genero: g("genero"),
+estado_civil: g("estado_civil"),
+nivel_estudios: g("nivel_estudios"),
+ttos_iniciados: g("ttos_iniciados"),
+recaidas: g("recaidas"),
+tiempo_abstinencia: g("tiempo_abstinencia"),
+importancia_tratamiento: g("importancia_tratamiento"),
+problema_principal: g("problema_principal"),
 
-thc_inicio: get("thc_inicio"),
-thc_fin: get("thc_fin"),
-thc_como: get("thc_como"),
-thc_frecuencia: get("thc_frecuencia"),
-
-oh_inicio: get("oh_inicio"),
-oh_fin: get("oh_fin"),
-oh_como: get("oh_como"),
-oh_frecuencia: get("oh_frecuencia"),
-
-coc_inicio: get("coc_inicio"),
-coc_fin: get("coc_fin"),
-coc_como: get("coc_como"),
-coc_frecuencia: get("coc_frecuencia"),
-
-op_inicio: get("op_inicio"),
-op_fin: get("op_fin"),
-op_como: get("op_como"),
-op_frecuencia: get("op_frecuencia"),
-
-keta_inicio: get("keta_inicio"),
-keta_fin: get("keta_fin"),
-keta_como: get("keta_como"),
-keta_frecuencia: get("keta_frecuencia"),
-
-bzd_inicio: get("bzd_inicio"),
-bzd_fin: get("bzd_fin"),
-bzd_como: get("bzd_como"),
-bzd_frecuencia: get("bzd_frecuencia"),
-
-mdma_inicio: get("mdma_inicio"),
-mdma_fin: get("mdma_fin"),
-mdma_como: get("mdma_como"),
-mdma_frecuencia: get("mdma_frecuencia"),
-
-ludo_inicio: get("ludo_inicio"),
-ludo_fin: get("ludo_fin"),
-ludo_como: get("ludo_como"),
-ludo_frecuencia: get("ludo_frecuencia"),
-
-sexo_inicio: get("sexo_inicio"),
-sexo_fin: get("sexo_fin"),
-sexo_como: get("sexo_como"),
-sexo_frecuencia: get("sexo_frecuencia"),
-
-otras_inicio: get("otras_inicio"),
-otras_fin: get("otras_fin"),
-otras_como: get("otras_como"),
-otras_frecuencia: get("otras_frecuencia")
+thc_inicio: g("thc_inicio"),
+thc_fin: g("thc_fin"),
+thc_como: g("thc_como"),
+thc_frecuencia: g("thc_frecuencia")
 
 };
 
@@ -300,11 +173,8 @@ const { error } = await supabaseClient
 .from("cuestionario_sece")
 .insert([data]);
 
-if(error){
-  alert("Error: " + error.message);
-}else{
-  alert("Guardado");
-}
+if(error){ alert(error.message) }
+else{ alert("Guardado") }
 
 }
 
