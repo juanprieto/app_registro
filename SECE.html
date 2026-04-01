@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>SECE</title>
 
 <link rel="icon" type="image/png" href="logo.png">
 
 <style>
+
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     max-width: 1100px;
@@ -25,7 +27,7 @@ h1 {
 
 h3 {
     color: rgb(167,188,75);
-    margin-top: 25px;
+    margin-top: 20px;
 }
 
 .card {
@@ -33,28 +35,40 @@ h3 {
     padding: 15px;
     border-radius: 8px;
     border: 1px solid #ddd;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
 }
 
 input, select {
     width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
+    padding: 7px;
+    margin-bottom: 8px;
     border-radius: 6px;
     border: 1px solid #ccc;
+    font-size: 14px;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
+.consumo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
 }
 
-td, th {
+.consumo-card {
     border: 1px solid #ddd;
-    padding: 6px;
-    text-align: center;
-    font-size: 13px;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fff;
+}
+
+.consumo-card h4 {
+    margin: 0 0 8px 0;
+    color: rgb(167,188,75);
+    font-size: 14px;
 }
 
 button {
@@ -65,7 +79,6 @@ button {
     border-radius: 6px;
     width: 100%;
     font-weight: bold;
-    cursor: pointer;
 }
 
 .logo-container {
@@ -74,15 +87,16 @@ button {
 }
 
 .logo-img {
-    max-width: 200px;
+    max-width: 180px;
 }
+
 </style>
 </head>
 
 <body>
 
 <div class="logo-container">
-    <img src="logo.png" class="logo-img">
+<img src="logo.png" class="logo-img">
 </div>
 
 <h1>Cuestionario SECE</h1>
@@ -90,10 +104,19 @@ button {
 <!-- Z -->
 <div class="card">
 <h3>Z. Identificación</h3>
-<input id="Z_nombre" placeholder="Z. Nombre">
-<input id="Z1" placeholder="Z1. Código Usuario">
+
+<label>Z. Nombre</label>
+<input id="Z_nombre">
+
+<label>Z1. Código Usuario</label>
+<input id="Z1">
+
+<label>Z2. Código Pulsera</label>
+<input id="Z2">
+
 <label>Z3. Fecha de recogida</label>
 <input id="Z3" type="date">
+
 </div>
 
 <!-- A -->
@@ -103,89 +126,91 @@ button {
 <label>A1. Fecha de nacimiento</label>
 <input id="A1" type="date">
 
+<label>A2. Género</label>
 <select id="A2">
-<option value="">A2 Género</option>
 <option value="1">1 Masculino</option>
 <option value="2">2 Femenino</option>
 <option value="3">3 No binario</option>
 </select>
 
+<label>A3. Estado civil</label>
 <select id="A3">
-<option value="">A3 Estado civil</option>
 <option value="1">1 Casado</option>
 <option value="6">6 Soltero</option>
 </select>
 
+<label>A4. Tiempo en pareja</label>
 <select id="A4">
-<option value="">A4 Tiempo pareja</option>
 <option value="0">0 Sin pareja</option>
 <option value="1">1 <1 año</option>
-<option value="2">2 1-3 años</option>
-<option value="3">3 3-10 años</option>
 <option value="4">4 +10 años</option>
 </select>
 
+<label>A5. Estudios</label>
 <select id="A5">
-<option value="">A5 Estudios</option>
 <option value="1">ESO</option>
 <option value="6">Postgrado</option>
 </select>
 
+<label>A6. Estudia</label>
 <select id="A6">
-<option value="">A6 Estudia</option>
 <option value="0">No</option>
 <option value="1">Sí</option>
 </select>
 
-<input id="A7" placeholder="A7 Ocupación">
+<label>A7. Ocupación</label>
+<input id="A7">
 
+<label>A8. Responsabilidad</label>
 <select id="A8">
-<option value="">A8 Responsabilidad</option>
 <option value="0">Baja</option>
 <option value="2">Alta</option>
 </select>
 
+<label>A9. Situación laboral</label>
 <select id="A9">
-<option value="">A9 Situación laboral</option>
 <option value="0">Completo</option>
 <option value="2">Paro</option>
 </select>
 
+<label>A10. Dependencia</label>
 <select id="A10">
-<option value="">A10 Dependencia</option>
 <option value="0">No</option>
 <option value="2">Total</option>
 </select>
 
+<label>A11. Fuente ingresos</label>
 <select id="A11">
-<option value="">A11 Ingresos fuente</option>
 <option value="1">Trabajo</option>
 <option value="9">Ilegal</option>
 </select>
 
+<label>A12. Ingresos</label>
 <select id="A12">
-<option value="">A12 Ingresos</option>
-<option value="0"><1000</option>
-<option value="3">+4000</option>
+<option value="0"><1000€</option>
+<option value="3">+4000€</option>
 </select>
 
-<input id="A13" type="number" placeholder="A13 Convivientes">
-<input id="A14" type="number" placeholder="A14 Personas a cargo">
+<label>A13. Convivientes</label>
+<input id="A13" type="number">
 
+<label>A14. Personas a cargo</label>
+<input id="A14" type="number">
+
+<label>A15. Cubre necesidades</label>
 <select id="A15">
-<option value="">A15 Cubre necesidades</option>
 <option value="0">No</option>
 <option value="1">Sí</option>
 </select>
 
+<label>A16. Deriva</label>
 <select id="A16">
-<option value="">A16 Deriva</option>
 <option value="0">Usuario</option>
 <option value="1">Familia</option>
 </select>
 
+<label>A17. Paga tratamiento</label>
 <select id="A17">
-<option value="">A17 Paga</option>
 <option value="0">Usuario</option>
 <option value="1">Familia</option>
 </select>
@@ -196,31 +221,49 @@ button {
 <div class="card">
 <h3>B. Clínico</h3>
 
-<input id="B1" type="number" placeholder="B1 Nº tratamientos">
+<label>B1. Nº tratamientos</label>
+<input id="B1" type="number">
+
+<label>B2. Fecha primer tratamiento</label>
 <input id="B2" type="date">
+
+<label>B3. Inicio tratamiento actual</label>
 <input id="B3" type="date">
-<input id="B4" type="number" placeholder="B4 Recaídas">
+
+<label>B4. Recaídas</label>
+<input id="B4" type="number">
+
 <label>B5. Fecha último consumo</label>
 <input id="B5" type="date">
+
+<label>B6. Importancia tratamiento</label>
 <select id="B6">
 <option value="0">0 Ninguna</option>
 <option value="4">4 Extrema</option>
 </select>
 
+<label>B7. >1 año abstinente</label>
 <select id="B7">
 <option value="0">No</option>
 <option value="1">Sí</option>
 </select>
 
-<input id="B8" placeholder="B8 Toxicológicos">
-<input id="B9" placeholder="B9 Psiquiátricos">
+<label>B8. Toxicológicos</label>
+<input id="B8">
+
+<label>B9. Psiquiátricos</label>
+<input id="B9">
+
+<label>B10. Consultas</label>
 <input id="B10" type="number">
 
+<label>B11. Medicación</label>
 <select id="B11">
 <option value="0">No</option>
 <option value="1">Sí</option>
 </select>
 
+<label>B12. Importancia salud mental</label>
 <select id="B12">
 <option value="0">Ninguna</option>
 <option value="4">Extrema</option>
@@ -228,97 +271,76 @@ button {
 
 </div>
 
-<!-- D -->
-<div class="card">
-<h3>D. Problemas</h3>
-
-<select id="D1"><option value="0">Nada</option><option value="4">Muy grave</option></select>
-<select id="D2"><option value="0">Nada</option><option value="4">Muy grave</option></select>
-<select id="D3"><option value="0">Nada</option><option value="4">Muy grave</option></select>
-<select id="D4"><option value="0">Nada</option><option value="4">Muy grave</option></select>
-<select id="D5"><option value="0">Nada</option><option value="4">Muy grave</option></select>
-<select id="D6"><option value="0">Nada</option><option value="4">Muy grave</option></select>
-
-<input id="D7" placeholder="Problema principal">
-<input id="D8" placeholder="Problema influyente">
-
-</div>
-
 <!-- CONSUMO -->
 <div class="card">
-<h3>Consumo (E–N)</h3>
+<h3>Consumo</h3>
 
-<table>
-<tr>
-<th></th><th>THC</th><th>OH</th><th>COC</th><th>OP</th><th>KETA</th><th>BZD</th><th>MDMA</th><th>LUDO</th><th>SEXO</th><th>OTRAS</th>
-</tr>
+<div class="consumo-grid">
 
-<tr>
-<td>Inicio (fecha)</td>
-<td><input id="E1" type="date"></td>
-<td><input id="F1" type="date"></td>
-<td><input id="G1" type="date"></td>
-<td><input id="H1" type="date"></td>
-<td><input id="I1" type="date"></td>
-<td><input id="J1" type="date"></td>
-<td><input id="K1" type="date"></td>
-<td><input id="L1" type="date"></td>
-<td><input id="M1" type="date"></td>
-<td><input id="N1" type="date"></td>
-</tr>
-
-<tr>
-<td>Fin (fecha)</td>
-<td><input id="E2" type="date"></td>
-<td><input id="F2" type="date"></td>
-<td><input id="G2" type="date"></td>
-<td><input id="H2" type="date"></td>
-<td><input id="I2" type="date"></td>
-<td><input id="J2" type="date"></td>
-<td><input id="K2" type="date"></td>
-<td><input id="L2" type="date"></td>
-<td><input id="M2" type="date"></td>
-<td><input id="N2" type="date"></td>
-</tr>
-
-<tr>
-<td>Cómo</td>
-<td><select id="E3"><option>Oral</option><option>Inhalada</option></select></td>
-<td><select id="F3"></select></td>
-<td><select id="G3"></select></td>
-<td><select id="H3"></select></td>
-<td><select id="I3"></select></td>
-<td><select id="J3"></select></td>
-<td><select id="K3"></select></td>
-<td><select id="L3"></select></td>
-<td><select id="M3"></select></td>
-<td><select id="N3"></select></td>
-</tr>
-
-<tr>
-<td>Frecuencia</td>
-<td><select id="E4"><option value="0">No</option><option value="4">Diario</option></select></td>
-<td><select id="F4"></select></td>
-<td><select id="G4"></select></td>
-<td><select id="H4"></select></td>
-<td><select id="I4"></select></td>
-<td><select id="J4"></select></td>
-<td><select id="K4"></select></td>
-<td><select id="L4"></select></td>
-<td><select id="M4"></select></td>
-<td><select id="N4"></select></td>
-</tr>
-
-</table>
+<!-- THC -->
+<div class="consumo-card">
+<h4>THC</h4>
+<label>E1 Inicio</label><input id="E1" type="date">
+<label>E2 Fin</label><input id="E2" type="date">
+<label>E3 Cómo</label><select id="E3"><option>Oral</option><option>Fumada</option></select>
+<label>E4 Frecuencia</label><select id="E4"><option>0</option><option>4</option></select>
 </div>
 
-<!-- O -->
-<div class="card">
-<h3>O. Sustancias problemáticas</h3>
+<!-- OH -->
+<div class="consumo-card">
+<h4>OH</h4>
+<label>F1 Inicio</label><input id="F1" type="date">
+<label>F2 Fin</label><input id="F2" type="date">
+<label>F3 Cómo</label><select id="F3"></select>
+<label>F4 Frecuencia</label><select id="F4"></select>
+</div>
 
-<input id="O1" placeholder="O1 Principal">
-<input id="O2" placeholder="O2 Segunda">
-<input id="O3" placeholder="O3 Tercera">
+<!-- COC -->
+<div class="consumo-card">
+<h4>COC</h4>
+<label>G1 Inicio</label><input id="G1" type="date">
+<label>G2 Fin</label><input id="G2" type="date">
+<label>G3 Cómo</label><select id="G3"></select>
+<label>G4 Frecuencia</label><select id="G4"></select>
+</div>
+
+<!-- OP -->
+<div class="consumo-card">
+<h4>OP</h4>
+<label>H1 Inicio</label><input id="H1" type="date">
+<label>H2 Fin</label><input id="H2" type="date">
+<label>H3 Cómo</label><select id="H3"></select>
+<label>H4 Frecuencia</label><select id="H4"></select>
+</div>
+
+<!-- KETA -->
+<div class="consumo-card">
+<h4>KETA</h4>
+<label>I1 Inicio</label><input id="I1" type="date">
+<label>I2 Fin</label><input id="I2" type="date">
+<label>I3 Cómo</label><select id="I3"></select>
+<label>I4 Frecuencia</label><select id="I4"></select>
+</div>
+
+<!-- BZD -->
+<div class="consumo-card">
+<h4>BZD</h4>
+<label>J1 Inicio</label><input id="J1" type="date">
+<label>J2 Fin</label><input id="J2" type="date">
+<label>J3 Cómo</label><select id="J3"></select>
+<label>J4 Frecuencia</label><select id="J4"></select>
+</div>
+
+<!-- MDMA -->
+<div class="consumo-card">
+<h4>MDMA</h4>
+<label>K1 Inicio</label><input id="K1" type="date">
+<label>K2 Fin</label><input id="K2" type="date">
+<label>K3 Cómo</label><select id="K3"></select>
+<label>K4 Frecuencia</label><select id="K4"></select>
+</div>
+
+</div>
 
 </div>
 
@@ -331,7 +353,7 @@ function guardar(){
         if(el.id) datos[el.id] = el.value;
     });
     console.log(datos);
-    alert("Datos capturados (ver consola)");
+    alert("OK");
 }
 </script>
 
