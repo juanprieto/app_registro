@@ -1,6 +1,123 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Cuestionario SECE</title>
+</head>
+<body>
+
+<h2>Cuestionario Socioeconómico Clínico</h2>
+
+<form id="formulario">
+
+  <h3>Datos</h3>
+  <input type="text" id="nombre" placeholder="Nombre"><br>
+  <input type="text" id="codigo_usuario" placeholder="Código usuario"><br>
+  <input type="text" id="codigo_pulsera" placeholder="Código pulsera"><br>
+
+  <h3>Datos personales</h3>
+  <input type="date" id="fecha_nacimiento"><br>
+
+  <label>Género:</label>
+  <select id="genero">
+    <option value="1">Masculino</option>
+    <option value="2">Femenino</option>
+    <option value="3">No binario</option>
+  </select><br>
+
+  <label>Estado civil:</label>
+  <select id="estado_civil">
+    <option value="1">Casado</option>
+    <option value="6">Soltero</option>
+  </select><br>
+
+  <label>Nivel estudios:</label>
+  <select id="nivel_estudios">
+    <option value="1">ESO</option>
+    <option value="2">Bachillerato</option>
+    <option value="3">FP</option>
+  </select><br>
+
+  <h3>Laboral</h3>
+  <label>Situación laboral:</label>
+  <select id="situacion_laboral">
+    <option value="0">Tiempo completo</option>
+    <option value="2">Paro</option>
+  </select><br>
+
+  <label>Ingresos:</label>
+  <select id="ingresos">
+    <option value="0"><1000€</option>
+    <option value="1">1000-2000€</option>
+    <option value="2">2000-4000€</option>
+  </select><br>
+
+  <h3>Clínico</h3>
+  <input type="number" id="ttos_iniciados" placeholder="Nº tratamientos"><br>
+  <input type="number" id="recaidas" placeholder="Recaídas"><br>
+  <input type="date" id="tiempo_abstinencia"><br>
+
+  <label>Importancia tratamiento:</label>
+  <select id="importancia_tratamiento">
+    <option value="0">Ninguna</option>
+    <option value="4">Extrema</option>
+  </select><br>
+
+  <h3>Problema principal</h3>
+  <select id="problema_principal">
+    <option value="1">Laboral</option>
+    <option value="2">Familiar</option>
+    <option value="6">Salud</option>
+  </select><br>
+
+  <button type="submit">Guardar</button>
+
+</form>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+const supabaseUrl = "https://TU_URL.supabase.co";
+const supabaseKey = "TU_ANON_KEY";
+
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+document.getElementById("formulario").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const data = {
+    nombre: document.getElementById("nombre").value,
+    codigo_usuario: document.getElementById("codigo_usuario").value,
+    codigo_pulsera: document.getElementById("codigo_pulsera").value,
+    fecha_nacimiento: document.getElementById("fecha_nacimiento").value,
+    genero: parseInt(document.getElementById("genero").value),
+    estado_civil: parseInt(document.getElementById("estado_civil").value),
+    nivel_estudios: parseInt(document.getElementById("nivel_estudios").value),
+    situacion_laboral: parseInt(document.getElementById("situacion_laboral").value),
+    ingresos: parseInt(document.getElementById("ingresos").value),
+    ttos_iniciados: parseInt(document.getElementById("ttos_iniciados").value),
+    recaidas: parseInt(document.getElementById("recaidas").value),
+    tiempo_abstinencia: document.getElementById("tiempo_abstinencia").value,
+    importancia_tratamiento: parseInt(document.getElementById("importancia_tratamiento").value),
+    problema_principal: parseInt(document.getElementById("problema_principal").value)
+  };
+
+  const { error } = await supabase
+    .from("cuestionario_sece")
+    .insert([data]);
+
+  if (error) {
+    alert("Error: " + error.message);
+  } else {
+    alert("Guardado correctamente");
+  }
+});
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html>
+<head>
   <meta charset="UTF-8">
   <title>Cuestionario SECE</title>
 
