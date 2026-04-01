@@ -1,206 +1,255 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>SECE</title>
 
-<style>
-body { font-family: Arial; padding:20px; max-width:1000px; margin:auto;}
-h2 { border-bottom:2px solid black;}
-h3 { margin-top:30px;}
-label { font-weight:bold;}
-input, select { width:100%; margin-bottom:10px; padding:5px;}
-table { border-collapse: collapse; width:100%; margin-top:20px;}
-td, th { border:1px solid #ccc; padding:6px; text-align:center;}
-</style>
+<link rel="icon" type="image/png" href="logo.png">
 
+<style>
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    max-width: 1100px;
+    margin: auto;
+    padding: 10px;
+    background-color: #f8f9fa;
+}
+
+h1 {
+    text-align: center;
+    color: rgb(167,188,75);
+    border-bottom: 2px solid rgb(167,188,75);
+    padding-bottom: 10px;
+}
+
+h3 {
+    color: rgb(167,188,75);
+    margin-top: 25px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+td, th {
+    border: 1px solid #ddd;
+    padding: 6px;
+    text-align: center;
+    font-size: 13px;
+}
+
+button {
+    background: rgb(167,188,75);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 6px;
+    width: 100%;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.logo-img {
+    max-width: 200px;
+}
+
+</style>
 </head>
 
 <body>
 
-<h2>SECE</h2>
+<div class="logo-container">
+    <img src="logo.png" class="logo-img">
+</div>
 
-<!-- Z -->
+<h1>Cuestionario SECE</h1>
+
+<div class="card">
 <h3>Identificación</h3>
 
-<label>Nombre</label><input>
-<label>Código Usuario</label><input>
-<label>Código Pulsera</label><input>
-<label>Fecha</label><input type="date">
+<input placeholder="Nombre">
+<input placeholder="Código usuario">
+<input placeholder="Código pulsera">
+<input type="date">
+</div>
 
-<!-- A -->
-<h3>Variables socioeconómicas</h3>
+<div class="card">
+<h3>Datos socioeconómicos</h3>
 
-<label>Fecha nacimiento</label><input type="date">
+<input type="date" placeholder="Fecha nacimiento">
 
-<label>Género</label>
 <select>
-<option value="1">Masculino</option>
-<option value="2">Femenino</option>
-<option value="3">No binario</option>
+<option>Masculino</option>
+<option>Femenino</option>
+<option>No binario</option>
 </select>
 
-<label>Estado civil</label>
 <select>
-<option value="1">Casado</option>
-<option value="2">Pareja</option>
-<option value="3">Viudo</option>
-<option value="4">Divorciado</option>
-<option value="5">Separado</option>
-<option value="6">Soltero</option>
+<option>Casado</option>
+<option>Soltero</option>
+<option>Separado</option>
+<option>Divorciado</option>
 </select>
 
-<label>Tiempo en pareja</label>
 <select>
-<option value="0">Sin pareja</option>
-<option value="1"><1 año</option>
-<option value="2">1-3 años</option>
-<option value="3">3-10 años</option>
-<option value="4">+10 años</option>
+<option>Sin pareja</option>
+<option><1 año</option>
+<option>1-3 años</option>
+<option>3-10 años</option>
+<option>+10 años</option>
 </select>
 
-<label>Nivel estudios</label>
 <select>
-<option value="1">ESO</option>
-<option value="2">Bachillerato</option>
-<option value="3">FP</option>
-<option value="4">Diplomatura</option>
-<option value="5">Licenciatura</option>
-<option value="6">Postgrado</option>
+<option>ESO</option>
+<option>Bachillerato</option>
+<option>FP</option>
+<option>Universidad</option>
+<option>Postgrado</option>
 </select>
 
-<label>Estudia actualmente</label>
-<select><option value="0">No</option><option value="1">Sí</option></select>
-
-<label>Ocupación</label><input>
-
-<label>Nivel responsabilidad</label>
 <select>
-<option value="0">Baja</option>
-<option value="1">Media</option>
-<option value="2">Alta</option>
+<option>No estudia</option>
+<option>Estudia</option>
 </select>
 
-<label>Situación laboral</label>
+<input placeholder="Ocupación">
+
 <select>
-<option value="0">Tiempo completo</option>
-<option value="1">Tiempo parcial</option>
-<option value="2">Paro</option>
-<option value="3">Baja</option>
-<option value="4">Fuera mercado</option>
+<option>Baja</option>
+<option>Media</option>
+<option>Alta</option>
 </select>
 
-<label>Dependencia económica</label>
 <select>
-<option value="0">No</option>
-<option value="1">Parcial</option>
-<option value="2">Total</option>
+<option>Tiempo completo</option>
+<option>Parcial</option>
+<option>Paro</option>
+<option>Baja</option>
 </select>
 
-<label>Fuente ingresos</label>
 <select>
-<option value="1">Empleo</option>
-<option value="4">Paro</option>
-<option value="6">Servicios sociales</option>
-<option value="8">Familia</option>
-<option value="9">Ingresos ilegales</option>
+<option>No depende</option>
+<option>Parcial</option>
+<option>Total</option>
 </select>
 
-<label>Ingresos</label>
 <select>
-<option value="0"><1000€</option>
-<option value="1">1000-2000€</option>
-<option value="2">2000-4000€</option>
-<option value="3">4000€+</option>
+<option>Trabajo</option>
+<option>Paro</option>
+<option>Servicios sociales</option>
+<option>Familia</option>
+<option>Ilegal</option>
 </select>
 
-<label>Nº convivientes</label><input type="number">
-<label>Nº personas a cargo</label><input type="number">
-
-<label>Cubre necesidades</label>
-<select><option value="0">No</option><option value="1">Sí</option></select>
-
-<label>Quién deriva</label>
 <select>
-<option value="0">Usuario</option>
-<option value="1">Familia</option>
-<option value="2">Amigos</option>
-<option value="3">Pareja</option>
+<option><1000€</option>
+<option>1000-2000€</option>
+<option>2000-4000€</option>
+<option>4000€+</option>
 </select>
 
-<label>Quién paga tratamiento</label>
+<input type="number" placeholder="Nº convivientes">
+<input type="number" placeholder="Personas a cargo">
+
 <select>
-<option value="0">Usuario</option>
-<option value="1">Familia</option>
-<option value="2">Amigos</option>
-<option value="3">Pareja</option>
+<option>No cubre necesidades</option>
+<option>Cubre necesidades</option>
 </select>
 
-<!-- B -->
+<select>
+<option>Usuario</option>
+<option>Familia</option>
+<option>Amigos</option>
+<option>Pareja</option>
+</select>
+
+<select>
+<option>Usuario</option>
+<option>Familia</option>
+<option>Amigos</option>
+<option>Pareja</option>
+</select>
+
+</div>
+
+<div class="card">
 <h3>Variables clínicas</h3>
 
-<label>Nº tratamientos</label><input type="number">
-<label>Fecha primer tratamiento</label><input type="date">
-<label>Inicio tratamiento actual</label><input type="date">
+<input type="number" placeholder="Nº tratamientos">
+<input type="date" placeholder="Fecha primer tratamiento">
+<input type="date" placeholder="Inicio tratamiento actual">
 
-<label>Recaídas</label><input type="number">
+<input type="number" placeholder="Recaídas">
+<input type="date" placeholder="Último consumo">
 
-<label>Fecha último consumo</label><input type="date">
-
-<label>Importancia tratamiento</label>
 <select>
-<option value="0">Ninguna</option>
-<option value="1">Leve</option>
-<option value="2">Moderada</option>
-<option value="3">Considerable</option>
-<option value="4">Extrema</option>
+<option>Ninguna</option>
+<option>Leve</option>
+<option>Moderada</option>
+<option>Considerable</option>
+<option>Extrema</option>
 </select>
 
-<label>+1 año abstinente</label>
-<select><option value="0">No</option><option value="1">Sí</option></select>
-
-<label>Antecedentes toxicológicos</label><input>
-<label>Antecedentes psiquiátricos</label><input>
-
-<label>Nº consultas psicológicas</label><input type="number">
-
-<label>Medicacion previa</label>
-<select><option value="0">No</option><option value="1">Sí</option></select>
-
-<label>Importancia salud mental</label>
 <select>
-<option value="0">Ninguna</option>
-<option value="1">Leve</option>
-<option value="2">Moderada</option>
-<option value="3">Considerable</option>
-<option value="4">Extrema</option>
+<option>No</option>
+<option>Sí</option>
 </select>
 
-<!-- D -->
+<input placeholder="Antecedentes toxicológicos">
+<input placeholder="Antecedentes psiquiátricos">
+
+<input type="number" placeholder="Consultas psicológicas">
+
+<select>
+<option>No</option>
+<option>Sí</option>
+</select>
+
+<select>
+<option>Ninguna</option>
+<option>Leve</option>
+<option>Moderada</option>
+<option>Considerable</option>
+<option>Extrema</option>
+</select>
+
+</div>
+
+<div class="card">
 <h3>Problemas</h3>
 
-<label>Laboral</label>
-<select><option value="0">Nada</option><option value="4">Muy grave</option></select>
+<select><option>Laboral</option><option>Familiar</option><option>Amistades</option><option>Pareja</option><option>Legal</option><option>Salud</option></select>
+<select><option>Laboral</option><option>Familiar</option><option>Amistades</option><option>Pareja</option><option>Legal</option><option>Salud</option></select>
 
-<label>Familiar</label>
-<select><option value="0">Nada</option><option value="4">Muy grave</option></select>
+</div>
 
-<label>Amistades</label>
-<select><option value="0">Nada</option><option value="4">Muy grave</option></select>
-
-<label>Pareja</label>
-<select><option value="0">Nada</option><option value="4">Muy grave</option></select>
-
-<label>Legal</label>
-<select><option value="0">Nada</option><option value="4">Muy grave</option></select>
-
-<label>Salud</label>
-<select><option value="0">Nada</option><option value="4">Muy grave</option></select>
-
-<label>Problema principal</label><input>
-<label>Problema que influye</label><input>
-
-<!-- CONSUMO -->
+<div class="card">
 <h3>Consumo</h3>
 
 <table>
@@ -232,24 +281,32 @@ td, th { border:1px solid #ccc; padding:6px; text-align:center;}
 </tr>
 
 <tr><td>Frecuencia</td>
-<td><select><option>0</option><option>4</option></select></td>
-<td><select><option>4</option></select></td>
-<td><select><option>3</option></select></td>
-<td><select><option>4</option></select></td>
-<td><select><option>2</option></select></td>
-<td><select><option>4</option></select></td>
-<td><select><option>1</option></select></td>
-<td><select><option>3</option></select></td>
-<td><select><option>3</option></select></td>
-<td><select><option>2</option></select></td>
+<td><select><option>No</option><option>Diario</option></select></td>
+<td><select><option>Diario</option></select></td>
+<td><select><option>Semanal</option></select></td>
+<td><select><option>Diario</option></select></td>
+<td><select><option>Semanal</option></select></td>
+<td><select><option>Diario</option></select></td>
+<td><select><option>Mensual</option></select></td>
+<td><select><option>Frecuente</option></select></td>
+<td><select><option>Frecuente</option></select></td>
+<td><select><option>Media</option></select></td>
 </tr>
 
 </table>
 
+</div>
+
+<div class="card">
 <h3>Sustancias problemáticas</h3>
-<input placeholder="1ª">
-<input placeholder="2ª">
-<input placeholder="3ª">
+
+<input placeholder="1ª sustancia">
+<input placeholder="2ª sustancia">
+<input placeholder="3ª sustancia">
+
+</div>
+
+<button>Guardar</button>
 
 </body>
 </html>
