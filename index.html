@@ -240,113 +240,138 @@ async function guardarRegistroEnSupabase(registro) {
 }
 
 
-        function agregarPaciente(nombre = '') {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><input type="text" value="${nombre}" oninput="autoGuardar()"></td>
-                <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
-                <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
-                <td><input type="checkbox" onchange="toggleMotivo(this)">
-                    <select class="motivo-select" onchange="pintarCeldaEscala(this)">
-                        <option value="0">Hoy no toca</option><option value="1">No justifica</option><option value="2">No quiere venir</option><option value="3">Recaído</option>
-                    </select>
-                </td>
-                <td class="bg-amarillo"><input type="checkbox" onchange="abrirModal(this); pintarCeldaCheck(this);"></td>
-                <td style="font-size:10px;">-</td>
-                <td><input type="checkbox" onchange="autoGuardar()"></td>
-                <td><input type="checkbox" class="medicacion" onchange="marcarMedicacion(this)"></td>
+       function agregarPaciente(nombre = '') {
+    const tr = document.createElement('tr');
 
-                <td class="bg-verde"><select onchange="pintarCeldaEscala(this)"><option value="0">BIEN</option><option value="1">REGULAR</option><option value="2">MAL</option><option value="3">RECAÍDA</option>
-                    </select>
-                </td>
-            `;
-            document.getElementById('tbody').appendChild(tr);
-         const selectPaciente = tr.querySelector(".paciente-select");
-poblarSelectPacientes(selectPaciente, "", nombre);
-         
-          
-            // --- Colorear casilla MED si el paciente debe medicarse ---
-const celdaMed = tr.cells[7];
-const selectPaciente = tr.querySelector(".paciente-select");
+    tr.innerHTML = `
+        <td><select class="paciente-select" onchange="autoGuardar()"></select></td>
+        <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
+        <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
+        <td><input type="checkbox" onchange="toggleMotivo(this)">
+            <select class="motivo-select" onchange="pintarCeldaEscala(this)">
+                <option value="0">Hoy no toca</option>
+                <option value="1">No justifica</option>
+                <option value="2">No quiere venir</option>
+                <option value="3">Recaído</option>
+            </select>
+        </td>
+        <td class="bg-amarillo"><input type="checkbox" onchange="abrirModal(this); pintarCeldaCheck(this);"></td>
+        <td style="font-size:10px;">-</td>
+        <td><input type="checkbox" onchange="autoGuardar()"></td>
+        <td><input type="checkbox" class="medicacion" onchange="marcarMedicacion(this)"></td>
+        <td class="bg-verde">
+            <select onchange="pintarCeldaEscala(this)">
+                <option value="0">BIEN</option>
+                <option value="1">REGULAR</option>
+                <option value="2">MAL</option>
+                <option value="3">RECAÍDA</option>
+            </select>
+        </td>
+    `;
 
-const idInicial = selectPaciente.value;
+    document.getElementById('tbody').appendChild(tr);
 
-const pacienteInicial = pacientesActivosCache.find(
-    p => p.ID_USUARIO === idInicial
-);
+    const selectPaciente = tr.querySelector(".paciente-select");
 
-const requiereInicial = pacienteInicial?.medicacion === true;
-const checkboxMedInicial = tr.cells[7].querySelector(".medicacion");
+    // Poblar select desde Supabase
+    poblarSelectPacientes(selectPaciente, nombre, nombre);
 
-celdaMed.classList.remove("bg-rojo", "bg-verde");
+    // --- MEDICACIÓN ---
+    const celdaMed = tr.cells[7];
 
-if (checkboxMedInicial.checked) {
-    celdaMed.classList.add("bg-verde");
-} else if (requiereInicial) {
-    celdaMed.classList.add("bg-rojo");
+    const aplicarColor = () => {
+        const idUsuario = selectPaciente.value;
+
+        const paciente = pacientesActivosCache.find(
+            p => p.ID_USUARIO === idUsuario
+        );
+
+        const requiere = paciente?.medicacion === true;
+        const checkbox = tr.cells[7].querySelector(".medicacion");
+
+        celdaMed.classList.remove("bg-rojo", "bg-verde");
+
+        if (checkbox.checked) {
+            celdaMed.classList.add("bg-verde");
+        } else if (requiere) {
+            celdaMed.classList.add("bg-rojo");
+        }
+    };
+
+    // Pintado inicial
+    setTimeout(aplicarColor, 100);
+
+    // Al cambiar paciente
+    selectPaciente.addEventListener("change", aplicarColor);
 }
-         selectPaciente.addEventListener("change", () => {
-    const idUsuario = selectPaciente.value;
 
-    const paciente = pacientesActivosCache.find(
-        p => p.ID_USUARIO === idUsuario
-    );
+       function restaurarFila(f) {
+   agregarPaciente(f.idUsuario || f.pac);
 
-    const requiereMedicacion = paciente?.medicacion === true;
-    const checkboxMed = tr.cells[7].querySelector(".medicacion");
+    const tr = document.getElementById('tbody').lastElementChild;
 
-    celdaMed.classList.remove("bg-rojo", "bg-verde");
+    const cM = tr.cells[1].querySelector('input');
+    cM.checked = f.m;
+    pintarCeldaCheck(cM);
 
-    if (checkboxMed.checked) {
-        celdaMed.classList.add("bg-verde");
-    } else if (requiereMedicacion) {
-        celdaMed.classList.add("bg-rojo");
+    const cT = tr.cells[2].querySelector('input');
+    cT.checked = f.t;
+    pintarCeldaCheck(cT);
+
+    const checkNV = tr.cells[3].querySelector('input');
+    const selNV = tr.cells[3].querySelector('select');
+    if (f.nv) {
+        checkNV.checked = true;
+        selNV.classList.add('visible');
+        selNV.value = f.mot;
+        pintarCeldaEscala(selNV);
     }
-});
 
-        }
+    const cC = tr.cells[4].querySelector('input');
+    cC.checked = f.c;
+    pintarCeldaCheck(cC);
 
-        function restaurarFila(f) {
-            agregarPaciente(f.pac);
-            const tr = document.getElementById('tbody').lastElementChild;
-            const cM = tr.cells[1].querySelector('input'); cM.checked = f.m; pintarCeldaCheck(cM);
-            const cT = tr.cells[2].querySelector('input'); cT.checked = f.t; pintarCeldaCheck(cT);
-            const selNV = tr.cells[3].querySelector('select');
-            if(f.nv) { 
-                tr.cells[3].querySelector('input').checked = true; 
-                selNV.classList.add('visible'); 
-                selNV.value = f.mot; 
-                pintarCeldaEscala(selNV);
-            }
-            const cC = tr.cells[4].querySelector('input'); cC.checked = f.c; pintarCeldaCheck(cC);
-            tr.cells[5].textContent = f.res; pintarCeldaResultado(tr.cells[5]);
-            tr.cells[6].querySelector('input').checked = f.rs;
-            marcarMedicacion(tr.cells[7].querySelector('input'));
-            const selR = tr.cells[8].querySelector('select');
-            selR.value = f.rg;
-            pintarCeldaEscala(selR);
-        }
+    tr.cells[5].textContent = f.res;
+    pintarCeldaResultado(tr.cells[5]);
 
-        function cargarListaDefault() {
-            document.getElementById('tbody').innerHTML = '';
-            LISTA_BASE.sort().forEach(n => agregarPaciente(n));
-        }
+    tr.cells[6].querySelector('input').checked = f.rs;
+
+    const checkMed = tr.cells[7].querySelector('input');
+    checkMed.checked = f.md;
+    marcarMedicacion(checkMed);
+
+    const selR = tr.cells[8].querySelector('select');
+    selR.value = f.rg;
+    pintarCeldaEscala(selR);
+}
+
+        async function cargarListaDefault() {
+    document.getElementById('tbody').innerHTML = '';
+
+    const pacientes = await cargarPacientesActivos();
+    pacientes.forEach(p => agregarPaciente(p.ID_USUARIO));
+}
 
         function autoGuardar() {
             const f = document.getElementById('fecha').value;
             if(!f) return;
-            const filas = Array.from(document.querySelectorAll('#tbody tr')).map(tr => ({
-                pac: tr.cells[0].querySelector('select').selectedOptions[0]?.textContent || "",
-                m: tr.cells[1].querySelector('input').checked,
-                t: tr.cells[2].querySelector('input').checked,
-                nv: tr.cells[3].querySelector('input').checked,
-                mot: tr.cells[3].querySelector('select').value,
-                c: tr.cells[4].querySelector('input').checked,
-                res: tr.cells[5].textContent,
-                rs: tr.cells[6].querySelector('input').checked,
-                md: tr.cells[7].querySelector('input').checked,
-                rg: tr.cells[8].querySelector('select').value
-            }));
+            const filas = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
+    const selectPaciente = tr.cells[0].querySelector('select');
+
+    return {
+        pac: selectPaciente.selectedOptions[0]?.textContent || "",
+        idUsuario: selectPaciente.value || "",
+        m: tr.cells[1].querySelector('input').checked,
+        t: tr.cells[2].querySelector('input').checked,
+        nv: tr.cells[3].querySelector('input').checked,
+        mot: tr.cells[3].querySelector('select').value,
+        c: tr.cells[4].querySelector('input').checked,
+        res: tr.cells[5].textContent,
+        rs: tr.cells[6].querySelector('input').checked,
+        md: tr.cells[7].querySelector('input').checked,
+        rg: tr.cells[8].querySelector('select').value
+    };
+});
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ fecha: f, filas: filas }));
         }
 
