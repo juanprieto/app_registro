@@ -147,8 +147,21 @@ button { background:rgb(167,188,75); color:white; padding:14px; border:none; bor
 <option value="3">+4000€</option>
 </select>
 
-<label>A13 Convivientes</label><input id="A13" type="number">
-<label>A14 Personas cargo</label><input id="A14" type="number">
+<label>A13 Convivientes</label>
+<select id="A13">
+<option value="0"><0</option>
+<option value="1">1€</option>
+<option value="2">2 o 3</option>
+<option value="3">4 o mas</option>
+</select>
+  
+<label>A14 Personas cargo</label>
+  <select id="A14">
+<option value="0"><0</option>
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3 o mas</option>
+</select>
 
 <label>A15 Cubre necesidades</label>
 <select id="A15"><option value="0">No</option><option value="1">Sí</option></select>
@@ -176,7 +189,7 @@ button { background:rgb(167,188,75); color:white; padding:14px; border:none; bor
 <div class="card">
 <h3>B Clínico</h3>
 
-<label>B1 Nº tratamientos</label><input id="B1" type="number">
+<label>B1 Nº tratamientos iniciados (incluir este)</label><input id="B1" type="number">
 <label>B2 Fecha primer tto</label><input id="B2" type="date">
 <label>B3 Inicio actual</label><input id="B3" type="date">
 <label>B4 Recaídas</label><input id="B4" type="number">
@@ -194,9 +207,20 @@ button { background:rgb(167,188,75); color:white; padding:14px; border:none; bor
 <label>B7 >1 año abstinente</label>
 <select id="B7"><option value="0">No</option><option value="1">Sí</option></select>
 
-<label>B8 Toxicológicos</label><input id="B8">
+<label>B8 Toxicológicos</label>
+  <select id="B8"><option value="0">No</option><option value="1">Sí</option></select>
+  
 <label>B9 Psiquiátricos</label><input id="B9">
-<label>B10 Consultas</label><input id="B10" type="number">
+  <select id="B9"><option value="0">No</option><option value="1">Sí</option></select>
+  
+<label>B10 Consultas</label>
+  <select id="B10">
+<option value="0">Ninguna</option>
+<option value="1">≤5</option>
+<option value="2">6–25</option>
+<option value="3">26–49</option>
+<option value="4">≥50</option>
+</select>
 
 <label>B11 Medicación</label>
 <select id="B11"><option value="0">No</option><option value="1">Sí</option></select>
