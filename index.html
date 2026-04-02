@@ -200,8 +200,7 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         }
 function marcarMedicacion(cb) {
     const td = cb.parentElement;
-    const nombre = cb.closest("tr").cells[0].querySelector("input").value.trim();
-
+    const nombre = cb.closest("tr").cells[0].querySelector("select").selectedOptions[0]?.textContent?.trim() || "";
     if (cb.checked) {
         td.classList.remove("bg-rojo");
         td.classList.add("bg-verde");
