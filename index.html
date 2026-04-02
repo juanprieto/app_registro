@@ -315,7 +315,8 @@ if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
 
         function abrirModal(cb) {
             filaActiva = cb.closest('tr');
-            document.getElementById('modalPaciente').textContent = filaActiva.cells[0].querySelector('input').value;
+            document.getElementById('modalPaciente').textContent =
+    filaActiva.cells[0].querySelector('select').selectedOptions[0]?.textContent || "";
             const IDs = ['m_COC', 'm_OH', 'm_THC', 'm_BZD', 'm_OPI', 'm_KETA', 'm_AMP', 'm_MTD'];
             IDs.forEach(id => document.getElementById(id).value = "");
             document.getElementById('modalControles').style.display = 'block';
