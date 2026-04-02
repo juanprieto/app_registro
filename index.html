@@ -200,10 +200,9 @@ let pacientesActivosCache = [];
             else td.classList.add('bg-verde');
         }
 
-     
-function marcarMedicacion(cb) {
+     function marcarMedicacion(cb) {
     const td = cb.parentElement;
-    const idUsuario = cb.closest("tr").cells[0].querySelector("select").value;
+    const idUsuario = cb.closest("tr").cells[0].querySelector(".paciente-idusuario")?.value || "";
 
     const paciente = pacientesActivosCache.find(
         p => p.ID_USUARIO === idUsuario
@@ -353,12 +352,13 @@ async function guardarRegistroEnSupabase(registro) {
         function autoGuardar() {
             const f = document.getElementById('fecha').value;
             if(!f) return;
-            const filas = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
-    const selectPaciente = tr.cells[0].querySelector('select');
+    const filas = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
+    const nombrePaciente = tr.cells[0].querySelector('.paciente-nombre')?.textContent || "";
+    const idUsuario = tr.cells[0].querySelector('.paciente-idusuario')?.value || "";
 
     return {
-        pac: selectPaciente.selectedOptions[0]?.textContent || "",
-        idUsuario: selectPaciente.value || "",
+        pac: nombrePaciente,
+        idUsuario: idUsuario,
         m: tr.cells[1].querySelector('input').checked,
         t: tr.cells[2].querySelector('input').checked,
         nv: tr.cells[3].querySelector('input').checked,
@@ -370,6 +370,7 @@ async function guardarRegistroEnSupabase(registro) {
         rg: tr.cells[8].querySelector('select').value
     };
 });
+         
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ fecha: f, filas: filas }));
         }
 
@@ -382,13 +383,13 @@ async function guardarRegistroEnSupabase(registro) {
         }
 
         function abrirModal(cb) {
-            filaActiva = cb.closest('tr');
-            document.getElementById('modalPaciente').textContent =
-    filaActiva.cells[0].querySelector('select').selectedOptions[0]?.textContent || "";
-            const IDs = ['m_COC', 'm_OH', 'm_THC', 'm_BZD', 'm_OPI', 'm_KETA', 'm_AMP', 'm_MTD'];
-            IDs.forEach(id => document.getElementById(id).value = "");
-            document.getElementById('modalControles').style.display = 'block';
-        }
+    filaActiva = cb.closest('tr');
+    document.getElementById('modalPaciente').textContent =
+        filaActiva.cells[0].querySelector('.paciente-nombre')?.textContent || "";
+    const IDs = ['m_COC', 'm_OH', 'm_THC', 'm_BZD', 'm_OPI', 'm_KETA', 'm_AMP', 'm_MTD'];
+    IDs.forEach(id => document.getElementById(id).value = "");
+    document.getElementById('modalControles').style.display = 'block';
+}
 
         function cerrarModal() { document.getElementById('modalControles').style.display = 'none'; }
 
@@ -488,34 +489,35 @@ async function exportarExcel() {
 
     // 🔹 1. Extraer datos de la tabla
     const data = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
-        const res = tr.cells[5].textContent;
+    const res = tr.cells[5].textContent;
 
-        const check = (sust) => {
-            if (!res || res === "-") return 1;
-            if (res.includes(`${sust}:POS`)) return 2;
-            if (res.includes(`${sust}:NEG`)) return 0;
-            return 1;
-        };
+    const check = (sust) => {
+        if (!res || res === "-") return 1;
+        if (res.includes(`${sust}:POS`)) return 2;
+        if (res.includes(`${sust}:NEG`)) return 0;
+        return 1;
+    };
 
-        return {
-            "FECHA": fBonita,
-           "PACIENTE": tr.cells[0].querySelector('select').selectedOptions[0]?.textContent || "",
-            "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
-            "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
-            "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
-            "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
-            "COC": check("COC"), "OH": check("OH"), "THC": check("THC"), "BZD": check("BZD"),
-            "OPI": check("OPI"), "KETA": check("KETA"), "AMP": check("AMP"), "MTD": check("MTD"),
-            "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
-            "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
-            "RIESGO": tr.cells[8].querySelector('select').value
-        };
-    });
+    return {
+        "FECHA": fBonita,
+        "PACIENTE": tr.cells[0].querySelector('.paciente-nombre')?.textContent || "",
+        "ID_USUARIO": tr.cells[0].querySelector('.paciente-idusuario')?.value || "",
+        "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
+        "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
+        "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
+        "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
+        "COC": check("COC"), "OH": check("OH"), "THC": check("THC"), "BZD": check("BZD"),
+        "OPI": check("OPI"), "KETA": check("KETA"), "AMP": check("AMP"), "MTD": check("MTD"),
+        "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
+        "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
+        "RIESGO": tr.cells[8].querySelector('select').value
+    };
+});
 
     // 🔹 2. Obtener todos los nombres de pacientes
-    const filasDOM = Array.from(document.querySelectorAll('#tbody tr'));
+const filasDOM = Array.from(document.querySelectorAll('#tbody tr'));
 const idsUsuario = filasDOM
-    .map(tr => tr.cells[0].querySelector("select")?.value || "")
+    .map(tr => tr.cells[0].querySelector(".paciente-idusuario")?.value || "")
     .filter(Boolean);
 
 // 🔹 3. Obtener IDs de pacientes en una sola llamada
@@ -539,8 +541,7 @@ pacientes.forEach(p => {
     // 🔹 5. Preparar registros para inserción masiva
   const registros = data.map((fila, index) => {
     const tr = filasDOM[index];
-    const select = tr.cells[0].querySelector("select");
-    const idUsuario = select.value;
+    const idUsuario = tr.cells[0].querySelector(".paciente-idusuario")?.value || "";
 
     return {
         fecha: fISO,
