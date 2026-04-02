@@ -251,7 +251,7 @@ async function guardarRegistroEnSupabase(registro) {
             `;
             document.getElementById('tbody').appendChild(tr);
          const selectPaciente = tr.querySelector(".paciente-select");
-poblarSelectPacientes(selectPaciente);
+poblarSelectPacientes(selectPaciente, "", nombre);
             // --- Colorear casilla MED si el paciente debe medicarse ---
             const nombrePaciente = nombre.trim();
             const celdaMed = tr.cells[7];
@@ -292,7 +292,7 @@ if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
             const f = document.getElementById('fecha').value;
             if(!f) return;
             const filas = Array.from(document.querySelectorAll('#tbody tr')).map(tr => ({
-                pac: tr.cells[0].querySelector('input').value,
+                pac: tr.cells[0].querySelector('select').selectedOptions[0]?.textContent || "",
                 m: tr.cells[1].querySelector('input').checked,
                 t: tr.cells[2].querySelector('input').checked,
                 nv: tr.cells[3].querySelector('input').checked,
@@ -351,7 +351,7 @@ async function cargarPacientesActivos() {
     return data || [];
 }
 
-async function poblarSelectPacientes(selectEl, idSeleccionado = "") {
+async function poblarSelectPacientes(selectEl, idSeleccionado = "", nombreSeleccionado = "") {
     const pacientes = await cargarPacientesActivos();
 
     selectEl.innerHTML = '<option value=""></option>';
@@ -361,7 +361,10 @@ async function poblarSelectPacientes(selectEl, idSeleccionado = "") {
         option.value = p.ID_USUARIO;
         option.textContent = p.nombre;
 
-        if (idSeleccionado && p.ID_USUARIO === idSeleccionado) {
+        if (
+    (idSeleccionado && p.ID_USUARIO === idSeleccionado) ||
+    (nombreSeleccionado && p.nombre === nombreSeleccionado)
+) {
             option.selected = true;
         }
 
