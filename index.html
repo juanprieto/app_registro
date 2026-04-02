@@ -269,7 +269,23 @@ poblarSelectPacientes(selectPaciente, "", nombre);
 const celdaMed = tr.cells[7];
 const selectPaciente = tr.querySelector(".paciente-select");
 
-selectPaciente.addEventListener("change", () => {
+const idInicial = selectPaciente.value;
+
+const pacienteInicial = pacientesActivosCache.find(
+    p => p.ID_USUARIO === idInicial
+);
+
+const requiereInicial = pacienteInicial?.medicacion === true;
+const checkboxMedInicial = tr.cells[7].querySelector(".medicacion");
+
+celdaMed.classList.remove("bg-rojo", "bg-verde");
+
+if (checkboxMedInicial.checked) {
+    celdaMed.classList.add("bg-verde");
+} else if (requiereInicial) {
+    celdaMed.classList.add("bg-rojo");
+}
+         selectPaciente.addEventListener("change", () => {
     const idUsuario = selectPaciente.value;
 
     const paciente = pacientesActivosCache.find(
