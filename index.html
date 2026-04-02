@@ -333,6 +333,40 @@ if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
             cerrarModal();
             autoGuardar();
         }
+
+async function cargarPacientesActivos() {
+    const { data, error } = await client
+        .from("pacientes")
+        .select('nombre, "ID_USUARIO"')
+        .eq("activo", true)
+        .order("nombre", { ascending: true });
+
+    if (error) {
+        console.error("Error cargando pacientes:", error);
+        return [];
+    }
+
+    return data || [];
+}
+
+async function poblarSelectPacientes(selectEl, idSeleccionado = "") {
+    const pacientes = await cargarPacientesActivos();
+
+    selectEl.innerHTML = '<option value=""></option>';
+
+    pacientes.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.ID_USUARIO;
+        option.textContent = p.nombre;
+
+        if (idSeleccionado && p.ID_USUARIO === idSeleccionado) {
+            option.selected = true;
+        }
+
+        selectEl.appendChild(option);
+    });
+}
+     
         async function obtenerPacienteId(nombre) {
     // 1. Buscar paciente por nombre
     const { data, error } = await client
