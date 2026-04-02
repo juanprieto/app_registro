@@ -240,11 +240,21 @@ async function guardarRegistroEnSupabase(registro) {
 }
 
 
-       function agregarPaciente(nombre = '') {
+    function agregarPaciente(idUsuario = '', nombreVisible = '') {
     const tr = document.createElement('tr');
 
+    const paciente = pacientesActivosCache.find(
+        p => p.ID_USUARIO === idUsuario
+    );
+
+    const nombreFinal = nombreVisible || paciente?.nombre || '';
+    const idFinal = idUsuario || paciente?.ID_USUARIO || '';
+
     tr.innerHTML = `
-        <td><select class="paciente-select" onchange="autoGuardar()"></select></td>
+        <td>
+            <span class="paciente-nombre">${nombreFinal}</span>
+            <input type="hidden" class="paciente-idusuario" value="${idFinal}">
+        </td>
         <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
         <td class="bg-amarillo"><input type="checkbox" onchange="pintarCeldaCheck(this)"></td>
         <td><input type="checkbox" onchange="toggleMotivo(this)">
@@ -271,19 +281,11 @@ async function guardarRegistroEnSupabase(registro) {
 
     document.getElementById('tbody').appendChild(tr);
 
-    const selectPaciente = tr.querySelector(".paciente-select");
-
-    // Poblar select desde Supabase
-    poblarSelectPacientes(selectPaciente, nombre, nombre);
-
-    // --- MEDICACIÓN ---
     const celdaMed = tr.cells[7];
 
     const aplicarColor = () => {
-        const idUsuario = selectPaciente.value;
-
         const paciente = pacientesActivosCache.find(
-            p => p.ID_USUARIO === idUsuario
+            p => p.ID_USUARIO === idFinal
         );
 
         const requiere = paciente?.medicacion === true;
@@ -298,11 +300,7 @@ async function guardarRegistroEnSupabase(registro) {
         }
     };
 
-    // Pintado inicial
-    setTimeout(aplicarColor, 100);
-
-    // Al cambiar paciente
-    selectPaciente.addEventListener("change", aplicarColor);
+    aplicarColor();
 }
 
        function restaurarFila(f) {
