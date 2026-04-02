@@ -151,6 +151,7 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const STORAGE_KEY = 'asistencia_v7_base64';
         let filaActiva = null;
+let pacientesActivosCache = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             const memoria = localStorage.getItem(STORAGE_KEY);
@@ -198,14 +199,23 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             if(texto.includes("POS")) td.classList.add('bg-rojo');
             else td.classList.add('bg-verde');
         }
+
+     
 function marcarMedicacion(cb) {
     const td = cb.parentElement;
-    const nombre = cb.closest("tr").cells[0].querySelector("select").selectedOptions[0]?.textContent?.trim() || "";
+    const idUsuario = cb.closest("tr").cells[0].querySelector("select").value;
+
+    const paciente = pacientesActivosCache.find(
+        p => p.ID_USUARIO === idUsuario
+    );
+
+    const requiereMedicacion = paciente?.medicacion === true;
+
     if (cb.checked) {
         td.classList.remove("bg-rojo");
         td.classList.add("bg-verde");
     } else {
-        if (PACIENTES_CON_MEDICACION.includes(nombre)) {
+        if (requiereMedicacion) {
             td.classList.remove("bg-verde");
             td.classList.add("bg-rojo");
         } else {
@@ -215,6 +225,8 @@ function marcarMedicacion(cb) {
 
     autoGuardar();
 }
+
+     
 async function guardarRegistroEnSupabase(registro) {
     const { data, error } = await client
         .from("registros_diarios")
@@ -251,13 +263,30 @@ async function guardarRegistroEnSupabase(registro) {
             document.getElementById('tbody').appendChild(tr);
          const selectPaciente = tr.querySelector(".paciente-select");
 poblarSelectPacientes(selectPaciente, "", nombre);
+         
+          
             // --- Colorear casilla MED si el paciente debe medicarse ---
-            const nombrePaciente = nombre.trim();
-            const celdaMed = tr.cells[7];
+const celdaMed = tr.cells[7];
+const selectPaciente = tr.querySelector(".paciente-select");
 
-if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
-    celdaMed.classList.add("bg-rojo"); // rojo claro
-}
+selectPaciente.addEventListener("change", () => {
+    const idUsuario = selectPaciente.value;
+
+    const paciente = pacientesActivosCache.find(
+        p => p.ID_USUARIO === idUsuario
+    );
+
+    const requiereMedicacion = paciente?.medicacion === true;
+    const checkboxMed = tr.cells[7].querySelector(".medicacion");
+
+    celdaMed.classList.remove("bg-rojo", "bg-verde");
+
+    if (checkboxMed.checked) {
+        celdaMed.classList.add("bg-verde");
+    } else if (requiereMedicacion) {
+        celdaMed.classList.add("bg-rojo");
+    }
+});
 
         }
 
@@ -339,16 +368,18 @@ if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
 async function cargarPacientesActivos() {
     const { data, error } = await client
         .from("pacientes")
-      .select('nombre, "ID_USUARIO", medicacion')
+        .select('nombre, "ID_USUARIO", medicacion')
         .eq("activo", true)
         .order("nombre", { ascending: true });
 
     if (error) {
         console.error("Error cargando pacientes:", error);
+        pacientesActivosCache = [];
         return [];
     }
 
-    return data || [];
+    pacientesActivosCache = data || [];
+    return pacientesActivosCache;
 }
 
 async function poblarSelectPacientes(selectEl, idSeleccionado = "", nombreSeleccionado = "") {
