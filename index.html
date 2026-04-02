@@ -321,7 +321,7 @@ if (checkboxMedInicial.checked) {
             const cC = tr.cells[4].querySelector('input'); cC.checked = f.c; pintarCeldaCheck(cC);
             tr.cells[5].textContent = f.res; pintarCeldaResultado(tr.cells[5]);
             tr.cells[6].querySelector('input').checked = f.rs;
-            tr.cells[7].querySelector('input').checked = f.md;
+            marcarMedicacion(tr.cells[7].querySelector('input'));
             const selR = tr.cells[8].querySelector('select');
             selR.value = f.rg;
             pintarCeldaEscala(selR);
@@ -476,7 +476,7 @@ async function exportarExcel() {
 
         return {
             "FECHA": fBonita,
-            "PACIENTE": tr.cells[0].querySelector('input').value,
+           "PACIENTE": tr.cells[0].querySelector('select').selectedOptions[0]?.textContent || "",
             "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
             "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
             "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
@@ -490,28 +490,39 @@ async function exportarExcel() {
     });
 
     // 🔹 2. Obtener todos los nombres de pacientes
-    const nombres = data.map(f => f.PACIENTE);
+    const filasDOM = Array.from(document.querySelectorAll('#tbody tr'));
+const idsUsuario = filasDOM
+    .map(tr => tr.cells[0].querySelector("select")?.value || "")
+    .filter(Boolean);
 
-    // 🔹 3. Obtener IDs de pacientes en una sola llamada
-    const { data: pacientes, error: errorPac } = await client
-        .from("pacientes")
-        .select("id, nombre")
-        .in("nombre", nombres);
+// 🔹 3. Obtener IDs de pacientes en una sola llamada
+const { data: pacientes, error: errorPac } = await client
+    .from("pacientes")
+    .select('id, "ID_USUARIO"')
+    .in("ID_USUARIO", idsUsuario);
 
-    if (errorPac) {
-        alert("Error obteniendo IDs de pacientes");
-        console.error(errorPac);
-        return;
-    }
+if (errorPac) {
+    alert("Error obteniendo IDs de pacientes");
+    console.error(errorPac);
+    return;
+}
 
-    // 🔹 4. Crear diccionario nombre → id
-    const mapaPacientes = {};
-    pacientes.forEach(p => mapaPacientes[p.nombre] = p.id);
+// 🔹 4. Crear diccionario ID_USUARIO → id
+const mapaPacientes = {};
+pacientes.forEach(p => {
+    mapaPacientes[p.ID_USUARIO] = p.id;
+});
 
     // 🔹 5. Preparar registros para inserción masiva
-    const registros = data.map(fila => ({
+  const registros = data.map((fila, index) => {
+    const tr = filasDOM[index];
+    const select = tr.cells[0].querySelector("select");
+    const idUsuario = select.value;
+
+    return {
         fecha: fISO,
-        paciente_id: mapaPacientes[fila.PACIENTE],
+        paciente_id: mapaPacientes[idUsuario] || null,
+        ID_USUARIO: idUsuario,
         asistencia: fila.ASISTENCIA,
         mañana: fila.MAÑANA === "SI",
         tarde: fila.TARDE === "SI",
@@ -530,7 +541,8 @@ async function exportarExcel() {
         medicacion: fila["MEDICACIÓN"] === "SI",
         riesgo: fila.RIESGO,
         observaciones: document.getElementById("observaciones")?.value || ""
-    }));
+    };
+});
 
     // 🔹 6. Insertar TODO en una sola llamada
     const { error: errorInsert } = await client
