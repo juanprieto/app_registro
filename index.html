@@ -250,6 +250,8 @@ async function guardarRegistroEnSupabase(registro) {
                 </td>
             `;
             document.getElementById('tbody').appendChild(tr);
+         const selectPaciente = tr.querySelector(".paciente-select");
+poblarSelectPacientes(selectPaciente);
             // --- Colorear casilla MED si el paciente debe medicarse ---
             const nombrePaciente = nombre.trim();
             const celdaMed = tr.cells[7];
