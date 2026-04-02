@@ -339,7 +339,7 @@ if (PACIENTES_CON_MEDICACION.includes(nombrePaciente)) {
 async function cargarPacientesActivos() {
     const { data, error } = await client
         .from("pacientes")
-        .select('nombre, "ID_USUARIO"')
+      .select('nombre, "ID_USUARIO", medicacion')
         .eq("activo", true)
         .order("nombre", { ascending: true });
 
