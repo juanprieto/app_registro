@@ -86,6 +86,8 @@
       cursor: not-allowed;
     }
   </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -628,6 +630,18 @@ async function poblarSelectPacientes() {
     O3: MAP_PROBLEMATICA[d.O3] || null
   };
 }
+    function exportarExcelSECE(registro) {
+  const filaExcel = { ...registro };
+
+  const ws = XLSX.utils.json_to_sheet([filaExcel]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "SECE");
+
+  const idUsuario = registro["ID_USUARIO"] || "sin_id";
+  const fecha = registro.fecha || "sin_fecha";
+
+  XLSX.writeFile(wb, `SECE_${idUsuario}_${fecha}.xlsx`);
+}
 
     async function guardar() {
       const btn = document.getElementById("btnGuardar");
@@ -655,11 +669,15 @@ async function poblarSelectPacientes() {
           return;
         }
 
-        alert("Guardado correctamente. Filas insertadas: " + (data?.length || 0));
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Guardar";
-      }
+        exportarExcelSECE(registro);
+document.querySelector("form")?.reset?.();
+document.querySelectorAll("input").forEach(i => {
+  if (i.type !== "button" && i.type !== "submit") i.value = "";
+});
+document.querySelectorAll("select").forEach(s => {
+  s.selectedIndex = 0;
+});
+alert("Guardado correctamente. Filas insertadas: " + (data?.length || 0));
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
