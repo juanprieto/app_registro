@@ -490,16 +490,19 @@
       return data || [];
     }
 
-    async function poblarSelectPacientes() {
+   
+    function recogerFormulario() {
+      const datos = {};
+      document.querySelectorAll("input, select").forEach(el => {
+        if (el.id) datos[el.id] = el.value;
+      });
+      return datos;
+    }
+async function poblarSelectPacientes() {
   const select = document.getElementById("Z_nombre");
   const inputIdUsuario = document.getElementById("Z1");
 
-  alert("1. Entrando en poblarSelectPacientes");
-
-  if (!select) {
-    alert("2. No existe Z_nombre");
-    return;
-  }
+  if (!select) return;
 
   const { data, error } = await client
     .from("pacientes")
@@ -507,10 +510,8 @@
     .eq("activo", true)
     .order("nombre", { ascending: true });
 
-  alert("3. error = " + JSON.stringify(error));
-  alert("4. pacientes = " + JSON.stringify(data));
-
   if (error) {
+    console.error("Error cargando pacientes:", error);
     return;
   }
 
@@ -526,17 +527,7 @@
   select.addEventListener("change", () => {
     inputIdUsuario.value = select.value || "";
   });
-
-  alert("5. Opciones cargadas = " + select.options.length);
 }
-    function recogerFormulario() {
-      const datos = {};
-      document.querySelectorAll("input, select").forEach(el => {
-        if (el.id) datos[el.id] = el.value;
-      });
-      return datos;
-    }
-
     function construirRegistro(d) {
   return {
     "ID_USUARIO": d.Z1 || null,
