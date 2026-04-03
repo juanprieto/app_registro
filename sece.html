@@ -373,6 +373,14 @@ if (!d.Z1) {
     alert("Debes seleccionar un paciente antes de guardar");
     return;
 }
+
+  console.log("DEBUG SEX", {
+  M1: d.M1,
+  M2: d.M2,
+  M3: d.M3,
+  M4: d.M4
+});
+  
     const registro = {
     "ID_USUARIO": d.Z1 || null,
     fecha: d.Z3 || null,
