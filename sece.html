@@ -28,9 +28,15 @@ button { background:rgb(167,188,75); color:white; padding:14px; border:none; bor
 <!-- Z -->
 <div class="card">
 <h3>Z. Identificación</h3>
-<label>Z Nombre</label><input id="Z_nombre">
-<label>Z1 Código Usuario</label><input id="Z1">
+  
+<label>Z Nombre</label>
+<select id="Z_nombre"></select>
+
+<label>Z1 Código Usuario</label>
+<input id="Z1" readonly>
+  
 <label>Z2 Código Pulsera</label><input id="Z2">
+  
 <label>Z3 Fecha recogida</label><input id="Z3" type="date">
 </div>
 
@@ -295,6 +301,40 @@ const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
 const SUPABASE_KEY = "TU_ANON_KEY_AQUI";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  async function cargarPacientesActivos() {
+    const { data, error } = await client
+        .from("pacientes")
+        .select('nombre, "ID_USUARIO"')
+        .eq("activo", true)
+        .order("nombre", { ascending: true });
+
+    if (error) {
+        console.error("Error cargando pacientes:", error);
+        return [];
+    }
+
+    return data || [];
+}
+
+async function poblarSelectPacientesSECE() {
+    const select = document.getElementById("Z_nombre");
+    const inputIdUsuario = document.getElementById("Z1");
+
+    const pacientes = await cargarPacientesActivos();
+
+    select.innerHTML = '<option value=""></option>';
+
+    pacientes.forEach(p => {
+        const option = document.createElement("option");
+        option.value = p.ID_USUARIO;
+        option.textContent = p.nombre;
+        select.appendChild(option);
+    });
+
+    select.addEventListener("change", () => {
+        inputIdUsuario.value = select.value || "";
+    });
+}
 </script>
 <script>
 
@@ -382,6 +422,9 @@ if (error) {
 
 alert("Guardado correctamente. Filas insertadas: " + (data?.length || 0));
 }  
+  document.addEventListener("DOMContentLoaded", () => {
+    poblarSelectPacientesSECE();
+});
 
 </script>
 
