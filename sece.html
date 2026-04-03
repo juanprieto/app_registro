@@ -300,7 +300,8 @@ b("THC","E")+b("ALCOHOL","F")+b("COCAÍNA","G")+b("OPIÁCEOS","H")+b("KETAMINA",
 
 <script>
 const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
-const SUPABASE_KEY = "TU_ANON_KEY_AQUI";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
+
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   
@@ -327,9 +328,18 @@ async function poblarSelectPacientesSECE() {
     const select = document.getElementById("Z_nombre");
     const inputIdUsuario = document.getElementById("Z1");
 
+    console.log("SELECT ENCONTRADO:", select);
+
+    if (!select) {
+        console.error("No existe el select Z_nombre");
+        return;
+    }
+
     const pacientes = await cargarPacientesActivos();
 
-    select.innerHTML = '<option value=""></option>';
+    console.log("PACIENTES CARGADOS:", pacientes);
+
+    select.innerHTML = '<option value="">Selecciona paciente</option>';
 
     pacientes.forEach(p => {
         const option = document.createElement("option");
@@ -337,6 +347,8 @@ async function poblarSelectPacientesSECE() {
         option.textContent = p.nombre;
         select.appendChild(option);
     });
+
+    console.log("OPCIONES FINALES:", select.innerHTML);
 
     select.addEventListener("change", () => {
         inputIdUsuario.value = select.value || "";
