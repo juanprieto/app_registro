@@ -287,13 +287,98 @@ b("THC","E")+b("ALCOHOL","F")+b("COCAÍNA","G")+b("OPIÁCEOS","H")+b("KETAMINA",
 
 <button onclick="guardar()">Guardar</button>
 
+  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-function guardar(){
-let d={};
-document.querySelectorAll("input,select").forEach(e=>{if(e.id)d[e.id]=e.value});
-console.log(d);
-alert("Datos OK");
-}
+const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
+const SUPABASE_KEY = "TU_ANON_KEY_AQUI";
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
+<script>
+
+async function guardar() {
+    const d = {};
+
+    document.querySelectorAll("input,select").forEach(e => {
+        if (e.id) d[e.id] = e.value;
+    });
+
+    const registro = {
+        "ID_USUARIO": d.Z1 || null,
+        fecha: d.Z3 || null,
+
+        A1: d.A1 || null,
+        A2: d.A2 || null,
+        A3: d.A3 || null,
+        A4: d.A4 || null,
+        A5: d.A5 || null,
+        A6: d.A6 || null,
+        A7: d.A7 || null,
+        A8: d.A8 || null,
+        A9: d.A9 || null,
+        A10: d.A10 || null,
+        A11: d.A11 || null,
+        A12: d.A12 || null,
+        A13: d.A13 || null,
+        A14: d.A14 || null,
+        A15: d.A15 || null,
+        A16: d.A16 || null,
+        A17: d.A17 || null,
+
+        B1: d.B1 || null,
+        B2: d.B2 || null,
+        B3: d.B3 || null,
+        B4: d.B4 || null,
+        B5: d.B5 || null,
+        B6: d.B6 || null,
+        B7: d.B7 || null,
+        B8: d.B8 || null,
+        B9: d.B9 || null,
+        B10: d.B10 || null,
+        B11: d.B11 || null,
+        B12: d.B12 || null,
+
+        THC_inicio: d.E1 || null,
+        THC_fin: d.E2 || null,
+        THC_modo: d.E3 || null,
+        THC_freq: d.E4 || null,
+
+        OH_inicio: d.F1 || null,
+        OH_fin: d.F2 || null,
+        OH_modo: d.F3 || null,
+        OH_freq: d.F4 || null,
+
+        COC_inicio: d.G1 || null,
+        COC_fin: d.G2 || null,
+        COC_modo: d.G3 || null,
+        COC_freq: d.G4 || null,
+
+        OP_inicio: d.H1 || null,
+        OP_fin: d.H2 || null,
+        OP_modo: d.H3 || null,
+        OP_freq: d.H4 || null,
+
+        KETA_inicio: d.I1 || null,
+        KETA_fin: d.I2 || null,
+        KETA_modo: d.I3 || null,
+        KETA_freq: d.I4 || null
+    };
+
+    const { error } = await client
+        .from("sece")
+        .insert([registro]);
+
+    if (error) {
+        console.error("Error guardando SECE:", error);
+        alert("Error guardando");
+        return;
+    }
+
+    alert("Guardado correctamente");
+}  
+
 </script>
 
 </body>
