@@ -189,10 +189,27 @@ button { background:rgb(167,188,75); color:white; padding:14px; border:none; bor
 <div class="card">
 <h3>B Clínico</h3>
 
-<label>B1 Nº tratamientos iniciados (incluir este)</label><input id="B1" type="number">
-<label>B2 Fecha primer tto</label><input id="B2" type="date">
-<label>B3 Inicio actual</label><input id="B3" type="date">
-<label>B4 Recaídas</label><input id="B4" type="number">
+<label>B1 Nº de tratamientos iniciados</label>
+  <select id="B1">
+<option value="0">Este es mi primer tratamiento</option>
+<option value="1">Este es el segundo</option>
+<option value="2">Este es el tercero</option>
+<option value="3">Cuatro o mas tratamientos</option>
+</select>
+  
+<label>B2 Fecha primer tratamiento relaizado</label><input id="B2" type="date">
+  
+<label>B3 Fecha inicio tratamiento actual</label><input id="B3" type="date">
+  
+<label>B4 Recaídas desde el primer tratamiento</label>
+ <select id="B4">
+<option value="0">Ninguna</option>
+<option value="1">Una recaída</option>
+<option value="2">Entre 2 y 5 </option>
+<option value="3">entre 6 y 10</option>
+<option value="4">Mas de 11</option>
+</select> 
+  
 <label>B5 Fecha último consumo</label><input id="B5" type="date">
 
 <label>B6 Importancia de este tratamiento para el usuario</label>
