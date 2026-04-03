@@ -1,706 +1,232 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SECE</title>
-  <link rel="icon" type="image/png" href="logo.png">
-
-  <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      max-width: 1100px;
-      margin: auto;
-      background: #f8f9fa;
-      padding: 10px;
-    }
-
-    h1 {
-      text-align: center;
-      color: rgb(167, 188, 75);
-      border-bottom: 2px solid rgb(167, 188, 75);
-      padding-bottom: 8px;
-    }
-
-    h3 {
-      color: rgb(167, 188, 75);
-      margin-top: 0;
-    }
-
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      margin-bottom: 15px;
-    }
-
-    label {
-      font-size: 14px;
-      font-weight: 600;
-      display: block;
-      margin-top: 8px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 7px;
-      margin-bottom: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-
-    .consumo-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 10px;
-    }
-
-    .consumo-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 10px;
-    }
-
-    .consumo-card h4 {
-      color: rgb(167, 188, 75);
-      margin-top: 0;
-      margin-bottom: 10px;
-    }
-
-    button {
-      background: rgb(167, 188, 75);
-      color: white;
-      padding: 14px;
-      border: none;
-      border-radius: 6px;
-      width: 100%;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-  </style>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-</head>
-
-<body>
-
-  <h1>Cuestionario SECE</h1>
-
-  <!-- Z -->
-  <div class="card">
-    <h3>Z. Identificación</h3>
-
-    <label for="Z_nombre">Z Nombre</label>
-    <select id="Z_nombre">
-      <option value="">Selecciona paciente</option>
-    </select>
-
-    <label for="Z1">Z1 Código Usuario</label>
-    <input id="Z1" readonly>
-
-    <label for="Z2">Z2 Código Pulsera</label>
-    <input id="Z2">
-
-    <label for="Z3">Z3 Fecha recogida</label>
-    <input id="Z3" type="date">
-  </div>
-
-  <!-- A -->
-  <div class="card">
-    <h3>A. Socioeconómico</h3>
-
-    <label for="A1">A1 Fecha de nacimiento</label>
-    <input id="A1" type="date">
-
-    <label for="A2">A2 Género</label>
-    <select id="A2">
-      <option value="1">Masculino</option>
-      <option value="2">Femenino</option>
-      <option value="3">No binario</option>
-    </select>
-
-    <label for="A3">A3 Estado civil actual</label>
-    <select id="A3">
-      <option value="1">Casado</option>
-      <option value="2">Vive como casado</option>
-      <option value="3">Viudo</option>
-      <option value="4">Divorciado</option>
-      <option value="5">Separado</option>
-      <option value="6">Soltero</option>
-    </select>
-
-    <label for="A4">A4 Tiempo en pareja de la relación actual</label>
-    <select id="A4">
-      <option value="0">Sin pareja</option>
-      <option value="1">Menos de 1 año</option>
-      <option value="2">1-3 años</option>
-      <option value="3">3-10 años</option>
-      <option value="4">Mas de 10 años</option>
-    </select>
-
-    <label for="A5">A5 Estudios terminados</label>
-    <select id="A5">
-      <option value="0">Ninguno</option>
-      <option value="1">ESO</option>
-      <option value="2">Bachillerato</option>
-      <option value="3">FP</option>
-      <option value="4">Diplomatura</option>
-      <option value="5">Licenciatura</option>
-      <option value="6">Postgrado</option>
-    </select>
-
-    <label for="A6">A6 Estudia actualmente?</label>
-    <select id="A6">
-      <option value="0">No</option>
-      <option value="1">Sí</option>
-    </select>
-
-    <label for="A7">A7 Ocupación actual (última ocupación)</label>
-    <select id="A7">
-      <option value="1">Profesiones técnicas</option>
-      <option value="2">Directivos</option>
-      <option value="3">Ventas</option>
-      <option value="4">Administración</option>
-      <option value="5">Producción</option>
-      <option value="6">Operarios</option>
-      <option value="7">Transporte</option>
-      <option value="8">Peón</option>
-      <option value="9">Servicios</option>
-      <option value="10">Agricultura</option>
-      <option value="11">Empleado granja</option>
-      <option value="12">Fuerzas armadas</option>
-      <option value="13">Servicio doméstico</option>
-      <option value="14">Otros</option>
-    </select>
-
-    <label for="A8">A8 Nivel de responsabilidad</label>
-    <select id="A8">
-      <option value="0">Baja</option>
-      <option value="1">Media</option>
-      <option value="2">Alta</option>
-    </select>
-
-    <label for="A9">A9 Situación laboral actual</label>
-    <select id="A9">
-      <option value="0">Trabaja jornada completa</option>
-      <option value="1">Trabaja jornada parcial</option>
-      <option value="2">Cobra paro u otro subsidio</option>
-      <option value="3">Baja laboral</option>
-      <option value="4">Fuera del mercado, pensionista, etc.</option>
-    </select>
-
-    <label for="A10">A10 Dependencia económica actual</label>
-    <select id="A10">
-      <option value="0">En absoluto</option>
-      <option value="1">Parcial</option>
-      <option value="2">Total</option>
-    </select>
-
-    <label for="A11">A11 Fuente de ingresos del usuario o de la persona a cargo</label>
-    <select id="A11">
-      <option value="1">Empleo</option>
-      <option value="2">Jubilación</option>
-      <option value="3">Incapacidad</option>
-      <option value="4">Paro</option>
-      <option value="5">Baja</option>
-      <option value="6">Servicios sociales</option>
-      <option value="7">Pensión</option>
-      <option value="8">Familia</option>
-      <option value="9">Ilegal</option>
-      <option value="10">Ahorros</option>
-      <option value="11">Otros</option>
-    </select>
-
-    <label for="A12">A12 Ingresos del usuario o de la persona a cargo</label>
-    <select id="A12">
-      <option value="0">Menos de 1000€</option>
-      <option value="1">1000-2000€</option>
-      <option value="2">2000-4000€</option>
-      <option value="3">Mas de 4000€</option>
-    </select>
-
-    <label for="A13">A13 Convivientes en el núcleo familiar</label>
-    <select id="A13">
-      <option value="0">Vive solo</option>
-      <option value="1">2</option>
-      <option value="2">3 o 4</option>
-      <option value="3">5 o mas</option>
-    </select>
-
-    <label for="A14">A14 Personas a cargo</label>
-    <select id="A14">
-      <option value="0">Todos los integrantes aportan dinero</option>
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3 o mas</option>
-    </select>
-
-    <label for="A15">A15 Lo que aporta el usuario cubre las necesidades de la familia?</label>
-    <select id="A15">
-      <option value="0">No</option>
-      <option value="1">Sí</option>
-    </select>
-
-    <label for="A16">A16 Quién deriva al tratamiento?</label>
-    <select id="A16">
-      <option value="0">Usuario</option>
-      <option value="1">Familia</option>
-      <option value="2">Amigos</option>
-      <option value="3">Pareja</option>
-    </select>
-
-    <label for="A17">A17 Quién paga tratamiento?</label>
-    <select id="A17">
-      <option value="0">Usuario</option>
-      <option value="1">Familia</option>
-      <option value="2">Amigos</option>
-      <option value="3">Pareja</option>
-      <option value="4">Otros</option>
-    </select>
-  </div>
-
-  <!-- B -->
-  <div class="card">
-    <h3>B. Clínico</h3>
-
-    <label for="B1">B1 Nº de tratamientos iniciados</label>
-    <select id="B1">
-      <option value="0">Este es mi primer tratamiento</option>
-      <option value="1">Este es el segundo</option>
-      <option value="2">Este es el tercero</option>
-      <option value="3">Cuatro o mas tratamientos</option>
-    </select>
-
-    <label for="B2">B2 Fecha primer tratamiento realizado</label>
-    <input id="B2" type="date">
-
-    <label for="B3">B3 Fecha inicio tratamiento actual</label>
-    <input id="B3" type="date">
-
-    <label for="B4">B4 Recaídas desde el primer tratamiento</label>
-    <select id="B4">
-      <option value="0">Ninguna</option>
-      <option value="1">Una recaída</option>
-      <option value="2">Entre 2 y 5</option>
-      <option value="3">Entre 6 y 10</option>
-      <option value="4">Mas de 11</option>
-    </select>
-
-    <label for="B5">B5 Fecha último consumo</label>
-    <input id="B5" type="date">
-
-    <label for="B6">B6 Importancia de este tratamiento para el usuario</label>
-    <select id="B6">
-      <option value="0">Ninguna</option>
-      <option value="1">Leve</option>
-      <option value="2">Moderada</option>
-      <option value="3">Considerable</option>
-      <option value="4">Extrema</option>
-    </select>
-
-    <label for="B7">B7 Ha conseguido mantenerse al menos 1 año abstinente?</label>
-    <select id="B7">
-      <option value="0">No</option>
-      <option value="1">Sí</option>
-    </select>
-
-    <label for="B8">B8 Antecedentes familiares toxicológicos</label>
-    <select id="B8">
-      <option value="0">No</option>
-      <option value="1">Sí</option>
-    </select>
-
-    <label for="B9">B9 Antecedentes familiares psiquiátricos</label>
-    <select id="B9">
-      <option value="0">No</option>
-      <option value="1">Sí</option>
-    </select>
-
-    <label for="B10">B10 Nº de consultas previas</label>
-    <select id="B10">
-      <option value="0">Ninguna</option>
-      <option value="1">1-5</option>
-      <option value="2">6-25</option>
-      <option value="3">26-49</option>
-      <option value="4">50 o más</option>
-    </select>
-
-    <label for="B11">B11 Ha tomado medicación psiquiátrica anteriormente</label>
-    <select id="B11">
-      <option value="0">No</option>
-      <option value="1">Sí</option>
-    </select>
-
-    <label for="B12">B12 Importancia de este tratamiento para su salud mental</label>
-    <select id="B12">
-      <option value="0">Ninguna</option>
-      <option value="1">Leve</option>
-      <option value="2">Moderada</option>
-      <option value="3">Considerable</option>
-      <option value="4">Extrema</option>
-    </select>
-  </div>
-
-  <!-- CONSUMO -->
-  <div class="card">
-    <h3>Consumo</h3>
-    <div class="consumo-grid" id="consumo"></div>
-  </div>
-
-  <!-- O -->
-  <div class="card">
-    <h3>Sustancias problemáticas</h3>
-
-    <select id="O1">
-      <option value="">O1</option>
-      <option value="E">THC</option>
-      <option value="F">ALCOHOL</option>
-      <option value="G">COCAÍNA</option>
-      <option value="H">OPIÁCEOS</option>
-      <option value="I">KETAMINA</option>
-      <option value="J">BZD</option>
-      <option value="K">MDMA</option>
-      <option value="L">LUDOPATÍA</option>
-      <option value="M">SEXO</option>
-      <option value="N">OTRAS</option>
-    </select>
-
-    <select id="O2">
-      <option value="">O2</option>
-      <option value="E">THC</option>
-      <option value="F">ALCOHOL</option>
-      <option value="G">COCAÍNA</option>
-      <option value="H">OPIÁCEOS</option>
-      <option value="I">KETAMINA</option>
-      <option value="J">BZD</option>
-      <option value="K">MDMA</option>
-      <option value="L">LUDOPATÍA</option>
-      <option value="M">SEXO</option>
-      <option value="N">OTRAS</option>
-    </select>
-
-    <select id="O3">
-      <option value="">O3</option>
-      <option value="E">THC</option>
-      <option value="F">ALCOHOL</option>
-      <option value="G">COCAÍNA</option>
-      <option value="H">OPIÁCEOS</option>
-      <option value="I">KETAMINA</option>
-      <option value="J">BZD</option>
-      <option value="K">MDMA</option>
-      <option value="L">LUDOPATÍA</option>
-      <option value="M">SEXO</option>
-      <option value="N">OTRAS</option>
-    </select>
-  </div>
-
-  <button id="btnGuardar" onclick="guardar()">Guardar</button>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-   
-    const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
-
-    
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const COMO = `
-      <option value="">-</option>
-      <option value="1">Oral</option>
-      <option value="2">Inhalada</option>
-      <option value="3">Fumada</option>
-      <option value="4">Inyectada</option>
-      <option value="5">Conductual</option>
-    `;
-
-    const FRE = `
-      <option value="">-</option>
-      <option value="0">No</option>
-      <option value="1">1-3/mes</option>
-      <option value="2">1-2/sem</option>
-      <option value="3">3-6/sem</option>
-      <option value="4">Diario</option>
-    `;
-
-    const MAP_PROBLEMATICA = {
-      E: 1,
-      F: 2,
-      G: 3,
-      H: 4,
-      I: 5,
-      J: 6,
-      K: 7,
-      L: 8,
-      M: 9,
-      N: 10
-    };
-
-    function bloqueConsumo(nombre, letra) {
-      return `
-        <div class="consumo-card">
-          <h4>${nombre}</h4>
-          <label for="${letra}1">${letra}1</label>
-          <input id="${letra}1" type="date">
-
-          <label for="${letra}2">${letra}2</label>
-          <input id="${letra}2" type="date">
-
-          <label for="${letra}3">${letra}3</label>
-          <select id="${letra}3">${COMO}</select>
-
-          <label for="${letra}4">${letra}4</label>
-          <select id="${letra}4">${FRE}</select>
-        </div>
-      `;
-    }
-
-    function renderizarBloquesConsumo() {
-      document.getElementById("consumo").innerHTML =
-        bloqueConsumo("THC", "E") +
-        bloqueConsumo("ALCOHOL", "F") +
-        bloqueConsumo("COCAÍNA", "G") +
-        bloqueConsumo("OPIÁCEOS", "H") +
-        bloqueConsumo("KETAMINA", "I") +
-        bloqueConsumo("BZD", "J") +
-        bloqueConsumo("MDMA", "K") +
-        bloqueConsumo("LUDOPATÍA", "L") +
-        bloqueConsumo("SEXO", "M") +
-        bloqueConsumo("OTRAS", "N");
-    }
-
-    async function cargarPacientesActivos() {
-      const { data, error } = await client
-        .from("pacientes")
-        .select('nombre, "ID_USUARIO"')
-        .eq("activo", true)
-        .order("nombre", { ascending: true });
-
-      if (error) {
-        console.error("Error cargando pacientes:", error);
-        return [];
-      }
-
-      return data || [];
-    }
-
-   
-    function recogerFormulario() {
-      const datos = {};
-      document.querySelectorAll("input, select").forEach(el => {
-        if (el.id) datos[el.id] = el.value;
-      });
-      return datos;
-    }
+// =======================
+// CONFIG
+// =======================
+const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
+const SUPABASE_KEY = "TU_KEY_AQUI";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// =======================
+// MAPAS
+// =======================
+const MAP_PROBLEMATICA = {
+  E: 1, F: 2, G: 3, H: 4, I: 5,
+  J: 6, K: 7, L: 8, M: 9, N: 10
+};
+
+// =======================
+// UI DINÁMICA (CONSUMO)
+// =======================
+const COMO = `<option value="">-</option>
+<option value="1">Oral</option>
+<option value="2">Inhalada</option>
+<option value="3">Fumada</option>
+<option value="4">Inyectada</option>
+<option value="5">Conductual</option>`;
+
+const FRE = `<option value="">-</option>
+<option value="0">No</option>
+<option value="1">1-3/mes</option>
+<option value="2">1-2/sem</option>
+<option value="3">3-6/sem</option>
+<option value="4">Diario</option>`;
+
+function bloqueConsumo(nombre, letra) {
+  return `
+    <div class="consumo-card">
+      <h4>${nombre}</h4>
+      <input id="${letra}1" type="date">
+      <input id="${letra}2" type="date">
+      <select id="${letra}3">${COMO}</select>
+      <select id="${letra}4">${FRE}</select>
+    </div>
+  `;
+}
+
+// =======================
+// PACIENTES
+// =======================
 async function poblarSelectPacientes() {
   const select = document.getElementById("Z_nombre");
-  const inputIdUsuario = document.getElementById("Z1");
-
-  if (!select) return;
+  const input = document.getElementById("Z1");
 
   const { data, error } = await client
     .from("pacientes")
     .select('nombre, "ID_USUARIO"')
     .eq("activo", true)
-    .order("nombre", { ascending: true });
+    .order("nombre");
 
   if (error) {
-    console.error("Error cargando pacientes:", error);
+    console.error(error);
     return;
   }
 
-  select.innerHTML = "";
-  const optionVacia = document.createElement("option");
-  optionVacia.value = "";
-  optionVacia.textContent = "Selecciona paciente";
-  select.appendChild(optionVacia);
+  select.innerHTML = '<option value="">Selecciona paciente</option>';
 
-  (data || []).forEach(p => {
-    const option = document.createElement("option");
-    option.value = p["ID_USUARIO"];
-    option.textContent = p.nombre;
-    select.appendChild(option);
+  data.forEach(p => {
+    const o = document.createElement("option");
+    o.value = p.ID_USUARIO;
+    o.textContent = p.nombre;
+    select.appendChild(o);
   });
 
-  select.value = "";
-  if (inputIdUsuario) inputIdUsuario.value = "";
-
   select.onchange = () => {
-    inputIdUsuario.value = select.value || "";
+    input.value = select.value || "";
   };
 }
-    function construirRegistro(d) {
+
+// =======================
+// HELPERS
+// =======================
+function freq(v) {
+  return v === "" ? 0 : Number(v);
+}
+
+function val(v) {
+  return v === "" ? null : v;
+}
+
+// =======================
+// CONSTRUIR REGISTRO
+// =======================
+function construirRegistro(d) {
   return {
-    "ID_USUARIO": d.Z1 || null,
+    ID_USUARIO: d.Z1 || null,
     fecha: d.Z3 || null,
 
-    A1: d.A1 || null,
-    A2: d.A2 || null,
-    A3: d.A3 || null,
-    A4: d.A4 || null,
-    A5: d.A5 || null,
-    A6: d.A6 || null,
-    A7: d.A7 || null,
-    A8: d.A8 || null,
-    A9: d.A9 || null,
-    A10: d.A10 || null,
-    A11: d.A11 || null,
-    A12: d.A12 || null,
-    A13: d.A13 || null,
-    A14: d.A14 || null,
-    A15: d.A15 || null,
-    A16: d.A16 || null,
-    A17: d.A17 || null,
+    A1: val(d.A1), A2: val(d.A2), A3: val(d.A3),
+    A4: val(d.A4), A5: val(d.A5), A6: val(d.A6),
+    A7: val(d.A7), A8: val(d.A8), A9: val(d.A9),
+    A10: val(d.A10), A11: val(d.A11), A12: val(d.A12),
+    A13: val(d.A13), A14: val(d.A14), A15: val(d.A15),
+    A16: val(d.A16), A17: val(d.A17),
 
-    B1: d.B1 || null,
-    B2: d.B2 || null,
-    B3: d.B3 || null,
-    B4: d.B4 || null,
-    B5: d.B5 || null,
-    B6: d.B6 || null,
-    B7: d.B7 || null,
-    B8: d.B8 || null,
-    B9: d.B9 || null,
-    B10: d.B10 || null,
-    B11: d.B11 || null,
-    B12: d.B12 || null,
+    B1: val(d.B1), B2: val(d.B2), B3: val(d.B3),
+    B4: val(d.B4), B5: val(d.B5), B6: val(d.B6),
+    B7: val(d.B7), B8: val(d.B8), B9: val(d.B9),
+    B10: val(d.B10), B11: val(d.B11), B12: val(d.B12),
 
-    D1: d.D1 || null,
-    D2: d.D2 || null,
-    D3: d.D3 || null,
-    D4: d.D4 || null,
-    D5: d.D5 || null,
-    D6: d.D6 || null,
-    D7: d.D7 || null,
-    D8: d.D8 || null,
+    THC_inicio: val(d.E1),
+    THC_fin: val(d.E2),
+    THC_modo: val(d.E3),
+    THC_freq: freq(d.E4),
 
-    THC_inicio: d.E1 || null,
-    THC_fin: d.E2 || null,
-    THC_modo: d.E3 || null,
-    THC_freq: d.E4 === "" ? 0 : Number(d.E4),
+    OH_inicio: val(d.F1),
+    OH_fin: val(d.F2),
+    OH_modo: val(d.F3),
+    OH_freq: freq(d.F4),
 
-    OH_inicio: d.F1 || null,
-    OH_fin: d.F2 || null,
-    OH_modo: d.F3 || null,
-    OH_freq: d.F4 === "" ? 0 : Number(d.F4),
+    COC_inicio: val(d.G1),
+    COC_fin: val(d.G2),
+    COC_modo: val(d.G3),
+    COC_freq: freq(d.G4),
 
-    COC_inicio: d.G1 || null,
-    COC_fin: d.G2 || null,
-    COC_modo: d.G3 || null,
-    COC_freq: d.G4 === "" ? 0 : Number(d.G4),
+    OP_inicio: val(d.H1),
+    OP_fin: val(d.H2),
+    OP_modo: val(d.H3),
+    OP_freq: freq(d.H4),
 
-    OP_inicio: d.H1 || null,
-    OP_fin: d.H2 || null,
-    OP_modo: d.H3 || null,
-    OP_freq: d.H4 === "" ? 0 : Number(d.H4),
+    KETA_inicio: val(d.I1),
+    KETA_fin: val(d.I2),
+    KETA_modo: val(d.I3),
+    KETA_freq: freq(d.I4),
 
-    KETA_inicio: d.I1 || null,
-    KETA_fin: d.I2 || null,
-    KETA_modo: d.I3 || null,
-    KETA_freq: d.I4 === "" ? 0 : Number(d.I4),
+    BZD_inicio: val(d.J1),
+    BZD_fin: val(d.J2),
+    BZD_modo: val(d.J3),
+    BZD_freq: freq(d.J4),
 
-    BZD_inicio: d.J1 || null,
-    BZD_fin: d.J2 || null,
-    BZD_modo: d.J3 || null,
-    BZD_freq: d.J4 === "" ? 0 : Number(d.J4),
+    MDMA_inicio: val(d.K1),
+    MDMA_fin: val(d.K2),
+    MDMA_modo: val(d.K3),
+    MDMA_freq: freq(d.K4),
 
-    MDMA_inicio: d.K1 || null,
-    MDMA_fin: d.K2 || null,
-    MDMA_modo: d.K3 || null,
-    MDMA_freq: d.K4 === "" ? 0 : Number(d.K4),
+    LUDO_inicio: val(d.L1),
+    LUDO_fin: val(d.L2),
+    LUDO_modo: val(d.L3),
+    LUDO_freq: freq(d.L4),
 
-    LUDO_inicio: d.L1 || null,
-    LUDO_fin: d.L2 || null,
-    LUDO_modo: d.L3 || null,
-    LUDO_freq: d.L4 === "" ? 0 : Number(d.L4),
+    SEX_inicio: val(d.M1),
+    SEX_fin: val(d.M2),
+    SEX_modo: val(d.M3),
+    SEX_freq: freq(d.M4),
 
-    SEX_inicio: d.M1 || null,
-    SEX_fin: d.M2 || null,
-    SEX_modo: d.M3 || null,
-    SEX_freq: d.M4 === "" ? 0 : Number(d.M4),
-
-    OTRAS_inicio: d.N1 || null,
-    OTRAS_fin: d.N2 || null,
-    OTRAS_modo: d.N3 || null,
-    OTRAS_freq: d.N4 === "" ? 0 : Number(d.N4),
+    OTRAS_inicio: val(d.N1),
+    OTRAS_fin: val(d.N2),
+    OTRAS_modo: val(d.N3),
+    OTRAS_freq: freq(d.N4),
 
     O1: MAP_PROBLEMATICA[d.O1] || null,
     O2: MAP_PROBLEMATICA[d.O2] || null,
     O3: MAP_PROBLEMATICA[d.O3] || null
   };
 }
-    function exportarExcelSECE(registro) {
-  const filaExcel = { ...registro };
 
-  const ws = XLSX.utils.json_to_sheet([filaExcel]);
+// =======================
+// EXPORTAR EXCEL
+// =======================
+function exportarExcel(registro) {
+  const ws = XLSX.utils.json_to_sheet([registro]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "SECE");
 
-  const idUsuario = registro["ID_USUARIO"] || "sin_id";
-  const fecha = registro.fecha || "sin_fecha";
-
-  XLSX.writeFile(wb, `SECE_${idUsuario}_${fecha}.xlsx`);
+  XLSX.writeFile(wb, `SECE_${registro.ID_USUARIO}_${registro.fecha || "NA"}.xlsx`);
 }
-function limpiarFormularioSECE() {
-  document.querySelectorAll("input").forEach(i => {
-    if (i.id === "Z1") {
-      i.value = "";
-      return;
-    }
 
-    if (i.type === "date" || i.type === "text") {
-      i.value = "";
-    }
+// =======================
+// LIMPIAR FORMULARIO
+// =======================
+function limpiar() {
+  document.querySelectorAll("input").forEach(i => i.value = "");
+  document.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
+}
+
+// =======================
+// GUARDAR
+// =======================
+async function guardar() {
+  const d = {};
+  document.querySelectorAll("input,select").forEach(e => {
+    if (e.id) d[e.id] = e.value;
   });
 
-  document.querySelectorAll("select").forEach(s => {
-    s.selectedIndex = 0;
-  });
+  if (!d.Z1) {
+    alert("Selecciona paciente");
+    return;
+  }
+
+  const registro = construirRegistro(d);
+
+  const { error } = await client
+    .from("sece")
+    .insert([registro]);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  exportarExcel(registro);
+  limpiar();
+
+  alert("OK");
 }
-    async function guardar() {
-      const btn = document.getElementById("btnGuardar");
-      const d = recogerFormulario();
 
-      if (!d.Z1) {
-        alert("Debes seleccionar un paciente antes de guardar");
-        return;
-      }
+// =======================
+// INIT
+// =======================
+document.addEventListener("DOMContentLoaded", () => {
 
-      const registro = construirRegistro(d);
+  document.getElementById("consumo").innerHTML =
+    bloqueConsumo("THC","E") +
+    bloqueConsumo("ALCOHOL","F") +
+    bloqueConsumo("COCAÍNA","G") +
+    bloqueConsumo("OPIÁCEOS","H") +
+    bloqueConsumo("KETAMINA","I") +
+    bloqueConsumo("BZD","J") +
+    bloqueConsumo("MDMA","K") +
+    bloqueConsumo("LUDOPATÍA","L") +
+    bloqueConsumo("SEXO","M") +
+    bloqueConsumo("OTRAS","N");
 
-      try {
-        btn.disabled = true;
-        btn.textContent = "Guardando...";
-
-        const { data, error } = await client
-          .from("sece")
-          .insert([registro])
-          .select();
-
-        if (error) {
-          console.error("Error guardando SECE:", error);
-          alert("Error guardando: " + error.message);
-          return;
-        }
-
-       exportarExcelSECE(registro);
-limpiarFormularioSECE();
-alert("Guardado correctamente. Filas insertadas: " + (data?.length || 0));
-
-           }
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      renderizarBloquesConsumo();
-      await poblarSelectPacientes();
-    });
-  </script>
-</body>
-</html>
+  poblarSelectPacientes();
+});
