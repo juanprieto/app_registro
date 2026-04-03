@@ -150,23 +150,44 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 ];
 
         const STORAGE_KEY = 'asistencia_v7_base64';
-        let filaActiva = null;
+const PACIENTES_CACHE_KEY = 'pacientes_activos_cache_v1';
+
+let filaActiva = null;
 let pacientesActivosCache = [];
 
-      window.addEventListener('DOMContentLoaded', async () => {
-    await cargarPacientesActivos(); // <- SIEMPRE primero
+window.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('fechaConfirmar').valueAsDate = new Date();
 
-    const memoria = localStorage.getItem(STORAGE_KEY);
+    const memoriaRaw = localStorage.getItem(STORAGE_KEY);
+    let memoria = null;
 
-    if (memoria) {
-        const data = JSON.parse(memoria);
-        document.getElementById('fecha').value = data.fecha;
-        data.filas.forEach(f => restaurarFila(f));
+    try {
+        memoria = memoriaRaw ? JSON.parse(memoriaRaw) : null;
+    } catch (e) {
+        console.error("Memoria local corrupta:", e);
+        localStorage.removeItem(STORAGE_KEY);
+        memoria = null;
+    }
+
+    await cargarPacientesActivos();
+
+    if (memoria && Array.isArray(memoria.filas) && memoria.filas.length > 0) {
+        document.getElementById('fecha').value = memoria.fecha || "";
+        document.getElementById('tbody').innerHTML = "";
+        memoria.filas.forEach(f => restaurarFila(f));
         document.getElementById('bloqueoInicio').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('tbody').innerHTML = "";
+    await cargarListaDefault();
+
+    if (memoria && memoria.fecha) {
+        document.getElementById('fecha').value = memoria.fecha;
+        document.getElementById('bloqueoInicio').style.display = 'none';
+        autoGuardar();
     } else {
-        document.getElementById('fechaConfirmar').valueAsDate = new Date();
         document.getElementById('bloqueoInicio').style.display = 'flex';
-        await cargarListaDefault();
     }
 });
 
@@ -409,20 +430,37 @@ async function guardarRegistroEnSupabase(registro) {
         }
 
 async function cargarPacientesActivos() {
-    const { data, error } = await client
-        .from("pacientes")
-        .select('nombre, "ID_USUARIO", medicacion')
-        .eq("activo", true)
-        .order("nombre", { ascending: true });
+    const cacheLocal = localStorage.getItem(PACIENTES_CACHE_KEY);
 
-    if (error) {
-        console.error("Error cargando pacientes:", error);
+    try {
+        const { data, error } = await client
+            .from("pacientes")
+            .select('nombre, "ID_USUARIO", medicacion')
+            .eq("activo", true)
+            .order("nombre", { ascending: true });
+
+        if (error) throw error;
+
+        pacientesActivosCache = data || [];
+        localStorage.setItem(PACIENTES_CACHE_KEY, JSON.stringify(pacientesActivosCache));
+        return pacientesActivosCache;
+
+    } catch (error) {
+        console.error("Error cargando pacientes desde Supabase:", error);
+
+        if (cacheLocal) {
+            try {
+                pacientesActivosCache = JSON.parse(cacheLocal) || [];
+                console.warn("Usando caché local de pacientes");
+                return pacientesActivosCache;
+            } catch (e) {
+                console.error("Error leyendo caché local de pacientes:", e);
+            }
+        }
+
         pacientesActivosCache = [];
         return [];
     }
-
-    pacientesActivosCache = data || [];
-    return pacientesActivosCache;
 }
 
 async function poblarSelectPacientes(selectEl, idSeleccionado = "", nombreSeleccionado = "") {
