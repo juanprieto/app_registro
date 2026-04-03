@@ -518,6 +518,17 @@ console.log("TIPOS PROBLEMÁTICOS", {
   N3: registro.OTRAS_modo,
   N4: registro.OTRAS_freq
 });
+
+  alert(JSON.stringify({
+  Z3: d.Z3,
+  M1: d.M1,
+  M2: d.M2,
+  M3: d.M3,
+  M4: d.M4,
+  O1: d.O1
+}, null, 2));
+
+  
    const { data, error } = await client
     .from("sece")
     .insert([registro])
