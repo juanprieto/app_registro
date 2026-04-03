@@ -491,25 +491,44 @@
     }
 
     async function poblarSelectPacientes() {
-      const select = document.getElementById("Z_nombre");
-      const inputIdUsuario = document.getElementById("Z1");
+  const select = document.getElementById("Z_nombre");
+  const inputIdUsuario = document.getElementById("Z1");
 
-      const pacientes = await cargarPacientesActivos();
+  alert("1. Entrando en poblarSelectPacientes");
 
-      select.innerHTML = '<option value="">Selecciona paciente</option>';
+  if (!select) {
+    alert("2. No existe Z_nombre");
+    return;
+  }
 
-      pacientes.forEach(p => {
-        const option = document.createElement("option");
-        option.value = p.ID_USUARIO;
-        option.textContent = p.nombre;
-        select.appendChild(option);
-      });
+  const { data, error } = await client
+    .from("pacientes")
+    .select('nombre, "ID_USUARIO"')
+    .eq("activo", true)
+    .order("nombre", { ascending: true });
 
-      select.addEventListener("change", () => {
-        inputIdUsuario.value = select.value || "";
-      });
-    }
+  alert("3. error = " + JSON.stringify(error));
+  alert("4. pacientes = " + JSON.stringify(data));
 
+  if (error) {
+    return;
+  }
+
+  select.innerHTML = '<option value="">Selecciona paciente</option>';
+
+  (data || []).forEach(p => {
+    const option = document.createElement("option");
+    option.value = p.ID_USUARIO;
+    option.textContent = p.nombre;
+    select.appendChild(option);
+  });
+
+  select.addEventListener("change", () => {
+    inputIdUsuario.value = select.value || "";
+  });
+
+  alert("5. Opciones cargadas = " + select.options.length);
+}
     function recogerFormulario() {
       const datos = {};
       document.querySelectorAll("input, select").forEach(el => {
