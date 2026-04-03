@@ -517,18 +517,25 @@ async function poblarSelectPacientes() {
     return;
   }
 
-  select.innerHTML = '<option value="">Selecciona paciente</option>';
+  select.innerHTML = "";
+  const optionVacia = document.createElement("option");
+  optionVacia.value = "";
+  optionVacia.textContent = "Selecciona paciente";
+  select.appendChild(optionVacia);
 
   (data || []).forEach(p => {
     const option = document.createElement("option");
-    option.value = p.ID_USUARIO;
+    option.value = p["ID_USUARIO"];
     option.textContent = p.nombre;
     select.appendChild(option);
   });
 
-  select.addEventListener("change", () => {
+  select.value = "";
+  if (inputIdUsuario) inputIdUsuario.value = "";
+
+  select.onchange = () => {
     inputIdUsuario.value = select.value || "";
-  });
+  };
 }
     function construirRegistro(d) {
   return {
@@ -642,7 +649,22 @@ async function poblarSelectPacientes() {
 
   XLSX.writeFile(wb, `SECE_${idUsuario}_${fecha}.xlsx`);
 }
+function limpiarFormularioSECE() {
+  document.querySelectorAll("input").forEach(i => {
+    if (i.id === "Z1") {
+      i.value = "";
+      return;
+    }
 
+    if (i.type === "date" || i.type === "text") {
+      i.value = "";
+    }
+  });
+
+  document.querySelectorAll("select").forEach(s => {
+    s.selectedIndex = 0;
+  });
+}
     async function guardar() {
       const btn = document.getElementById("btnGuardar");
       const d = recogerFormulario();
@@ -669,16 +691,11 @@ async function poblarSelectPacientes() {
           return;
         }
 
-        exportarExcelSECE(registro);
-document.querySelector("form")?.reset?.();
-document.querySelectorAll("input").forEach(i => {
-  if (i.type !== "button" && i.type !== "submit") i.value = "";
-});
-document.querySelectorAll("select").forEach(s => {
-  s.selectedIndex = 0;
-});
+       exportarExcelSECE(registro);
+limpiarFormularioSECE();
 alert("Guardado correctamente. Filas insertadas: " + (data?.length || 0));
-    }
+
+           }
 
     document.addEventListener("DOMContentLoaded", async () => {
       renderizarBloquesConsumo();
