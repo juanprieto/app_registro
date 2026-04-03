@@ -366,17 +366,21 @@ async function guardar() {
         KETA_freq: d.I4 || null
     };
 
-    const { error } = await client
-        .from("sece")
-        .insert([registro]);
+   const { data, error } = await client
+    .from("sece")
+    .insert([registro])
+    .select();
 
-    if (error) {
-        console.error("Error guardando SECE:", error);
-        alert("Error guardando");
-        return;
-    }
+console.log("INSERT SECE data:", data);
+console.log("INSERT SECE error:", error);
 
-    alert("Guardado correctamente");
+if (error) {
+    console.error("Error guardando SECE:", error);
+    alert("Error guardando: " + error.message);
+    return;
+}
+
+alert("Guardado correctamente. Filas insertadas: " + (data?.length || 0));
 }  
 
 </script>
