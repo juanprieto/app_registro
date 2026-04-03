@@ -490,7 +490,34 @@ if (!d.Z1) {
     O2: mapProblematica[d.O2] || null,
     O3: mapProblematica[d.O3] || null
 };
-
+console.log("TIPOS PROBLEMÁTICOS", {
+  O1_raw: d.O1,
+  O2_raw: d.O2,
+  O3_raw: d.O3,
+  O1_final: registro.O1,
+  O2_final: registro.O2,
+  O3_final: registro.O3,
+  E3: registro.THC_modo,
+  E4: registro.THC_freq,
+  F3: registro.OH_modo,
+  F4: registro.OH_freq,
+  G3: registro.COC_modo,
+  G4: registro.COC_freq,
+  H3: registro.OP_modo,
+  H4: registro.OP_freq,
+  I3: registro.KETA_modo,
+  I4: registro.KETA_freq,
+  J3: registro.BZD_modo,
+  J4: registro.BZD_freq,
+  K3: registro.MDMA_modo,
+  K4: registro.MDMA_freq,
+  L3: registro.LUDO_modo,
+  L4: registro.LUDO_freq,
+  M3: registro.SEX_modo,
+  M4: registro.SEX_freq,
+  N3: registro.OTRAS_modo,
+  N4: registro.OTRAS_freq
+});
    const { data, error } = await client
     .from("sece")
     .insert([registro])
