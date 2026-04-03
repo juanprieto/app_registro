@@ -154,18 +154,21 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let pacientesActivosCache = [];
 
       window.addEventListener('DOMContentLoaded', async () => {
-            const memoria = localStorage.getItem(STORAGE_KEY);
-            if (memoria) {
-                const data = JSON.parse(memoria);
-                document.getElementById('fecha').value = data.fecha;
-                data.filas.forEach(f => restaurarFila(f));
-                document.getElementById('bloqueoInicio').style.display = 'none';
-           } else {
-    document.getElementById('fechaConfirmar').valueAsDate = new Date();
-    document.getElementById('bloqueoInicio').style.display = 'flex';
-    await cargarListaDefault();
-}
-        });
+    await cargarPacientesActivos(); // <- SIEMPRE primero
+
+    const memoria = localStorage.getItem(STORAGE_KEY);
+
+    if (memoria) {
+        const data = JSON.parse(memoria);
+        document.getElementById('fecha').value = data.fecha;
+        data.filas.forEach(f => restaurarFila(f));
+        document.getElementById('bloqueoInicio').style.display = 'none';
+    } else {
+        document.getElementById('fechaConfirmar').valueAsDate = new Date();
+        document.getElementById('bloqueoInicio').style.display = 'flex';
+        await cargarListaDefault();
+    }
+});
 
         function confirmarFechaInicial() {
             const fVal = document.getElementById('fechaConfirmar').value;
