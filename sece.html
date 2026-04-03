@@ -369,7 +369,10 @@ async function guardar() {
     document.querySelectorAll("input,select").forEach(e => {
         if (e.id) d[e.id] = e.value;
     });
-
+if (!d.Z1) {
+    alert("Debes seleccionar un paciente antes de guardar");
+    return;
+}
     const registro = {
         "ID_USUARIO": d.Z1 || null,
         fecha: d.Z3 || null,
