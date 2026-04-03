@@ -303,12 +303,16 @@ const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
 const SUPABASE_KEY = "TU_ANON_KEY_AQUI";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
   async function cargarPacientesActivos() {
     const { data, error } = await client
         .from("pacientes")
-        .select('nombre, "ID_USUARIO"')
+        .select('nombre, "ID_USUARIO", activo')
         .eq("activo", true)
         .order("nombre", { ascending: true });
+
+    console.log("PACIENTES:", data);
+    console.log("ERROR:", error);
 
     if (error) {
         console.error("Error cargando pacientes:", error);
@@ -317,7 +321,8 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     return data || [];
 }
-
+  
+  
 async function poblarSelectPacientesSECE() {
     const select = document.getElementById("Z_nombre");
     const inputIdUsuario = document.getElementById("Z1");
