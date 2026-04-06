@@ -139,15 +139,7 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </div>
 
     <script>
-        const LISTA_BASE = ["Alan Mollica", "Anastasia Valls", "Ana Zubia", "Anna Narbona", "Antonio Gutierrez", "Carlos Ezquerra", "Carlos Palomar", "Cesar Gavilan", "Concha Rodriguez", "Dani Urgelles", "Eduard de la Torre", "Eloi André", "Eva Alvarez", "Francesc Ordeig", "Ignasi Martin (Nacho)", "Ivan Pueyo", "Jacinto Texido", "Javier Sanz", "Jordi Homs", "Jordi Navarro", "Jordi Ortuno", "Jordi Perez", "Juanma Reboll", "Laury Gallardo", "Marc Garrell", "Marc Gonzalez", "Maria Munoz", "Mario Shefer", "Massinissa Ait-Ahmed", "Oscar Leal", "Puri Galiot", "Sara Alguacil", "Sergio Funes", "Vicente Vega",];
-        // Pacientes que deben tomar medicación
-        const PACIENTES_CON_MEDICACION = [
-    "Anastasia Valls","Antonio Gutierrez", 
-    "Alan Mollica","Carlos Palomar","Concha Rodriguez", 
-    "Dani Urgelles","Francesc Ordeig", "Ivan Pueyo", 
-    "Jordi Homs", "Marc Gonzalez",
-    "Massinissa Ait-Ahmed", 
-];
+       
 
         const STORAGE_KEY = 'asistencia_v7_base64';
         const PACIENTES_CACHE_KEY = 'pacientes_activos_cache_v1';
@@ -192,13 +184,23 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-        function confirmarFechaInicial() {
-            const fVal = document.getElementById('fechaConfirmar').value;
-            if(!fVal) return alert("Selecciona fecha");
-            document.getElementById('fecha').value = fVal;
-            document.getElementById('bloqueoInicio').style.display = 'none';
-            autoGuardar();
-        }
+      function confirmarFechaInicial() {
+    const fVal = document.getElementById('fechaConfirmar').value;
+
+    if (!fVal) {
+        alert("Selecciona fecha");
+        return;
+    }
+
+    if (diaYaCerrado(fVal)) {
+        alert("Esa fecha ya fue cerrada/exportada en esta tablet.");
+        return;
+    }
+
+    document.getElementById('fecha').value = fVal;
+    document.getElementById('bloqueoInicio').style.display = 'none';
+    autoGuardar();
+}
 
         function pintarCeldaCheck(el) {
             const td = el.parentElement;
@@ -398,7 +400,24 @@ async function guardarRegistroEnSupabase(registro) {
          
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ fecha: f, filas: filas }));
         }
+function getCierreMap() {
+    try {
+        return JSON.parse(localStorage.getItem(CIERRE_KEY)) || {};
+    } catch {
+        return {};
+    }
+}
 
+function marcarDiaCerrado(fecha) {
+    const cierres = getCierreMap();
+    cierres[fecha] = true;
+    localStorage.setItem(CIERRE_KEY, JSON.stringify(cierres));
+}
+
+function diaYaCerrado(fecha) {
+    const cierres = getCierreMap();
+    return cierres[fecha] === true;
+}
         function toggleMotivo(cb) { 
             const sel = cb.nextElementSibling;
             sel.classList.toggle('visible', cb.checked);
@@ -524,93 +543,121 @@ async function poblarSelectPacientes(selectEl, idSeleccionado = "", nombreSelecc
 
 async function exportarExcel() {
     const fISO = document.getElementById('fecha').value;
+
+    if (!fISO) {
+        alert("No hay fecha activa");
+        return;
+    }
+
+    if (typeof diaYaCerrado === "function" && diaYaCerrado(fISO)) {
+        alert("Este día ya fue cerrado/exportado.");
+        return;
+    }
+
     const [y, m, d] = fISO.split('-');
     const fBonita = `${d}/${m}/${y}`;
 
     if (!confirm(`¿Exportar informe de fecha ${fBonita}?`)) return;
 
-    // 🔹 1. Extraer datos de la tabla
-    const data = Array.from(document.querySelectorAll('#tbody tr')).map(tr => {
-    const res = tr.cells[5].textContent;
+    // 1. Extraer datos de la tabla
+    const filasDOM = Array.from(document.querySelectorAll('#tbody tr'));
 
-    const check = (sust) => {
-        if (!res || res === "-") return 1;
-        if (res.includes(`${sust}:POS`)) return 2;
-        if (res.includes(`${sust}:NEG`)) return 0;
-        return 1;
-    };
+    if (filasDOM.length === 0) {
+        alert("No hay pacientes en pantalla para exportar.");
+        return;
+    }
 
-    return {
-        "FECHA": fBonita,
-        "PACIENTE": tr.cells[0].querySelector('.paciente-nombre')?.textContent || "",
-        "ID_USUARIO": tr.cells[0].querySelector('.paciente-idusuario')?.value || "",
-        "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
-        "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
-        "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
-        "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
-        "COC": check("COC"), "OH": check("OH"), "THC": check("THC"), "BZD": check("BZD"),
-        "OPI": check("OPI"), "KETA": check("KETA"), "AMP": check("AMP"), "MTD": check("MTD"),
-        "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
-        "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
-        "RIESGO": tr.cells[8].querySelector('select').value
-    };
-});
+    const data = filasDOM.map(tr => {
+        const res = tr.cells[5].textContent;
 
-    // 🔹 2. Obtener todos los nombres de pacientes
-const filasDOM = Array.from(document.querySelectorAll('#tbody tr'));
-const idsUsuario = filasDOM
-    .map(tr => tr.cells[0].querySelector(".paciente-idusuario")?.value || "")
-    .filter(Boolean);
+        const check = (sust) => {
+            if (!res || res === "-") return 1;
+            if (res.includes(`${sust}:POS`)) return 2;
+            if (res.includes(`${sust}:NEG`)) return 0;
+            return 1;
+        };
 
-// 🔹 3. Obtener IDs de pacientes en una sola llamada
-const { data: pacientes, error: errorPac } = await client
-    .from("pacientes")
-    .select('id, "ID_USUARIO"')
-    .in("ID_USUARIO", idsUsuario);
+        return {
+            "FECHA": fBonita,
+            "PACIENTE": tr.cells[0].querySelector('.paciente-nombre')?.textContent || "",
+            "ID_USUARIO": tr.cells[0].querySelector('.paciente-idusuario')?.value || "",
+            "ASISTENCIA": tr.cells[3].querySelector('input').checked ? tr.cells[3].querySelector('select').value : 0,
+            "MAÑANA": tr.cells[1].querySelector('input').checked ? "SI" : "NO",
+            "TARDE": tr.cells[2].querySelector('input').checked ? "SI" : "NO",
+            "CONTROL": tr.cells[4].querySelector('input').checked ? "SI" : "NO",
+            "COC": check("COC"),
+            "OH": check("OH"),
+            "THC": check("THC"),
+            "BZD": check("BZD"),
+            "OPI": check("OPI"),
+            "KETA": check("KETA"),
+            "AMP": check("AMP"),
+            "MTD": check("MTD"),
+            "RESCATE": tr.cells[6].querySelector('input').checked ? "SI" : "NO",
+            "MEDICACIÓN": tr.cells[7].querySelector('input').checked ? "SI" : "NO",
+            "RIESGO": tr.cells[8].querySelector('select').value
+        };
+    });
 
-if (errorPac) {
-    alert("Error obteniendo IDs de pacientes");
-    console.error(errorPac);
-    return;
-}
+    // 2. Obtener IDs de usuario presentes en pantalla
+    const idsUsuario = filasDOM
+        .map(tr => tr.cells[0].querySelector(".paciente-idusuario")?.value || "")
+        .filter(Boolean);
 
-// 🔹 4. Crear diccionario ID_USUARIO → id
-const mapaPacientes = {};
-pacientes.forEach(p => {
-    mapaPacientes[p.ID_USUARIO] = p.id;
-});
+    if (idsUsuario.length === 0) {
+        alert("No hay ID_USUARIO válidos para guardar.");
+        return;
+    }
 
-    // 🔹 5. Preparar registros para inserción masiva
-  const registros = data.map((fila, index) => {
-    const tr = filasDOM[index];
-    const idUsuario = tr.cells[0].querySelector(".paciente-idusuario")?.value || "";
+    // 3. Obtener IDs reales de pacientes en una sola llamada
+    const { data: pacientes, error: errorPac } = await client
+        .from("pacientes")
+        .select('id, "ID_USUARIO"')
+        .in("ID_USUARIO", idsUsuario);
 
-    return {
-        fecha: fISO,
-        paciente_id: mapaPacientes[idUsuario] || null,
-        ID_USUARIO: idUsuario,
-        asistencia: fila.ASISTENCIA,
-        mañana: fila.MAÑANA === "SI",
-        tarde: fila.TARDE === "SI",
-        control: fila.CONTROL === "SI",
-        sustancias: {
-            COC: fila.COC,
-            OH: fila.OH,
-            THC: fila.THC,
-            BZD: fila.BZD,
-            OPI: fila.OPI,
-            KETA: fila.KETA,
-            AMP: fila.AMP,
-            MTD: fila.MTD
-        },
-        rescate: fila.RESCATE === "SI",
-        medicacion: fila["MEDICACIÓN"] === "SI",
-        riesgo: fila.RIESGO,
-        observaciones: document.getElementById("observaciones")?.value || ""
-    };
-});
+    if (errorPac) {
+        alert("Error obteniendo IDs de pacientes");
+        console.error(errorPac);
+        return;
+    }
 
-    // 🔹 6. Insertar TODO en una sola llamada
+    // 4. Crear diccionario ID_USUARIO -> id
+    const mapaPacientes = {};
+    (pacientes || []).forEach(p => {
+        mapaPacientes[p.ID_USUARIO] = p.id;
+    });
+
+    // 5. Preparar registros para inserción masiva
+    const registros = data.map((fila, index) => {
+        const tr = filasDOM[index];
+        const idUsuario = tr.cells[0].querySelector(".paciente-idusuario")?.value || "";
+
+        return {
+            fecha: fISO,
+            paciente_id: mapaPacientes[idUsuario] || null,
+            ID_USUARIO: idUsuario,
+            asistencia: fila.ASISTENCIA,
+            mañana: fila.MAÑANA === "SI",
+            tarde: fila.TARDE === "SI",
+            control: fila.CONTROL === "SI",
+            sustancias: {
+                COC: fila.COC,
+                OH: fila.OH,
+                THC: fila.THC,
+                BZD: fila.BZD,
+                OPI: fila.OPI,
+                KETA: fila.KETA,
+                AMP: fila.AMP,
+                MTD: fila.MTD
+            },
+            rescate: fila.RESCATE === "SI",
+            medicacion: fila["MEDICACIÓN"] === "SI",
+            riesgo: fila.RIESGO,
+            observaciones: document.getElementById("observaciones")?.value || ""
+        };
+    });
+
+    // 6. Insertar todo en Supabase
     const { error: errorInsert } = await client
         .from("registros_diarios")
         .insert(registros);
@@ -621,29 +668,40 @@ pacientes.forEach(p => {
         return;
     }
 
-    // 🔹 7. Exportar Excel compatible con Android/Samsung
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Tesis");
+    // 7. Marcar día como cerrado
+    if (typeof marcarDiaCerrado === "function") {
+        marcarDiaCerrado(fISO);
+    }
 
-    // Generar el archivo como ArrayBuffer
-    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    // 8. Exportar Excel compatible con Android / Samsung
+    try {
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Tesis");
 
-    // Convertir a Blob
-    const blob = new Blob([excelBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    });
+        const excelBuffer = XLSX.write(wb, {
+            bookType: "xlsx",
+            type: "array"
+        });
 
-    // Descargar usando FileSaver (compatible con Android)
-    saveAs(blob, `Registro_${fISO}.xlsx`);
+        const blob = new Blob([excelBuffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        });
 
-    // 🔹 8. Preguntar si limpiar pantalla
+        saveAs(blob, `Registro_${fISO}.xlsx`);
+    } catch (e) {
+        console.error("Error generando o descargando Excel:", e);
+        alert("Los datos se han guardado, pero hubo un problema al generar el Excel.");
+        return;
+    }
+
+    // 9. Preguntar si limpiar pantalla
     setTimeout(() => {
         if (confirm("¿Finalizar día y limpiar pantalla?")) {
             localStorage.removeItem(STORAGE_KEY);
             location.reload();
         }
-    }, 500);
+    }, 700);
 }
 
 
