@@ -248,17 +248,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 }
 
      
-async function guardarRegistroEnSupabase(registro) {
-    const { data, error } = await client
-        .from("registros_diarios")
-        .insert(registro);
-
-    if (error) {
-        console.error("Error guardando en Supabase:", error);
-    } else {
-        console.log("Registro guardado en Supabase:", data);
-    }
-}
 
 
     function agregarPaciente(idUsuario = '', nombreVisible = '') {
@@ -460,64 +449,7 @@ async function cargarPacientesActivos() {
         return [];
     }
 }
-
-async function poblarSelectPacientes(selectEl, idSeleccionado = "", nombreSeleccionado = "") {
-    const pacientes = await cargarPacientesActivos();
-
-    selectEl.innerHTML = '<option value=""></option>';
-
-    pacientes.forEach(p => {
-        const option = document.createElement("option");
-        option.value = p.ID_USUARIO;
-        option.textContent = p.nombre;
-
-        if (
-    (idSeleccionado && p.ID_USUARIO === idSeleccionado) ||
-    (nombreSeleccionado && p.nombre === nombreSeleccionado)
-) {
-            option.selected = true;
-        }
-
-        selectEl.appendChild(option);
-    });
-}
-     
-        async function obtenerPacienteId(nombre) {
-    // 1. Buscar paciente por nombre
-    const { data, error } = await client
-        .from("pacientes")
-        .select("id")
-        .eq("nombre", nombre)
-        .maybeSingle();
-
-    if (error) {
-        console.error("Error buscando paciente:", error);
-        return null;
-    }
-
-    // 2. Si existe, devolver su id
-    if (data) {
-        return data.id;
-    }
-
-    // 3. Si no existe, crearlo automáticamente
-    const { data: nuevo, error: errorInsert } = await client
-        .from("pacientes")
-        .insert({
-            nombre: nombre,
-            activo: true,
-            medicacion: false
-        })
-        .select()
-        .single();
-
-    if (errorInsert) {
-        console.error("Error creando paciente:", errorInsert);
-        return null;
-    }
-
-    return nuevo.id;
-}
+       
 
 async function exportarExcel() {
     const fISO = document.getElementById('fecha').value;
