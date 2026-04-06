@@ -27,7 +27,7 @@
         .col-resultados { width: 130px; }
         .col-riesgo { width: 120px; }
 
-        #tbody td:first-child input { font-size: 15px !important; font-weight: bold; border: none; width: 100%; background: transparent; }
+        .paciente-nombre { font-size: 15px; font-weight: bold; }
         select { width: 95%; padding: 4px; border-radius: 4px; font-size: 12px; font-weight: bold; }
         
         button { background: rgb(167, 188, 75); color: white; padding: 12px 20px; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; }
@@ -82,7 +82,7 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     <div style="margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 20px;">
         <label>FECHA:</label> 
         <input type="date" id="fecha" disabled style="font-size: 18px; border:none; font-weight:bold;">
-        <button onclick="agregarPaciente()">➕ Paciente Extra</button>
+      
      <button onclick="window.open('calendario.html', '_blank')">
     📅 Abrir calendario semanal
 </button>
