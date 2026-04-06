@@ -143,7 +143,7 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const STORAGE_KEY = 'asistencia_v7_base64';
         const PACIENTES_CACHE_KEY = 'pacientes_activos_cache_v1';
-        const CIERRE_KEY = 'registro_diario_cerrado_v1';
+        
 
 let filaActiva = null;
 let pacientesActivosCache = [];
@@ -189,11 +189,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     if (!fVal) {
         alert("Selecciona fecha");
-        return;
-    }
-
-    if (diaYaCerrado(fVal)) {
-        alert("Esa fecha ya fue cerrada/exportada en esta tablet.");
         return;
     }
 
@@ -400,24 +395,7 @@ async function guardarRegistroEnSupabase(registro) {
          
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ fecha: f, filas: filas }));
         }
-function getCierreMap() {
-    try {
-        return JSON.parse(localStorage.getItem(CIERRE_KEY)) || {};
-    } catch {
-        return {};
-    }
-}
 
-function marcarDiaCerrado(fecha) {
-    const cierres = getCierreMap();
-    cierres[fecha] = true;
-    localStorage.setItem(CIERRE_KEY, JSON.stringify(cierres));
-}
-
-function diaYaCerrado(fecha) {
-    const cierres = getCierreMap();
-    return cierres[fecha] === true;
-}
         function toggleMotivo(cb) { 
             const sel = cb.nextElementSibling;
             sel.classList.toggle('visible', cb.checked);
@@ -549,10 +527,7 @@ async function exportarExcel() {
         return;
     }
 
-    if (typeof diaYaCerrado === "function" && diaYaCerrado(fISO)) {
-        alert("Este día ya fue cerrado/exportado.");
-        return;
-    }
+   
 
     const [y, m, d] = fISO.split('-');
     const fBonita = `${d}/${m}/${y}`;
@@ -668,10 +643,7 @@ async function exportarExcel() {
         return;
     }
 
-    // 7. Marcar día como cerrado
-    if (typeof marcarDiaCerrado === "function") {
-        marcarDiaCerrado(fISO);
-    }
+ 
 
     // 8. Exportar Excel compatible con Android / Samsung
     try {
