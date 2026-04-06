@@ -353,11 +353,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     pintarCeldaEscala(selR);
 }
 
-        async function cargarListaDefault() {
+       async function cargarListaDefault() {
     document.getElementById('tbody').innerHTML = '';
-
-    const pacientes = await cargarPacientesActivos();
-    pacientes.forEach(p => agregarPaciente(p.ID_USUARIO));
+    pacientesActivosCache.forEach(p => agregarPaciente(p.ID_USUARIO));
+}
 }
 
         function autoGuardar() {
