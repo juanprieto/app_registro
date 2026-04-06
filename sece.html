@@ -55,6 +55,15 @@
       box-sizing: border-box;
     }
 
+    .date-input {
+      letter-spacing: 0.5px;
+    }
+
+    .date-input.invalid {
+      border: 2px solid #dc3545;
+      background: #fff5f5;
+    }
+
     .consumo-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -112,7 +121,7 @@
     <input id="Z2">
 
     <label for="Z3">Z3 Fecha recogida</label>
-    <input id="Z3" type="date">
+    <input id="Z3" type="text" class="date-input" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off">
   </div>
 
   <!-- A -->
@@ -120,7 +129,7 @@
     <h3>A. Socioeconómico</h3>
 
     <label for="A1">A1 Fecha de nacimiento</label>
-    <input id="A1" type="date">
+    <input id="A1" type="text" class="date-input" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off">
 
     <label for="A2">A2 Género</label>
     <select id="A2">
@@ -299,10 +308,10 @@
     </select>
 
     <label for="B2">B2 Fecha primer tratamiento realizado</label>
-    <input id="B2" type="date">
+    <input id="B2" type="text" class="date-input" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off">
 
     <label for="B3">B3 Fecha inicio tratamiento actual</label>
-    <input id="B3" type="date">
+    <input id="B3" type="text" class="date-input" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off">
 
     <label for="B4">B4 Recaídas desde el primer tratamiento</label>
     <select id="B4">
@@ -315,7 +324,7 @@
     </select>
 
     <label for="B5">B5 Fecha último consumo</label>
-    <input id="B5" type="date">
+    <input id="B5" type="text" class="date-input" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off">
 
     <label for="B6">B6 Importancia de este tratamiento para el usuario</label>
     <select id="B6">
@@ -442,7 +451,7 @@
 
     <label for="D7">D7 Cúal de estos es el que más le ha preocupado?</label>
     <select id="D7">
-     <option value="">-</option>
+      <option value="">-</option>
       <option value="E">THC</option>
       <option value="F">ALCOHOL</option>
       <option value="G">COCAÍNA</option>
@@ -457,7 +466,7 @@
 
     <label for="D8">D8 Cuál cree que es el que más ha influenciado en su decisión de iniciar este tratamiento?</label>
     <select id="D8">
-     <option value="">-</option>
+      <option value="">-</option>
       <option value="E">THC</option>
       <option value="F">ALCOHOL</option>
       <option value="G">COCAÍNA</option>
@@ -477,11 +486,11 @@
     <div class="consumo-grid" id="consumo"></div>
   </div>
 
- 
   <!-- O -->
   <div class="card">
     <h3>Sustancias problemáticas</h3>
- <label for="O1">O1 Sustancia mas problemática</label>
+
+    <label for="O1">O1 Sustancia mas problemática</label>
     <select id="O1">
       <option value="">-</option>
       <option value="E">THC</option>
@@ -495,7 +504,8 @@
       <option value="M">SEXO</option>
       <option value="N">OTRAS</option>
     </select>
- <label for="O2">O2 Segunda sustancia mas problemática</label>
+
+    <label for="O2">O2 Segunda sustancia mas problemática</label>
     <select id="O2">
       <option value="">-</option>
       <option value="E">THC</option>
@@ -509,7 +519,8 @@
       <option value="M">SEXO</option>
       <option value="N">OTRAS</option>
     </select>
- <label for="O3">O3 Tercera sustancia mas problemática</label>
+
+    <label for="O3">O3 Tercera sustancia mas problemática</label>
     <select id="O3">
       <option value="">-</option>
       <option value="E">THC</option>
@@ -562,10 +573,10 @@
           <h4>${nombre}</h4>
 
           <label for="${letra}1">${letra}1 Fecha inicio</label>
-          <input id="${letra}1" type="date">
+          <input id="${letra}1" type="text" class="date-input" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off">
 
           <label for="${letra}2">${letra}2 Fecha fin</label>
-          <input id="${letra}2" type="date">
+          <input id="${letra}2" type="text" class="date-input" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off">
 
           <label for="${letra}3">${letra}3 Modo</label>
           <select id="${letra}3">${COMO}</select>
@@ -621,6 +632,98 @@
       };
     }
 
+    function aplicarMascaraFecha(valor) {
+      const digitos = (valor || "").replace(/\D/g, "").slice(0, 8);
+      const partes = [];
+
+      if (digitos.length > 0) partes.push(digitos.slice(0, 2));
+      if (digitos.length > 2) partes.push(digitos.slice(2, 4));
+      if (digitos.length > 4) partes.push(digitos.slice(4, 8));
+
+      return partes.join("/");
+    }
+
+    function esFechaValidaTexto(valor) {
+      if (!valor) return true;
+
+      const match = valor.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!match) return false;
+
+      const dia = Number(match[1]);
+      const mes = Number(match[2]);
+      const anio = Number(match[3]);
+
+      if (anio < 1900 || anio > 2100) return false;
+      if (mes < 1 || mes > 12) return false;
+
+      const diasMes = new Date(anio, mes, 0).getDate();
+      return dia >= 1 && dia <= diasMes;
+    }
+
+    function fechaTextoAISO(valor) {
+      if (!valor) return null;
+      if (!esFechaValidaTexto(valor)) return null;
+
+      const [dia, mes, anio] = valor.split("/");
+      return `${anio}-${mes}-${dia}`;
+    }
+
+    function marcarEstadoFecha(input) {
+      if (!input) return;
+
+      const valor = input.value.trim();
+
+      if (!valor) {
+        input.classList.remove("invalid");
+        return;
+      }
+
+      if (esFechaValidaTexto(valor)) {
+        input.classList.remove("invalid");
+      } else {
+        input.classList.add("invalid");
+      }
+    }
+
+    function activarInputsFecha() {
+      document.addEventListener("input", (e) => {
+        if (!e.target.classList.contains("date-input")) return;
+        e.target.value = aplicarMascaraFecha(e.target.value);
+        marcarEstadoFecha(e.target);
+      });
+
+      document.addEventListener("blur", (e) => {
+        if (!e.target.classList.contains("date-input")) return;
+        marcarEstadoFecha(e.target);
+      }, true);
+    }
+
+    function obtenerTextoLabel(inputId) {
+      const label = document.querySelector(`label[for="${inputId}"]`);
+      return label ? label.textContent.trim() : inputId;
+    }
+
+    function validarFormularioFechas() {
+      const errores = [];
+
+      document.querySelectorAll(".date-input").forEach(input => {
+        const valor = input.value.trim();
+        if (valor && !esFechaValidaTexto(valor)) {
+          input.classList.add("invalid");
+          errores.push(obtenerTextoLabel(input.id));
+        } else {
+          input.classList.remove("invalid");
+        }
+      });
+
+      if (errores.length > 0) {
+        alert("Fechas inválidas en:\n- " + errores.join("\n- ") + "\n\nUsa formato dd/mm/aaaa");
+        return false;
+      }
+
+      return true;
+    }
+
     function val(v) {
       return v === "" ? null : v;
     }
@@ -629,33 +732,37 @@
       return v === "" ? 0 : Number(v);
     }
 
+    function fechaVal(v) {
+      return fechaTextoAISO(v);
+    }
+
     function construirRegistro(d) {
       return {
         ID_USUARIO: d.Z1 || null,
-        fecha: d.Z3 || null,
+        fecha: fechaVal(d.Z3),
 
-        A1: val(d.A1), A2: val(d.A2), A3: val(d.A3), A4: val(d.A4), A5: val(d.A5),
+        A1: fechaVal(d.A1), A2: val(d.A2), A3: val(d.A3), A4: val(d.A4), A5: val(d.A5),
         A6: val(d.A6), A7: val(d.A7), A8: val(d.A8), A9: val(d.A9), A10: val(d.A10),
         A11: val(d.A11), A12: val(d.A12), A13: val(d.A13), A14: val(d.A14),
         A15: val(d.A15), A16: val(d.A16), A17: val(d.A17),
 
-        B1: val(d.B1), B2: val(d.B2), B3: val(d.B3), B4: val(d.B4), B5: val(d.B5),
+        B1: val(d.B1), B2: fechaVal(d.B2), B3: fechaVal(d.B3), B4: val(d.B4), B5: fechaVal(d.B5),
         B6: val(d.B6), B7: val(d.B7), B8: val(d.B8), B9: val(d.B9),
         B10: val(d.B10), B11: val(d.B11), B12: val(d.B12),
 
         D1: val(d.D1), D2: val(d.D2), D3: val(d.D3), D4: val(d.D4),
         D5: val(d.D5), D6: val(d.D6), D7: val(d.D7), D8: val(d.D8),
 
-        THC_inicio: val(d.E1), THC_fin: val(d.E2), THC_modo: val(d.E3), THC_freq: freq(d.E4),
-        OH_inicio: val(d.F1), OH_fin: val(d.F2), OH_modo: val(d.F3), OH_freq: freq(d.F4),
-        COC_inicio: val(d.G1), COC_fin: val(d.G2), COC_modo: val(d.G3), COC_freq: freq(d.G4),
-        OP_inicio: val(d.H1), OP_fin: val(d.H2), OP_modo: val(d.H3), OP_freq: freq(d.H4),
-        KETA_inicio: val(d.I1), KETA_fin: val(d.I2), KETA_modo: val(d.I3), KETA_freq: freq(d.I4),
-        BZD_inicio: val(d.J1), BZD_fin: val(d.J2), BZD_modo: val(d.J3), BZD_freq: freq(d.J4),
-        MDMA_inicio: val(d.K1), MDMA_fin: val(d.K2), MDMA_modo: val(d.K3), MDMA_freq: freq(d.K4),
-        LUDO_inicio: val(d.L1), LUDO_fin: val(d.L2), LUDO_modo: val(d.L3), LUDO_freq: freq(d.L4),
-        SEX_inicio: val(d.M1), SEX_fin: val(d.M2), SEX_modo: val(d.M3), SEX_freq: freq(d.M4),
-        OTRAS_inicio: val(d.N1), OTRAS_fin: val(d.N2), OTRAS_modo: val(d.N3), OTRAS_freq: freq(d.N4),
+        THC_inicio: fechaVal(d.E1), THC_fin: fechaVal(d.E2), THC_modo: val(d.E3), THC_freq: freq(d.E4),
+        OH_inicio: fechaVal(d.F1), OH_fin: fechaVal(d.F2), OH_modo: val(d.F3), OH_freq: freq(d.F4),
+        COC_inicio: fechaVal(d.G1), COC_fin: fechaVal(d.G2), COC_modo: val(d.G3), COC_freq: freq(d.G4),
+        OP_inicio: fechaVal(d.H1), OP_fin: fechaVal(d.H2), OP_modo: val(d.H3), OP_freq: freq(d.H4),
+        KETA_inicio: fechaVal(d.I1), KETA_fin: fechaVal(d.I2), KETA_modo: val(d.I3), KETA_freq: freq(d.I4),
+        BZD_inicio: fechaVal(d.J1), BZD_fin: fechaVal(d.J2), BZD_modo: val(d.J3), BZD_freq: freq(d.J4),
+        MDMA_inicio: fechaVal(d.K1), MDMA_fin: fechaVal(d.K2), MDMA_modo: val(d.K3), MDMA_freq: freq(d.K4),
+        LUDO_inicio: fechaVal(d.L1), LUDO_fin: fechaVal(d.L2), LUDO_modo: val(d.L3), LUDO_freq: freq(d.L4),
+        SEX_inicio: fechaVal(d.M1), SEX_fin: fechaVal(d.M2), SEX_modo: val(d.M3), SEX_freq: freq(d.M4),
+        OTRAS_inicio: fechaVal(d.N1), OTRAS_fin: fechaVal(d.N2), OTRAS_modo: val(d.N3), OTRAS_freq: freq(d.N4),
 
         O1: MAP_PROBLEMATICA[d.O1] || null,
         O2: MAP_PROBLEMATICA[d.O2] || null,
@@ -678,11 +785,11 @@
       document.querySelectorAll("input").forEach(i => {
         if (i.id === "Z1") {
           i.value = "";
+          i.classList.remove("invalid");
           return;
         }
-        if (i.type === "date" || i.type === "text") {
-          i.value = "";
-        }
+        i.value = "";
+        i.classList.remove("invalid");
       });
 
       document.querySelectorAll("select").forEach(s => {
@@ -695,11 +802,15 @@
       const d = {};
 
       document.querySelectorAll("input,select").forEach(e => {
-        if (e.id) d[e.id] = e.value;
+        if (e.id) d[e.id] = e.value.trim();
       });
 
       if (!d.Z1) {
         alert("Selecciona paciente");
+        return;
+      }
+
+      if (!validarFormularioFechas()) {
         return;
       }
 
@@ -729,6 +840,7 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
       renderizarBloquesConsumo();
+      activarInputsFecha();
       await poblarSelectPacientes();
     });
   </script>
