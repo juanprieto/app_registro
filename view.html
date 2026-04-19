@@ -160,14 +160,7 @@
           <select id="patientSelect" multiple size="6"></select>
         </div>
 
-        <div>
-          <label for="idSelect">ID_USUARIO</label>
-          <select id="idSelect">
-            <option value="">Todos</option>
-          </select>
-        </div>
-
-        <div>
+              <div>
           <label for="variableSelect">Variable</label>
           <select id="variableSelect">
             <option value="">Selecciona una variable</option>
@@ -264,8 +257,8 @@
     // =========================
     const viewSelect = document.getElementById("viewSelect");
     const patientSelect = document.getElementById("patientSelect");
-    const idSelect = document.getElementById("idSelect");
-    const variableSelect = document.getElementById("variableSelect"); const xVariableSelect = document.getElementById("xVariableSelect");
+    const variableSelect = document.getElementById("variableSelect"); 
+    const xVariableSelect = document.getElementById("xVariableSelect");
     const searchInput = document.getElementById("searchInput");
     const loadBtn = document.getElementById("loadBtn");
     const clearBtn = document.getElementById("clearBtn");
@@ -402,38 +395,29 @@ function orderColumns(cols){
     function applyLocalFilters(rows){
       if (!rows.length) return [];
 
-      const idCol = detectIdColumn(rows[0]);
-      const patientCol = detectPatientColumn(rows[0]);
+          const patientCol = detectPatientColumn(rows[0]);
 
       let out = [...rows];
 
       const selectedPatients = getSelectedValues(patientSelect);
 
-if (selectedPatients.length && patientCol){
-  out = out.filter(r => selectedPatients.includes(String(r[patientCol])));
-}
-
-      if (idSelect.value && idCol){
-        out = out.filter(r => String(r[idCol]) === String(idSelect.value));
+      if (selectedPatients.length && patientCol){
+       out = out.filter(r => selectedPatients.includes(String(r[patientCol])));
       }
-
       if (searchInput.value.trim()){
         const q = searchInput.value.trim().toLowerCase();
         out = out.filter(r =>
           Object.values(r).some(v => String(v ?? "").toLowerCase().includes(q))
         );
       }
-
       return out;
     }
-
     function buildChart(rows){
   if (!rows.length){
     metaEl.textContent = "Sin datos para graficar.";
     if (currentChart) currentChart.destroy();
     return;
   }
-
   const yVariable = variableSelect.value;
   if (!yVariable){
     metaEl.textContent = "Selecciona una variable para graficar.";
@@ -571,7 +555,7 @@ function detectDateColumn(row){
         setStatus(`La vista ${viewName} no devolvió filas.`);
         variableSelect.innerHTML = `<option value="">Sin variables</option>`;
         patientSelect.innerHTML = `<option value="">Todos</option>`;
-        idSelect.innerHTML = `<option value="">Todos</option>`;
+      
         renderTable([]);
         if (currentChart) currentChart.destroy();
         metaEl.textContent = "";
@@ -593,16 +577,6 @@ populateSelect(xVariableSelect, allCols, "Automática");
         );
       } else {
         patientSelect.innerHTML = `<option value="">No detectado</option>`;
-      }
-
-      if (idCol){
-        populateSelect(
-          idSelect,
-          uniqueSorted(currentRows.map(r => r[idCol])),
-          "Todos"
-        );
-      } else {
-        idSelect.innerHTML = `<option value="">No detectado</option>`;
       }
 
       populateSelect(variableSelect, numericCols, "Selecciona una variable");
@@ -639,14 +613,12 @@ populateSelect(xVariableSelect, allCols, "Automática");
     // =========================
     loadBtn.addEventListener("click", loadViewData);
     patientSelect.addEventListener("change", refreshLocalView);
-    idSelect.addEventListener("change", refreshLocalView);
     variableSelect.addEventListener("change", refreshLocalView);
     searchInput.addEventListener("input", refreshLocalView);
     xVariableSelect.addEventListener("change", refreshLocalView);
 
     clearBtn.addEventListener("click", () => {
       Array.from(patientSelect.options).forEach(opt => opt.selected = false);
-      idSelect.value = "";
       variableSelect.value = "";
       searchInput.value = "";
       xVariableSelect.value = "";
