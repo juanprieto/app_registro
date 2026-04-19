@@ -230,7 +230,9 @@ const VIEWS = [
   "vw_sece_vpr"
 ];
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  db: { schema: "tesis_views" }
+});
     // =========================
     // STATE
     // =========================
