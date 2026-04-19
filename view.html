@@ -270,12 +270,12 @@ const sbViews = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         .sort((a,b) => String(a).localeCompare(String(b), "es"));
     }
 
-    function detectIdColumn(row){
-      if (!row) return null;
-      const keys = Object.keys(row);
-      const candidates = ["ID_USUARIO", "id_usuario", "usuario_id", "user_id"];
-      return candidates.find(c => keys.includes(c)) || null;
-    }
+    function detectPatientColumn(row){
+  if (!row) return null;
+  const keys = Object.keys(row);
+  const candidates = ["nombre", "paciente", "NOMBRE", "Paciente"];
+  return candidates.find(c => keys.includes(c)) || null;
+}
 
     function detectPatientColumn(row){
       if (!row) return null;
@@ -433,38 +433,46 @@ const sbViews = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         (dateCol ? ` · Eje X: ${dateCol}` : "");
     }
 
-    async function loadViewData(){
-      const viewName = viewSelect.value;
-      if (!viewName){
-        setStatus("Selecciona una vista.");
-        return;
-      }
+  async function loadViewData(){
+  const viewName = viewSelect.value;
+  if (!viewName){
+    setStatus("Selecciona una vista.");
+    return;
+  }
 
-      setStatus(`Cargando ${viewName}...`);
+  setStatus(`Cargando ${viewName}...`);
 
-      const { data, error } = await sbViews
-        .from(viewName)
-        .select("*")
-        .limit(1000);
+  const { data, error } = await sbViews
+    .from(viewName)
+    .select("*")
+    .limit(1000);
 
-      if (error){
-        setStatus(`Error al cargar ${viewName}: ${error.message}`);
-        console.error(error);
-        return;
-      }
+  if (error){
+    setStatus(`Error al cargar ${viewName}: ${error.message}`);
+    console.error(error);
+    return;
+  }
 
-      currentRows = data || [];
+  const patientsMap = await loadPatientsMap();
 
-      if (!currentRows.length){
-        setStatus(`La vista ${viewName} no devolvió filas.`);
-        variableSelect.innerHTML = `<option value="">Sin variables</option>`;
-        patientSelect.innerHTML = `<option value="">Todos</option>`;
-        idSelect.innerHTML = `<option value="">Todos</option>`;
-        renderTable([]);
-        if (currentChart) currentChart.destroy();
-        metaEl.textContent = "";
-        return;
-      }
+  currentRows = (data || []).map(row => {
+    const idUsuario = row.ID_USUARIO ?? row.id_usuario ?? "";
+    return {
+      ...row,
+      nombre: patientsMap.get(String(idUsuario)) || ""
+    };
+  });
+
+  if (!currentRows.length){
+    setStatus(`La vista ${viewName} no devolvió filas.`);
+    variableSelect.innerHTML = `<option value="">Sin variables</option>`;
+    patientSelect.innerHTML = `<option value="">Todos</option>`;
+    idSelect.innerHTML = `<option value="">Todos</option>`;
+    renderTable([]);
+    if (currentChart) currentChart.destroy();
+    metaEl.textContent = "";
+    return;
+  }
 
       const firstRow = currentRows[0];
       const patientCol = detectPatientColumn(firstRow);
@@ -517,6 +525,26 @@ const sbViews = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         viewSelect.appendChild(opt);
       });
     }
+    async function loadPatientsMap() {
+  const { data, error } = await sbPublic
+    .from("pacientes")
+    .select("ID_USUARIO, nombre");
+
+  if (error) {
+    console.error("Error cargando pacientes:", error);
+    return new Map();
+  }
+
+  const map = new Map();
+
+  (data || []).forEach(row => {
+    if (row.ID_USUARIO) {
+      map.set(String(row.ID_USUARIO), row.nombre || "");
+    }
+  });
+
+  return map;
+}
 
     // =========================
     // EVENTS
