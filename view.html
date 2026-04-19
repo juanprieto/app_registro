@@ -230,7 +230,11 @@ const VIEWS = [
   "vw_sece_vpr"
 ];
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+const sbPublic = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  db: { schema: "public" }
+});
+
+const sbViews = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   db: { schema: "tesis_views" }
 });
     // =========================
@@ -438,7 +442,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
       setStatus(`Cargando ${viewName}...`);
 
-      const { data, error } = await sb
+      const { data, error } = await sbViews
         .from(viewName)
         .select("*")
         .limit(1000);
