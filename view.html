@@ -485,6 +485,26 @@
 
       return map;
     }
+    function detectIdColumn(row){
+  if (!row) return null;
+  const keys = Object.keys(row);
+  const candidates = ["ID_USUARIO", "id_usuario", "usuario_id", "user_id"];
+  return candidates.find(c => keys.includes(c)) || null;
+}
+
+function detectPatientColumn(row){
+  if (!row) return null;
+  const keys = Object.keys(row);
+  const candidates = ["nombre", "paciente", "NOMBRE", "Paciente"];
+  return candidates.find(c => keys.includes(c)) || null;
+}
+
+function detectDateColumn(row){
+  if (!row) return null;
+  const keys = Object.keys(row);
+  const candidates = ["fecha", "FECHA", "date", "created_at"];
+  return candidates.find(c => keys.includes(c)) || null;
+}
 
     async function loadViewData(){
       const viewName = viewSelect.value;
