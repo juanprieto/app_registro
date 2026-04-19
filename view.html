@@ -18,9 +18,11 @@
       --text:#1f2937;
       --muted:#6b7280;
       --accent:#2563eb;
+      --soft:#eef2ff;
+      --soft-text:#1e3a8a;
     }
 
-    *{box-sizing:border-box}
+    *{ box-sizing:border-box; }
 
     body{
       margin:0;
@@ -30,7 +32,7 @@
     }
 
     .wrap{
-      max-width:1200px;
+      max-width:1280px;
       margin:24px auto;
       padding:0 16px;
     }
@@ -50,7 +52,7 @@
 
     .grid{
       display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap:12px;
     }
 
@@ -116,6 +118,7 @@
       border-radius:12px;
       margin-top:12px;
       background:#fff;
+      max-height:600px;
     }
 
     table{
@@ -142,6 +145,55 @@
       width:100% !important;
       max-height:420px;
     }
+
+    #patientChips{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-top:8px;
+      min-height:20px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--soft);
+      color:var(--soft-text);
+      font-size:13px;
+    }
+
+    .chip button{
+      border:none;
+      background:transparent;
+      color:var(--soft-text);
+      cursor:pointer;
+      width:auto;
+      padding:0;
+      font-size:16px;
+      line-height:1;
+    }
+
+    #patientOptions{
+      border:1px solid var(--line);
+      border-radius:10px;
+      max-height:180px;
+      overflow:auto;
+      margin-top:8px;
+      background:#fff;
+    }
+
+    .patient-option{
+      padding:8px 10px;
+      cursor:pointer;
+      border-bottom:1px solid #eef2f7;
+    }
+
+    .patient-option:hover{
+      background:#f8fafc;
+    }
   </style>
 </head>
 <body>
@@ -156,24 +208,26 @@
         </div>
 
         <div>
-          <label for="patientSelect">Paciente</label>
-          <select id="patientSelect" multiple size="6"></select>
+          <label for="patientSearch">Paciente</label>
+          <input id="patientSearch" type="text" placeholder="Buscar paciente..." />
+          <div id="patientChips"></div>
+          <div id="patientOptions"></div>
         </div>
 
-              <div>
-          <label for="variableSelect">Variable</label>
+        <div>
+          <label for="variableSelect">Variable Y</label>
           <select id="variableSelect">
             <option value="">Selecciona una variable</option>
           </select>
         </div>
-  
-    <div>
-  <label for="xVariableSelect">Variable eje X</label>
-  <select id="xVariableSelect">
-    <option value="">Automática</option>
-  </select>
-</div>
-</div>
+
+        <div>
+          <label for="xVariableSelect">Variable eje X</label>
+          <select id="xVariableSelect">
+            <option value="">Automática</option>
+          </select>
+        </div>
+      </div>
 
       <div class="row">
         <div>
@@ -183,12 +237,12 @@
 
         <div>
           <label>&nbsp;</label>
-          <button id="loadBtn">Cargar datos</button>
+          <button id="loadBtn" type="button">Cargar datos</button>
         </div>
 
         <div>
           <label>&nbsp;</label>
-          <button id="clearBtn" class="secondary">Limpiar filtros</button>
+          <button id="clearBtn" type="button" class="secondary">Limpiar filtros</button>
         </div>
       </div>
 
@@ -234,30 +288,25 @@
       "vw_sece_vpr"
     ];
 
-    const sbPublic = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY,
-      { db: { schema: "public" } }
-    );
-
-    const sbViews = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_ANON_KEY,
-      { db: { schema: "tesis_views" } }
-    );
+    // Un solo cliente
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // =========================
     // STATE
     // =========================
     let currentRows = [];
     let currentChart = null;
+    let selectedPatients = [];
+    let allPatients = [];
 
     // =========================
     // ELEMENTS
     // =========================
     const viewSelect = document.getElementById("viewSelect");
-    const patientSelect = document.getElementById("patientSelect");
-    const variableSelect = document.getElementById("variableSelect"); 
+    const patientSearch = document.getElementById("patientSearch");
+    const patientChips = document.getElementById("patientChips");
+    const patientOptions = document.getElementById("patientOptions");
+    const variableSelect = document.getElementById("variableSelect");
     const xVariableSelect = document.getElementById("xVariableSelect");
     const searchInput = document.getElementById("searchInput");
     const loadBtn = document.getElementById("loadBtn");
@@ -327,6 +376,11 @@
       });
     }
 
+    function getAllColumns(rows){
+      if (!rows.length) return [];
+      return Object.keys(rows[0]).filter(col => col !== "id");
+    }
+
     function populateSelect(selectEl, values, firstLabel){
       selectEl.innerHTML = "";
 
@@ -342,22 +396,23 @@
         selectEl.appendChild(opt);
       });
     }
-function orderColumns(cols){
-  const preferredOrder = [
-    "nombre",
-    "ID_USUARIO",
-    "id_usuario",
-    "fecha",
-    "paciente"
-  ];
 
-  const preferred = preferredOrder.filter(col => cols.includes(col));
-  const rest = cols
-    .filter(col => !preferredOrder.includes(col))
-    .sort((a, b) => a.localeCompare(b, "es"));
+    function orderColumns(cols){
+      const preferredOrder = [
+        "nombre",
+        "ID_USUARIO",
+        "id_usuario",
+        "fecha",
+        "paciente"
+      ];
 
-  return [...preferred, ...rest];
-}
+      const preferred = preferredOrder.filter(col => cols.includes(col));
+      const rest = cols
+        .filter(col => !preferredOrder.includes(col))
+        .sort((a, b) => a.localeCompare(b, "es"));
+
+      return [...preferred, ...rest];
+    }
 
     function renderTable(rows){
       tableHead.innerHTML = "";
@@ -366,8 +421,8 @@ function orderColumns(cols){
       if (!rows.length) return;
 
       const cols = orderColumns(
-  Object.keys(rows[0]).filter(col => col !== "id")
-);
+        Object.keys(rows[0]).filter(col => col !== "id")
+      );
 
       const trHead = document.createElement("tr");
       cols.forEach(col => {
@@ -388,95 +443,145 @@ function orderColumns(cols){
       });
     }
 
-    function getSelectedValues(selectEl){
-  return Array.from(selectEl.selectedOptions).map(opt => opt.value).filter(Boolean);
-}
+    function renderPatientChips() {
+      patientChips.innerHTML = "";
+
+      selectedPatients.forEach(name => {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+
+        const text = document.createElement("span");
+        text.textContent = name;
+
+        const close = document.createElement("button");
+        close.textContent = "×";
+        close.type = "button";
+        close.onclick = () => {
+          selectedPatients = selectedPatients.filter(p => p !== name);
+          renderPatientChips();
+          renderPatientOptions(patientSearch.value.trim());
+          refreshLocalView();
+        };
+
+        chip.appendChild(text);
+        chip.appendChild(close);
+        patientChips.appendChild(chip);
+      });
+    }
+
+    function renderPatientOptions(query = "") {
+      patientOptions.innerHTML = "";
+
+      const normalized = query.toLowerCase();
+
+      const visible = allPatients.filter(name =>
+        !selectedPatients.includes(name) &&
+        (!normalized || String(name).toLowerCase().includes(normalized))
+      );
+
+      visible.slice(0, 50).forEach(name => {
+        const row = document.createElement("div");
+        row.className = "patient-option";
+        row.textContent = name;
+        row.onclick = () => {
+          selectedPatients.push(name);
+          selectedPatients = [...new Set(selectedPatients)].sort((a,b) => a.localeCompare(b, "es"));
+          patientSearch.value = "";
+          renderPatientChips();
+          renderPatientOptions("");
+          refreshLocalView();
+        };
+        patientOptions.appendChild(row);
+      });
+    }
 
     function applyLocalFilters(rows){
       if (!rows.length) return [];
 
-          const patientCol = detectPatientColumn(rows[0]);
+      const patientCol = detectPatientColumn(rows[0]);
 
       let out = [...rows];
 
-      const selectedPatients = getSelectedValues(patientSelect);
-
       if (selectedPatients.length && patientCol){
-       out = out.filter(r => selectedPatients.includes(String(r[patientCol])));
+        out = out.filter(r => selectedPatients.includes(String(r[patientCol])));
       }
+
       if (searchInput.value.trim()){
         const q = searchInput.value.trim().toLowerCase();
         out = out.filter(r =>
           Object.values(r).some(v => String(v ?? "").toLowerCase().includes(q))
         );
       }
+
       return out;
     }
+
     function buildChart(rows){
-  if (!rows.length){
-    metaEl.textContent = "Sin datos para graficar.";
-    if (currentChart) currentChart.destroy();
-    return;
-  }
-  const yVariable = variableSelect.value;
-  if (!yVariable){
-    metaEl.textContent = "Selecciona una variable para graficar.";
-    if (currentChart) currentChart.destroy();
-    return;
-  }
-
-  const autoDateCol = detectDateColumn(rows[0]);
-  const autoIdCol = detectIdColumn(rows[0]);
-  const autoPatientCol = detectPatientColumn(rows[0]);
-
-  const selectedX = xVariableSelect.value;
-
-  const xCol = selectedX || autoDateCol || autoPatientCol || autoIdCol;
-
-  let chartRows = rows
-    .filter(r =>
-      r[yVariable] !== null &&
-      r[yVariable] !== undefined &&
-      r[yVariable] !== "" &&
-      !isNaN(Number(r[yVariable]))
-    )
-    .map(r => ({
-      label: xCol ? String(r[xCol] ?? "") : "fila",
-      value: Number(r[yVariable])
-    }));
-
-  chartRows = chartRows.slice(0, 200);
-
-  if (currentChart) currentChart.destroy();
-
-  const ctx = document.getElementById("chart");
-
-  currentChart = new Chart(ctx, {
-    type: (xCol && xCol.toLowerCase().includes("fecha")) ? "line" : "bar",
-    data: {
-      labels: chartRows.map(r => r.label),
-      datasets: [{
-        label: yVariable,
-        data: chartRows.map(r => r.value)
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: true }
-      },
-      scales: {
-        y: { beginAtZero: false }
+      if (!rows.length){
+        metaEl.textContent = "Sin datos para graficar.";
+        if (currentChart) currentChart.destroy();
+        return;
       }
-    }
-  });
 
-  metaEl.textContent =
-    `Filas graficadas: ${chartRows.length} · Eje X: ${xCol || "automático"} · Eje Y: ${yVariable}`;
-}
+      const yVariable = variableSelect.value;
+      if (!yVariable){
+        metaEl.textContent = "Selecciona una variable para graficar.";
+        if (currentChart) currentChart.destroy();
+        return;
+      }
+
+      const autoDateCol = detectDateColumn(rows[0]);
+      const autoIdCol = detectIdColumn(rows[0]);
+      const autoPatientCol = detectPatientColumn(rows[0]);
+
+      const selectedX = xVariableSelect.value;
+      const xCol = selectedX || autoDateCol || autoPatientCol || autoIdCol;
+
+      let chartRows = rows
+        .filter(r =>
+          r[yVariable] !== null &&
+          r[yVariable] !== undefined &&
+          r[yVariable] !== "" &&
+          !isNaN(Number(r[yVariable]))
+        )
+        .map(r => ({
+          label: xCol ? String(r[xCol] ?? "") : "fila",
+          value: Number(r[yVariable])
+        }));
+
+      chartRows = chartRows.slice(0, 200);
+
+      if (currentChart) currentChart.destroy();
+
+      const ctx = document.getElementById("chart");
+
+      currentChart = new Chart(ctx, {
+        type: (xCol && xCol.toLowerCase().includes("fecha")) ? "line" : "bar",
+        data: {
+          labels: chartRows.map(r => r.label),
+          datasets: [{
+            label: yVariable,
+            data: chartRows.map(r => r.value)
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: { beginAtZero: false }
+          }
+        }
+      });
+
+      metaEl.textContent =
+        `Filas graficadas: ${chartRows.length} · Eje X: ${xCol || "automático"} · Eje Y: ${yVariable}`;
+    }
 
     async function loadPatientsMap() {
-      const { data, error } = await sbPublic
+      const { data, error } = await sb
+        .schema("public")
         .from("pacientes")
         .select("ID_USUARIO, nombre");
 
@@ -495,30 +600,6 @@ function orderColumns(cols){
 
       return map;
     }
-    function detectIdColumn(row){
-  if (!row) return null;
-  const keys = Object.keys(row);
-  const candidates = ["ID_USUARIO", "id_usuario", "usuario_id", "user_id"];
-  return candidates.find(c => keys.includes(c)) || null;
-}
-
-function detectPatientColumn(row){
-  if (!row) return null;
-  const keys = Object.keys(row);
-  const candidates = ["nombre", "paciente", "NOMBRE", "Paciente"];
-  return candidates.find(c => keys.includes(c)) || null;
-}
-
-function detectDateColumn(row){
-  if (!row) return null;
-  const keys = Object.keys(row);
-  const candidates = ["fecha", "FECHA", "date", "created_at"];
-  return candidates.find(c => keys.includes(c)) || null;
-}
-    function getAllColumns(rows){
-  if (!rows.length) return [];
-  return Object.keys(rows[0]).filter(col => col !== "id");
-}
 
     async function loadViewData(){
       const viewName = viewSelect.value;
@@ -530,7 +611,8 @@ function detectDateColumn(row){
 
       setStatus(`Cargando ${viewName}...`);
 
-      const { data, error } = await sbViews
+      const { data, error } = await sb
+        .schema("tesis_views")
         .from(viewName)
         .select("*")
         .limit(1000);
@@ -554,32 +636,35 @@ function detectDateColumn(row){
       if (!currentRows.length){
         setStatus(`La vista ${viewName} no devolvió filas.`);
         variableSelect.innerHTML = `<option value="">Sin variables</option>`;
-        patientSelect.innerHTML = `<option value="">Todos</option>`;
-      
+        xVariableSelect.innerHTML = `<option value="">Automática</option>`;
         renderTable([]);
         if (currentChart) currentChart.destroy();
         metaEl.textContent = "";
+        allPatients = [];
+        selectedPatients = [];
+        renderPatientChips();
+        renderPatientOptions("");
         return;
       }
 
       const firstRow = currentRows[0];
       const patientCol = detectPatientColumn(firstRow);
-      const idCol = detectIdColumn(firstRow);
       const numericCols = getNumericColumns(currentRows);
       const allCols = getAllColumns(currentRows);
-populateSelect(xVariableSelect, allCols, "Automática");
 
       if (patientCol){
-        populateSelect(
-          patientSelect,
-          uniqueSorted(currentRows.map(r => r[patientCol])),
-          "Todos"
-        );
+        allPatients = uniqueSorted(currentRows.map(r => r[patientCol]));
+        renderPatientChips();
+        renderPatientOptions("");
       } else {
-        patientSelect.innerHTML = `<option value="">No detectado</option>`;
+        allPatients = [];
+        selectedPatients = [];
+        renderPatientChips();
+        renderPatientOptions("");
       }
 
       populateSelect(variableSelect, numericCols, "Selecciona una variable");
+      populateSelect(xVariableSelect, allCols, "Automática");
 
       const filtered = applyLocalFilters(currentRows);
       renderTable(filtered);
@@ -612,16 +697,23 @@ populateSelect(xVariableSelect, allCols, "Automática");
     // EVENTS
     // =========================
     loadBtn.addEventListener("click", loadViewData);
-    patientSelect.addEventListener("change", refreshLocalView);
+
+    patientSearch.addEventListener("input", () => {
+      renderPatientOptions(patientSearch.value.trim());
+    });
+
     variableSelect.addEventListener("change", refreshLocalView);
-    searchInput.addEventListener("input", refreshLocalView);
     xVariableSelect.addEventListener("change", refreshLocalView);
+    searchInput.addEventListener("input", refreshLocalView);
 
     clearBtn.addEventListener("click", () => {
-      Array.from(patientSelect.options).forEach(opt => opt.selected = false);
-      variableSelect.value = "";
+      selectedPatients = [];
+      patientSearch.value = "";
       searchInput.value = "";
+      variableSelect.value = "";
       xVariableSelect.value = "";
+      renderPatientChips();
+      renderPatientOptions("");
       refreshLocalView();
     });
 
@@ -629,6 +721,8 @@ populateSelect(xVariableSelect, allCols, "Automática");
     // INIT
     // =========================
     initViews();
+    renderPatientChips();
+    renderPatientOptions("");
     setStatus("Selecciona una vista y pulsa Cargar datos.");
   </script>
 </body>
