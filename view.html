@@ -49,6 +49,7 @@
       padding:16px;
       margin-bottom:16px;
     }
+    
 
     .grid{
       display:grid;
@@ -175,7 +176,9 @@
       font-size:16px;
       line-height:1;
     }
-
+.full-width{
+  grid-column: 1 / -1;
+}
     #patientOptions{
       border:1px solid var(--line);
       border-radius:10px;
@@ -207,12 +210,12 @@
           <select id="viewSelect"></select>
         </div>
 
-        <div>
-          <label for="patientSearch">Paciente</label>
-          <input id="patientSearch" type="text" placeholder="Buscar paciente..." />
-          <div id="patientChips"></div>
-          <div id="patientOptions"></div>
-        </div>
+        <div class="full-width">
+  <label for="patientSearch">Paciente</label>
+  <input id="patientSearch" type="text" placeholder="Buscar paciente..." />
+  <div id="patientChips"></div>
+  <div id="patientOptions"></div>
+</div>
 
         <div>
           <label for="variableSelect">Variable Y</label>
@@ -249,10 +252,10 @@
       <div id="status" class="status">Listo.</div>
     </div>
 
-    <div class="card">
-      <canvas id="chart"></canvas>
-      <div id="meta" class="meta"></div>
-    </div>
+    <div class="card" id="chartCard" style="display:none;">
+  <canvas id="chart"></canvas>
+  <div id="meta" class="meta"></div>
+</div>
 
     <div class="card">
       <div class="table-wrap">
@@ -312,7 +315,7 @@
     const loadBtn = document.getElementById("loadBtn");
     const clearBtn = document.getElementById("clearBtn");
     const statusEl = document.getElementById("status");
-    const metaEl = document.getElementById("meta");
+    const metaEl = document.getElementById("meta"); const chartCard = document.getElementById("chartCard");
     const tableHead = document.querySelector("#dataTable thead");
     const tableBody = document.querySelector("#dataTable tbody");
 
@@ -517,18 +520,23 @@
     }
 
     function buildChart(rows){
+     
       if (!rows.length){
-        metaEl.textContent = "Sin datos para graficar.";
-        if (currentChart) currentChart.destroy();
-        return;
-      }
+  chartCard.style.display = "none";
+  metaEl.textContent = "";
+  if (currentChart) currentChart.destroy();
+  return;
+}
 
-      const yVariable = variableSelect.value;
-      if (!yVariable){
-        metaEl.textContent = "Selecciona una variable para graficar.";
-        if (currentChart) currentChart.destroy();
-        return;
-      }
+const yVariable = variableSelect.value;
+if (!yVariable){
+  chartCard.style.display = "none";
+  metaEl.textContent = "";
+  if (currentChart) currentChart.destroy();
+  return;
+}
+
+chartCard.style.display = "block";
 
       const autoDateCol = detectDateColumn(rows[0]);
       const autoIdCol = detectIdColumn(rows[0]);
@@ -644,6 +652,7 @@
         selectedPatients = [];
         renderPatientChips();
         renderPatientOptions("");
+        chartCard.style.display = "none";
         return;
       }
 
