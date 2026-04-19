@@ -200,71 +200,117 @@
   </style>
 </head>
 <body>
+
   <div class="wrap">
+
     <h1>Visualizador de vistas SECE</h1>
 
     <div class="card">
+
       <div class="grid">
+
         <div>
+
           <label for="viewSelect">Vista</label>
+
           <select id="viewSelect"></select>
+
+        </div>
+
+        <div>
+
+          <label for="variableSelect">Variable Y</label>
+
+          <select id="variableSelect">
+
+            <option value="">Selecciona una variable</option>
+
+          </select>
+
+        </div>
+
+        <div>
+
+          <label for="xVariableSelect">Variable eje X</label>
+
+          <select id="xVariableSelect">
+
+            <option value="">Automática</option>
+
+          </select>
+
         </div>
 
         <div class="full-width">
-  <label for="patientSearch">Paciente</label>
-  <input id="patientSearch" type="text" placeholder="Buscar paciente..." />
-  <div id="patientChips"></div>
-  <div id="patientOptions"></div>
-</div>
 
-        <div>
-          <label for="variableSelect">Variable Y</label>
-          <select id="variableSelect">
-            <option value="">Selecciona una variable</option>
-          </select>
+          <label for="patientSearch">Paciente</label>
+
+          <input id="patientSearch" type="text" placeholder="Buscar paciente..." />
+
+          <div id="patientChips"></div>
+
+          <div id="patientOptions"></div>
+
         </div>
 
-        <div>
-          <label for="xVariableSelect">Variable eje X</label>
-          <select id="xVariableSelect">
-            <option value="">Automática</option>
-          </select>
-        </div>
       </div>
 
       <div class="row">
+
         <div>
+
           <label for="searchInput">Filtro texto libre</label>
+
           <input id="searchInput" type="text" placeholder="Buscar en filas cargadas" />
+
         </div>
 
         <div>
+
           <label>&nbsp;</label>
+
           <button id="loadBtn" type="button">Cargar datos</button>
+
         </div>
 
         <div>
+
           <label>&nbsp;</label>
+
           <button id="clearBtn" type="button" class="secondary">Limpiar filtros</button>
+
         </div>
+
       </div>
 
       <div id="status" class="status">Listo.</div>
+
     </div>
 
     <div class="card" id="chartCard" style="display:none;">
-  <canvas id="chart"></canvas>
-  <div id="meta" class="meta"></div>
-</div>
+
+      <canvas id="chart"></canvas>
+
+      <div id="meta" class="meta"></div>
+
+    </div>
 
     <div class="card">
+
       <div class="table-wrap">
+
         <table id="dataTable">
+
           <thead></thead>
+
           <tbody></tbody>
+
         </table>
+
       </div>
+
     </div>
+
   </div>
 
   <script>
