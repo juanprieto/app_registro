@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SECE · Visualizador VW</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --line:#d9deea;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --accent:#2563eb;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .wrap{
+      max-width:1200px;
+      margin:24px auto;
+      padding:0 16px;
+    }
+
+    h1{
+      margin:0 0 16px;
+      font-size:24px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+      margin-bottom:16px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap:12px;
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:6px;
+      font-weight:700;
+    }
+
+    select, input, button{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fff;
+      font-size:14px;
+    }
+
+    button{
+      cursor:pointer;
+      background:var(--accent);
+      color:#fff;
+      border:none;
+      font-weight:700;
+    }
+
+    button.secondary{
+      background:#eef2ff;
+      color:#1e3a8a;
+      border:1px solid #c7d2fe;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:end;
+    }
+
+    .row > div{
+      flex:1 1 220px;
+    }
+
+    .meta{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:8px;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      margin-top:12px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      background:#fff;
+    }
+
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    th{
+      background:#f8fafc;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    .status{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:8px;
+      white-space:pre-wrap;
+    }
+
+    canvas{
+      width:100% !important;
+      max-height:420px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Visualizador de vistas SECE</h1>
+
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label for="viewSelect">Vista</label>
+          <select id="viewSelect"></select>
+        </div>
+
+        <div>
+          <label for="patientSelect">Paciente</label>
+          <select id="patientSelect">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="idSelect">ID_USUARIO</label>
+          <select id="idSelect">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="variableSelect">Variable</label>
+          <select id="variableSelect">
+            <option value="">Selecciona una variable</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label for="searchInput">Filtro texto libre</label>
+          <input id="searchInput" type="text" placeholder="Buscar en filas cargadas" />
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="loadBtn">Cargar datos</button>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="clearBtn" class="secondary">Limpiar filtros</button>
+        </div>
+      </div>
+
+      <div id="status" class="status">Listo.</div>
+    </div>
+
+    <div class="card">
+      <canvas id="chart"></canvas>
+      <div id="meta" class="meta"></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table id="dataTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // CONFIG
+    // =========================
+    const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
+
+
+    const VIEWS = [
+      "vw_sece_a_proporcion",
+      "vw_sece_c_conciencia",
+      "vw_sece_c_economica",
+      "vw_sece_c_educativo_laboral",
+      "vw_sece_c_sociodemo",
+      "vw_sece_carga_ajustada",
+      "vw_sece_cargas_base",
+      "vw_sece_clinico",
+      "vw_sece_cronicidad",
+      "vw_sece_precocidad",
+      "vw_sece_sub_a",
+      "vw_sece_sub_c",
+      "vw_sece_vpr"
+    ];
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // =========================
+    // STATE
+    // =========================
+    let currentRows = [];
+    let currentChart = null;
+
+    // =========================
+    // ELEMENTS
+    // =========================
+    const viewSelect = document.getElementById("viewSelect");
+    const patientSelect = document.getElementById("patientSelect");
+    const idSelect = document.getElementById("idSelect");
+    const variableSelect = document.getElementById("variableSelect");
+    const searchInput = document.getElementById("searchInput");
+    const loadBtn = document.getElementById("loadBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const statusEl = document.getElementById("status");
+    const metaEl = document.getElementById("meta");
+    const tableHead = document.querySelector("#dataTable thead");
+    const tableBody = document.querySelector("#dataTable tbody");
+
+    // =========================
+    // HELPERS
+    // =========================
+    function setStatus(text){
+      statusEl.textContent = text;
+    }
+
+    function uniqueSorted(arr){
+      return [...new Set(arr.filter(v => v !== null && v !== undefined && v !== ""))]
+        .sort((a,b) => String(a).localeCompare(String(b), "es"));
+    }
+
+    function detectIdColumn(row){
+      if (!row) return null;
+      const keys = Object.keys(row);
+      const candidates = ["ID_USUARIO", "id_usuario", "usuario_id", "user_id"];
+      return candidates.find(c => keys.includes(c)) || null;
+    }
+
+    function detectPatientColumn(row){
+      if (!row) return null;
+      const keys = Object.keys(row);
+      const candidates = ["paciente", "nombre", "NOMBRE", "Paciente"];
+      return candidates.find(c => keys.includes(c)) || null;
+    }
+
+    function detectDateColumn(row){
+      if (!row) return null;
+      const keys = Object.keys(row);
+      const candidates = ["fecha", "FECHA", "date", "created_at"];
+      return candidates.find(c => keys.includes(c)) || null;
+    }
+
+    function getNumericColumns(rows){
+      if (!rows.length) return [];
+      const keys = Object.keys(rows[0]);
+
+      return keys.filter(key => {
+        if (["ID_USUARIO", "id_usuario", "paciente", "nombre", "fecha", "created_at"].includes(key)) return false;
+
+        const sample = rows
+          .map(r => r[key])
+          .filter(v => v !== null && v !== undefined && v !== "")
+          .slice(0, 20);
+
+        if (!sample.length) return false;
+
+        return sample.every(v => !isNaN(Number(v)));
+      });
+    }
+
+    function populateSelect(selectEl, values, firstLabel){
+      selectEl.innerHTML = "";
+      const first = document.createElement("option");
+      first.value = "";
+      first.textContent = firstLabel;
+      selectEl.appendChild(first);
+
+      values.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        selectEl.appendChild(opt);
+      });
+    }
+
+    function renderTable(rows){
+      tableHead.innerHTML = "";
+      tableBody.innerHTML = "";
+
+      if (!rows.length){
+        return;
+      }
+
+      const cols = Object.keys(rows[0]);
+
+      const trHead = document.createElement("tr");
+      cols.forEach(col => {
+        const th = document.createElement("th");
+        th.textContent = col;
+        trHead.appendChild(th);
+      });
+      tableHead.appendChild(trHead);
+
+      rows.forEach(row => {
+        const tr = document.createElement("tr");
+        cols.forEach(col => {
+          const td = document.createElement("td");
+          td.textContent = row[col] ?? "";
+          tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function applyLocalFilters(rows){
+      const idCol = detectIdColumn(rows[0]);
+      const patientCol = detectPatientColumn(rows[0]);
+
+      let out = [...rows];
+
+      if (patientSelect.value && patientCol){
+        out = out.filter(r => String(r[patientCol]) === String(patientSelect.value));
+      }
+
+      if (idSelect.value && idCol){
+        out = out.filter(r => String(r[idCol]) === String(idSelect.value));
+      }
+
+      if (searchInput.value.trim()){
+        const q = searchInput.value.trim().toLowerCase();
+        out = out.filter(r =>
+          Object.values(r).some(v => String(v ?? "").toLowerCase().includes(q))
+        );
+      }
+
+      return out;
+    }
+
+    function buildChart(rows){
+      const variable = variableSelect.value;
+      if (!variable){
+        metaEl.textContent = "Selecciona una variable para graficar.";
+        if (currentChart) currentChart.destroy();
+        return;
+      }
+
+      const dateCol = detectDateColumn(rows[0]);
+      const idCol = detectIdColumn(rows[0]);
+      const patientCol = detectPatientColumn(rows[0]);
+
+      let chartRows = rows
+        .filter(r => r[variable] !== null && r[variable] !== undefined && r[variable] !== "" && !isNaN(Number(r[variable])))
+        .map(r => ({
+          label: dateCol
+            ? String(r[dateCol])
+            : patientCol
+              ? String(r[patientCol])
+              : idCol
+                ? String(r[idCol])
+                : "fila",
+          value: Number(r[variable])
+        }));
+
+      chartRows = chartRows.slice(0, 200);
+
+      const ctx = document.getElementById("chart");
+
+      if (currentChart) currentChart.destroy();
+
+      currentChart = new Chart(ctx, {
+        type: dateCol ? "line" : "bar",
+        data: {
+          labels: chartRows.map(r => r.label),
+          datasets: [{
+            label: variable,
+            data: chartRows.map(r => r.value)
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: { beginAtZero: false }
+          }
+        }
+      });
+
+      metaEl.textContent =
+        `Filas graficadas: ${chartRows.length} · Variable: ${variable}` +
+        (dateCol ? ` · Eje X: ${dateCol}` : "");
+    }
+
+    async function loadViewData(){
+      const viewName = viewSelect.value;
+      if (!viewName){
+        setStatus("Selecciona una vista.");
+        return;
+      }
+
+      setStatus(`Cargando ${viewName}...`);
+
+      const { data, error } = await supabase
+        .from(viewName)
+        .select("*")
+        .limit(1000);
+
+      if (error){
+        setStatus(`Error al cargar ${viewName}: ${error.message}`);
+        console.error(error);
+        return;
+      }
+
+      currentRows = data || [];
+
+      if (!currentRows.length){
+        setStatus(`La vista ${viewName} no devolvió filas.`);
+        variableSelect.innerHTML = `<option value="">Sin variables</option>`;
+        patientSelect.innerHTML = `<option value="">Todos</option>`;
+        idSelect.innerHTML = `<option value="">Todos</option>`;
+        renderTable([]);
+        if (currentChart) currentChart.destroy();
+        metaEl.textContent = "";
+        return;
+      }
+
+      const firstRow = currentRows[0];
+      const patientCol = detectPatientColumn(firstRow);
+      const idCol = detectIdColumn(firstRow);
+      const numericCols = getNumericColumns(currentRows);
+
+      if (patientCol){
+        populateSelect(
+          patientSelect,
+          uniqueSorted(currentRows.map(r => r[patientCol])),
+          "Todos"
+        );
+      } else {
+        patientSelect.innerHTML = `<option value="">No detectado</option>`;
+      }
+
+      if (idCol){
+        populateSelect(
+          idSelect,
+          uniqueSorted(currentRows.map(r => r[idCol])),
+          "Todos"
+        );
+      } else {
+        idSelect.innerHTML = `<option value="">No detectado</option>`;
+      }
+
+      populateSelect(variableSelect, numericCols, "Selecciona una variable");
+
+      const filtered = applyLocalFilters(currentRows);
+      renderTable(filtered);
+      buildChart(filtered);
+
+      setStatus(`Vista cargada: ${viewName} · Filas: ${currentRows.length}`);
+    }
+
+    function refreshLocalView(){
+      if (!currentRows.length) return;
+      const filtered = applyLocalFilters(currentRows);
+      renderTable(filtered);
+      buildChart(filtered);
+      setStatus(`Filas visibles: ${filtered.length} / ${currentRows.length}`);
+    }
+
+    function initViews(){
+      viewSelect.innerHTML = "";
+      VIEWS.forEach(vw => {
+        const opt = document.createElement("option");
+        opt.value = vw;
+        opt.textContent = vw;
+        viewSelect.appendChild(opt);
+      });
+    }
+
+    // =========================
+    // EVENTS
+    // =========================
+    loadBtn.addEventListener("click", loadViewData);
+    patientSelect.addEventListener("change", refreshLocalView);
+    idSelect.addEventListener("change", refreshLocalView);
+    variableSelect.addEventListener("change", refreshLocalView);
+    searchInput.addEventListener("input", refreshLocalView);
+
+    clearBtn.addEventListener("click", () => {
+      patientSelect.value = "";
+      idSelect.value = "";
+      variableSelect.value = "";
+      searchInput.value = "";
+      refreshLocalView();
+    });
+
+    // =========================
+    // INIT
+    // =========================
+    initViews();
+    setStatus("Selecciona una vista y pulsa Cargar datos.");
+  </script>
+</body>
+</html>
