@@ -176,6 +176,12 @@
           </select>
         </div>
       </div>
+      <div>
+  <label for="xVariableSelect">Variable eje X</label>
+  <select id="xVariableSelect">
+    <option value="">Automática</option>
+  </select>
+</div>
 
       <div class="row">
         <div>
@@ -260,7 +266,7 @@
     const viewSelect = document.getElementById("viewSelect");
     const patientSelect = document.getElementById("patientSelect");
     const idSelect = document.getElementById("idSelect");
-    const variableSelect = document.getElementById("variableSelect");
+    const variableSelect = document.getElementById("variableSelect"); const xVariableSelect = document.getElementById("xVariableSelect");
     const searchInput = document.getElementById("searchInput");
     const loadBtn = document.getElementById("loadBtn");
     const clearBtn = document.getElementById("clearBtn");
@@ -399,71 +405,68 @@
     }
 
     function buildChart(rows){
-      if (!rows.length){
-        metaEl.textContent = "Sin datos para graficar.";
-        if (currentChart) currentChart.destroy();
-        return;
+  if (!rows.length){
+    metaEl.textContent = "Sin datos para graficar.";
+    if (currentChart) currentChart.destroy();
+    return;
+  }
+
+  const yVariable = variableSelect.value;
+  if (!yVariable){
+    metaEl.textContent = "Selecciona una variable para graficar.";
+    if (currentChart) currentChart.destroy();
+    return;
+  }
+
+  const autoDateCol = detectDateColumn(rows[0]);
+  const autoIdCol = detectIdColumn(rows[0]);
+  const autoPatientCol = detectPatientColumn(rows[0]);
+
+  const selectedX = xVariableSelect.value;
+
+  const xCol = selectedX || autoDateCol || autoPatientCol || autoIdCol;
+
+  let chartRows = rows
+    .filter(r =>
+      r[yVariable] !== null &&
+      r[yVariable] !== undefined &&
+      r[yVariable] !== "" &&
+      !isNaN(Number(r[yVariable]))
+    )
+    .map(r => ({
+      label: xCol ? String(r[xCol] ?? "") : "fila",
+      value: Number(r[yVariable])
+    }));
+
+  chartRows = chartRows.slice(0, 200);
+
+  if (currentChart) currentChart.destroy();
+
+  const ctx = document.getElementById("chart");
+
+  currentChart = new Chart(ctx, {
+    type: (xCol && xCol.toLowerCase().includes("fecha")) ? "line" : "bar",
+    data: {
+      labels: chartRows.map(r => r.label),
+      datasets: [{
+        label: yVariable,
+        data: chartRows.map(r => r.value)
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true }
+      },
+      scales: {
+        y: { beginAtZero: false }
       }
-
-      const variable = variableSelect.value;
-      if (!variable){
-        metaEl.textContent = "Selecciona una variable para graficar.";
-        if (currentChart) currentChart.destroy();
-        return;
-      }
-
-      const dateCol = detectDateColumn(rows[0]);
-      const idCol = detectIdColumn(rows[0]);
-      const patientCol = detectPatientColumn(rows[0]);
-
-      let chartRows = rows
-        .filter(r =>
-          r[variable] !== null &&
-          r[variable] !== undefined &&
-          r[variable] !== "" &&
-          !isNaN(Number(r[variable]))
-        )
-        .map(r => ({
-          label: dateCol
-            ? String(r[dateCol])
-            : patientCol
-              ? String(r[patientCol])
-              : idCol
-                ? String(r[idCol])
-                : "fila",
-          value: Number(r[variable])
-        }));
-
-      chartRows = chartRows.slice(0, 200);
-
-      if (currentChart) currentChart.destroy();
-
-      const ctx = document.getElementById("chart");
-
-      currentChart = new Chart(ctx, {
-        type: dateCol ? "line" : "bar",
-        data: {
-          labels: chartRows.map(r => r.label),
-          datasets: [{
-            label: variable,
-            data: chartRows.map(r => r.value)
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true }
-          },
-          scales: {
-            y: { beginAtZero: false }
-          }
-        }
-      });
-
-      metaEl.textContent =
-        `Filas graficadas: ${chartRows.length} · Variable: ${variable}` +
-        (dateCol ? ` · Eje X: ${dateCol}` : "");
     }
+  });
+
+  metaEl.textContent =
+    `Filas graficadas: ${chartRows.length} · Eje X: ${xCol || "automático"} · Eje Y: ${yVariable}`;
+}
 
     async function loadPatientsMap() {
       const { data, error } = await sbPublic
@@ -504,6 +507,10 @@ function detectDateColumn(row){
   const keys = Object.keys(row);
   const candidates = ["fecha", "FECHA", "date", "created_at"];
   return candidates.find(c => keys.includes(c)) || null;
+}
+    function getAllColumns(rows){
+  if (!rows.length) return [];
+  return Object.keys(rows[0]).filter(col => col !== "id");
 }
 
     async function loadViewData(){
@@ -552,6 +559,8 @@ function detectDateColumn(row){
       const patientCol = detectPatientColumn(firstRow);
       const idCol = detectIdColumn(firstRow);
       const numericCols = getNumericColumns(currentRows);
+      const allCols = getAllColumns(currentRows);
+populateSelect(xVariableSelect, allCols, "Automática");
 
       if (patientCol){
         populateSelect(
@@ -610,12 +619,14 @@ function detectDateColumn(row){
     idSelect.addEventListener("change", refreshLocalView);
     variableSelect.addEventListener("change", refreshLocalView);
     searchInput.addEventListener("input", refreshLocalView);
+    xVariableSelect.addEventListener("change", refreshLocalView);
 
     clearBtn.addEventListener("click", () => {
       patientSelect.value = "";
       idSelect.value = "";
       variableSelect.value = "";
       searchInput.value = "";
+      xVariableSelect.value = "";
       refreshLocalView();
     });
 
