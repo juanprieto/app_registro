@@ -157,9 +157,7 @@
 
         <div>
           <label for="patientSelect">Paciente</label>
-          <select id="patientSelect">
-            <option value="">Todos</option>
-          </select>
+          <select id="patientSelect" multiple size="6"></select>
         </div>
 
         <div>
@@ -351,6 +349,22 @@
         selectEl.appendChild(opt);
       });
     }
+function orderColumns(cols){
+  const preferredOrder = [
+    "nombre",
+    "ID_USUARIO",
+    "id_usuario",
+    "fecha",
+    "paciente"
+  ];
+
+  const preferred = preferredOrder.filter(col => cols.includes(col));
+  const rest = cols
+    .filter(col => !preferredOrder.includes(col))
+    .sort((a, b) => a.localeCompare(b, "es"));
+
+  return [...preferred, ...rest];
+}
 
     function renderTable(rows){
       tableHead.innerHTML = "";
@@ -358,7 +372,9 @@
 
       if (!rows.length) return;
 
-      const cols = Object.keys(rows[0]).filter(col => col !== "id");
+      const cols = orderColumns(
+  Object.keys(rows[0]).filter(col => col !== "id")
+);
 
       const trHead = document.createElement("tr");
       cols.forEach(col => {
@@ -379,6 +395,10 @@
       });
     }
 
+    function getSelectedValues(selectEl){
+  return Array.from(selectEl.selectedOptions).map(opt => opt.value).filter(Boolean);
+}
+
     function applyLocalFilters(rows){
       if (!rows.length) return [];
 
@@ -387,9 +407,11 @@
 
       let out = [...rows];
 
-      if (patientSelect.value && patientCol){
-        out = out.filter(r => String(r[patientCol]) === String(patientSelect.value));
-      }
+      const selectedPatients = getSelectedValues(patientSelect);
+
+if (selectedPatients.length && patientCol){
+  out = out.filter(r => selectedPatients.includes(String(r[patientCol])));
+}
 
       if (idSelect.value && idCol){
         out = out.filter(r => String(r[idCol]) === String(idSelect.value));
@@ -623,7 +645,7 @@ populateSelect(xVariableSelect, allCols, "Automática");
     xVariableSelect.addEventListener("change", refreshLocalView);
 
     clearBtn.addEventListener("click", () => {
-      patientSelect.value = "";
+      Array.from(patientSelect.options).forEach(opt => opt.selected = false);
       idSelect.value = "";
       variableSelect.value = "";
       searchInput.value = "";
