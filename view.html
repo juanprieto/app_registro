@@ -347,6 +347,8 @@
     let currentChart = null;
     let selectedPatients = [];
     let allPatients = [];
+    let sortColumn = null;
+    let sortDirection = "asc";
 
     // =========================
     // ELEMENTS
@@ -462,35 +464,87 @@
 
       return [...preferred, ...rest];
     }
+    function normalizeValue(value){
+  if (value === null || value === undefined || value === "") return null;
+
+  const asNumber = Number(value);
+  if (!isNaN(asNumber) && String(value).trim() !== "") return asNumber;
+
+  const asDate = Date.parse(value);
+  if (!isNaN(asDate)) return asDate;
+
+  return String(value).toLowerCase();
+}
+
+function sortRows(rows){
+  if (!sortColumn) return rows;
+
+  const sorted = [...rows].sort((a, b) => {
+    const va = normalizeValue(a[sortColumn]);
+    const vb = normalizeValue(b[sortColumn]);
+
+    if (va === null && vb === null) return 0;
+    if (va === null) return 1;
+    if (vb === null) return -1;
+
+    if (va < vb) return sortDirection === "asc" ? -1 : 1;
+    if (va > vb) return sortDirection === "asc" ? 1 : -1;
+    return 0;
+  });
+
+  return sorted;
+}
 
     function renderTable(rows){
-      tableHead.innerHTML = "";
-      tableBody.innerHTML = "";
+  tableHead.innerHTML = "";
+  tableBody.innerHTML = "";
 
-      if (!rows.length) return;
+  if (!rows.length) return;
 
-      const cols = orderColumns(
-        Object.keys(rows[0]).filter(col => col !== "id")
-      );
+  const cols = orderColumns(
+    Object.keys(rows[0]).filter(col => col !== "id")
+  );
 
-      const trHead = document.createElement("tr");
-      cols.forEach(col => {
-        const th = document.createElement("th");
-        th.textContent = col;
-        trHead.appendChild(th);
-      });
-      tableHead.appendChild(trHead);
+  const sortedRows = sortRows(rows);
 
-      rows.forEach(row => {
-        const tr = document.createElement("tr");
-        cols.forEach(col => {
-          const td = document.createElement("td");
-          td.textContent = row[col] ?? "";
-          tr.appendChild(td);
-        });
-        tableBody.appendChild(tr);
-      });
-    }
+  const trHead = document.createElement("tr");
+
+  cols.forEach(col => {
+    const th = document.createElement("th");
+    th.style.cursor = "pointer";
+
+    const arrow =
+      sortColumn === col
+        ? (sortDirection === "asc" ? " ▲" : " ▼")
+        : "";
+
+    th.textContent = col + arrow;
+
+    th.onclick = () => {
+      if (sortColumn === col) {
+        sortDirection = sortDirection === "asc" ? "desc" : "asc";
+      } else {
+        sortColumn = col;
+        sortDirection = "asc";
+      }
+      refreshLocalView();
+    };
+
+    trHead.appendChild(th);
+  });
+
+  tableHead.appendChild(trHead);
+
+  sortedRows.forEach(row => {
+    const tr = document.createElement("tr");
+    cols.forEach(col => {
+      const td = document.createElement("td");
+      td.textContent = row[col] ?? "";
+      tr.appendChild(td);
+    });
+    tableBody.appendChild(tr);
+  });
+}
 
     function renderPatientChips() {
       patientChips.innerHTML = "";
@@ -528,7 +582,7 @@
         (!normalized || String(name).toLowerCase().includes(normalized))
       );
 
-      visible.slice(0, 50).forEach(name => {
+      visible.forEach(name => {
         const row = document.createElement("div");
         row.className = "patient-option";
         row.textContent = name;
@@ -722,6 +776,8 @@ chartCard.style.display = "block";
       populateSelect(xVariableSelect, allCols, "Automática");
 
       const filtered = applyLocalFilters(currentRows);
+      sortColumn = null;
+      sortDirection = "asc";
       renderTable(filtered);
       buildChart(filtered);
 
