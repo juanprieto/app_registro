@@ -102,6 +102,7 @@ button.secondary{
   color:#1e3a8a;
   border:1px solid #c7d2fe;
 }
+    
 
 .row{
   display:flex;
@@ -234,6 +235,63 @@ canvas{
     grid-template-columns: 1fr;
   }
 }
+    @media print {
+  body {
+    background: #fff;
+  }
+
+  .wrap {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  button,
+  #loadBtn,
+  #clearBtn,
+  #printBtn,
+  #swapAxesBtn,
+  #patientSearch,
+  #patientOptions,
+  #patientChips,
+  .status {
+    display: none !important;
+  }
+
+  .card {
+    border: none;
+    box-shadow: none;
+    margin: 0 0 12px 0;
+    padding: 0;
+  }
+
+  #chartCard {
+    display: none !important;
+  }
+
+  .table-wrap {
+    max-height: none;
+    overflow: visible;
+    border: none;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    font-size: 11px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    white-space: nowrap;
+  }
+
+  th {
+    position: static;
+    background: #f3f4f6 !important;
+  }
+}
   </style>
 </head>
 <body>
@@ -313,6 +371,10 @@ canvas{
           <button id="clearBtn" type="button" class="secondary">Limpiar filtros</button>
         </div>
       </div>
+      <div>
+  <label>&nbsp;</label>
+  <button id="printBtn" type="button" class="secondary">Imprimir resultados</button>
+</div>
 
       <div id="status" class="status">Listo.</div>
     </div>
@@ -412,6 +474,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const chartCard = document.getElementById("chartCard");
     const tableHead = document.querySelector("#dataTable thead");
     const tableBody = document.querySelector("#dataTable tbody");
+    const printBtn = document.getElementById("printBtn");
 
     // =========================
     // HELPERS
@@ -1000,6 +1063,9 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     chartTypeSelect.addEventListener("change", refreshLocalView);
     seriesLimitSelect.addEventListener("change", refreshLocalView);
     searchInput.addEventListener("input", refreshLocalView);
+    printBtn.addEventListener("click", () => {
+  window.print();
+});
 
     swapAxesBtn.addEventListener("click", () => {
       const selectedY = getSelectedValues(variableSelect);
