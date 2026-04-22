@@ -213,33 +213,43 @@
 
           <label for="viewSelect">Vista</label>
 
-          <select id="viewSelect"></select>
+          <select id="viewSelect"></select><div>
+  <label for="variableSelect">Variables Y</label>
+  <select id="variableSelect" multiple size="8"></select>
+</div>
+
+<div>
+  <label for="xVariableSelect">Variable eje X</label>
+  <select id="xVariableSelect">
+    <option value="">Automática</option>
+  </select>
+</div>
+
+<div>
+  <label for="chartTypeSelect">Tipo de gráfico</label>
+  <select id="chartTypeSelect">
+    <option value="auto">Automático</option>
+    <option value="line">Líneas</option>
+    <option value="bar">Barras</option>
+    <option value="scatter">Dispersión</option>
+    <option value="histogram">Histograma</option>
+  </select>
+</div>
+
+<div>
+  <label for="seriesLimitSelect">Cuántas variables Y mostrar</label>
+  <select id="seriesLimitSelect">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3" selected>3</option>
+    <option value="5">5</option>
+    <option value="10">10</option>
+  </select>
+</div>
 
         </div>
 
-        <div>
-
-          <label for="variableSelect">Variable Y</label>
-
-          <select id="variableSelect">
-
-            <option value="">Selecciona una variable</option>
-
-          </select>
-
-        </div>
-
-        <div>
-
-          <label for="xVariableSelect">Variable eje X</label>
-
-          <select id="xVariableSelect">
-
-            <option value="">Automática</option>
-
-          </select>
-
-        </div>
+        
 
         <div class="full-width">
 
@@ -364,6 +374,8 @@
     const patientOptions = document.getElementById("patientOptions");
     const variableSelect = document.getElementById("variableSelect");
     const xVariableSelect = document.getElementById("xVariableSelect");
+    const chartTypeSelect = document.getElementById("chartTypeSelect");
+    const seriesLimitSelect = document.getElementById("seriesLimitSelect");
     const searchInput = document.getElementById("searchInput");
     const loadBtn = document.getElementById("loadBtn");
     const clearBtn = document.getElementById("clearBtn");
@@ -623,75 +635,202 @@ function sortRows(rows){
 
       return out;
     }
-
-    function buildChart(rows){
-     
-      if (!rows.length){
-  chartCard.style.display = "none";
-  metaEl.textContent = "";
-  if (currentChart) currentChart.destroy();
-  return;
+    function getSelectedValues(selectEl) {
+  return Array.from(selectEl.selectedOptions)
+    .map(o => o.value)
+    .filter(Boolean);
 }
 
-const yVariable = variableSelect.value;
-if (!yVariable){
-  chartCard.style.display = "none";
-  metaEl.textContent = "";
-  if (currentChart) currentChart.destroy();
-  return;
+function isNumericValue(v) {
+  return v !== null && v !== undefined && v !== "" && !isNaN(Number(v));
 }
 
-chartCard.style.display = "block";
+function buildHistogram(values, bins = 12) {
+  if (!values.length) return { labels: [], counts: [] };
 
-      const autoDateCol = detectDateColumn(rows[0]);
-      const autoIdCol = detectIdColumn(rows[0]);
-      const autoPatientCol = detectPatientColumn(rows[0]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
 
-      const selectedX = xVariableSelect.value;
-      const xCol = selectedX || autoDateCol || autoPatientCol || autoIdCol;
+  if (min === max) {
+    return {
+      labels: [String(min)],
+      counts: [values.length]
+    };
+  }
 
-      let chartRows = rows
-        .filter(r =>
-          r[yVariable] !== null &&
-          r[yVariable] !== undefined &&
-          r[yVariable] !== "" &&
-          !isNaN(Number(r[yVariable]))
-        )
-        .map(r => ({
-          label: xCol ? String(r[xCol] ?? "") : "fila",
-          value: Number(r[yVariable])
-        }));
+  const width = (max - min) / bins;
+  const counts = new Array(bins).fill(0);
+  const labels = [];
 
-      chartRows = chartRows.slice(0, 200);
+  for (let i = 0; i < bins; i++) {
+    const start = min + i * width;
+    const end = i === bins - 1 ? max : start + width;
+    labels.push(`${start.toFixed(2)}-${end.toFixed(2)}`);
+  }
 
-      if (currentChart) currentChart.destroy();
+  values.forEach(v => {
+    let idx = Math.floor((v - min) / width);
+    if (idx >= bins) idx = bins - 1;
+    if (idx < 0) idx = 0;
+    counts[idx]++;
+  });
 
-      const ctx = document.getElementById("chart");
+  return { labels, counts };
+}
 
-      currentChart = new Chart(ctx, {
-        type: (xCol && xCol.toLowerCase().includes("fecha")) ? "line" : "bar",
-        data: {
-          labels: chartRows.map(r => r.label),
-          datasets: [{
-            label: yVariable,
-            data: chartRows.map(r => r.value)
-          }]
+    function buildChart(rows) {
+  if (!rows.length) {
+    chartCard.style.display = "none";
+    metaEl.textContent = "";
+    if (currentChart) currentChart.destroy();
+    return;
+  }
+
+  const selectedYVariables = getSelectedValues(variableSelect);
+  if (!selectedYVariables.length) {
+    chartCard.style.display = "none";
+    metaEl.textContent = "";
+    if (currentChart) currentChart.destroy();
+    return;
+  }
+
+  chartCard.style.display = "block";
+
+  const autoDateCol = detectDateColumn(rows[0]);
+  const autoIdCol = detectIdColumn(rows[0]);
+  const autoPatientCol = detectPatientColumn(rows[0]);
+
+  const selectedX = xVariableSelect.value;
+  const xCol = selectedX || autoDateCol || autoPatientCol || autoIdCol;
+
+  const chartTypeRaw = chartTypeSelect.value || "auto";
+  const maxSeries = Number(seriesLimitSelect.value || 3);
+  const yVariables = selectedYVariables.slice(0, maxSeries);
+
+  const resolvedType =
+    chartTypeRaw === "auto"
+      ? ((xCol && xCol.toLowerCase().includes("fecha")) ? "line" : "bar")
+      : chartTypeRaw;
+
+  if (currentChart) currentChart.destroy();
+
+  const ctx = document.getElementById("chart");
+
+  // HISTOGRAMA: usa solo la primera Y
+  if (resolvedType === "histogram") {
+    const yVar = yVariables[0];
+    const values = rows
+      .map(r => r[yVar])
+      .filter(isNumericValue)
+      .map(Number)
+      .slice(0, 500);
+
+    const hist = buildHistogram(values, 12);
+
+    currentChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: hist.labels,
+        datasets: [{
+          label: `Histograma de ${yVar}`,
+          data: hist.counts
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true }
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true }
-          },
-          scales: {
-            y: { beginAtZero: false }
-          }
+        scales: {
+          y: { beginAtZero: true }
         }
-      });
+      }
+    });
 
-      metaEl.textContent =
-        `Filas graficadas: ${chartRows.length} · Eje X: ${xCol || "automático"} · Eje Y: ${yVariable}`;
+    metaEl.textContent =
+      `Tipo: histograma · Variable: ${yVar} · Valores usados: ${values.length}`;
+    return;
+  }
+
+  // FILAS BASE
+  let chartRows = rows.slice(0, 200);
+
+  // SCATTER
+  if (resolvedType === "scatter") {
+    const datasets = yVariables.map((yVar) => {
+      const points = chartRows
+        .map((r, idx) => {
+          const rawY = r[yVar];
+          if (!isNumericValue(rawY)) return null;
+
+          let rawX;
+          if (xCol && isNumericValue(r[xCol])) {
+            rawX = Number(r[xCol]);
+          } else {
+            rawX = idx + 1;
+          }
+
+          return { x: rawX, y: Number(rawY) };
+        })
+        .filter(Boolean);
+
+      return {
+        label: yVar,
+        data: points
+      };
+    });
+
+    currentChart = new Chart(ctx, {
+      type: "scatter",
+      data: { datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true }
+        },
+        scales: {
+          x: { type: "linear", beginAtZero: false },
+          y: { beginAtZero: false }
+        }
+      }
+    });
+
+    metaEl.textContent =
+      `Tipo: dispersión · Eje X: ${xCol && isNumericValue(chartRows[0]?.[xCol]) ? xCol : "índice de fila"} · Variables Y: ${yVariables.join(", ")}`;
+    return;
+  }
+
+  // LINE / BAR
+  const labels = chartRows.map((r, idx) => {
+    if (!xCol) return `fila ${idx + 1}`;
+    return String(r[xCol] ?? `fila ${idx + 1}`);
+  });
+
+  const datasets = yVariables.map((yVar) => ({
+    label: yVar,
+    data: chartRows.map(r => isNumericValue(r[yVar]) ? Number(r[yVar]) : null)
+  }));
+
+  currentChart = new Chart(ctx, {
+    type: resolvedType,
+    data: {
+      labels,
+      datasets
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true }
+      },
+      scales: {
+        y: { beginAtZero: false }
+      }
     }
+  });
 
+  metaEl.textContent =
+    `Filas graficadas: ${chartRows.length} · Tipo: ${resolvedType} · Eje X: ${xCol || "automático"} · Variables Y: ${yVariables.join(", ")}`;
+}
     async function loadPatientsMap() {
       const { data, error } = await sb
         .schema("public")
@@ -820,6 +959,8 @@ chartCard.style.display = "block";
 
     variableSelect.addEventListener("change", refreshLocalView);
     xVariableSelect.addEventListener("change", refreshLocalView);
+    chartTypeSelect.addEventListener("change", () => buildChart(currentRows));
+    seriesLimitSelect.addEventListener("change", () => buildChart(currentRows));
     searchInput.addEventListener("input", refreshLocalView);
 
     clearBtn.addEventListener("click", () => {
