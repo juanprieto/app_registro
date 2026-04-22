@@ -341,31 +341,48 @@
     // =========================
     const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
-    const VIEW_SCHEMA = "tesis_views";
-    
-
+       
     const VIEWS = [
-      "vw_multi_bis",
-      "vw_multi_ceper",
-      "vw_multi_isp46",
-      "vw_multi_lsb50",
-      "vw_multi_uppsp",
-      "vw_sece_a_proporcion",
-      "vw_sece_c_conciencia",
-      "vw_sece_c_economica",
-      "vw_sece_c_educativo_laboral",
-      "vw_sece_c_sociodemo",
-      "vw_sece_carga_ajustada",
-      "vw_sece_cargas_base",
-      "vw_sece_clinico",
-      "vw_sece_cronicidad",
-      "vw_sece_precocidad",
-      "vw_sece_sub_a",
-      "vw_sece_sub_c",
-      "vw_sece_vpr"
-    ];
 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  "vw_multi_bis",
+
+  "vw_multi_ceper",
+
+  "vw_multi_isp46",
+
+  "vw_multi_lsb50",
+
+  "vw_multi_uppsp",
+
+  "vw_sece_a_proporcion",
+
+  "vw_sece_c_conciencia",
+
+  "vw_sece_c_economica",
+
+  "vw_sece_c_educativo_laboral",
+
+  "vw_sece_c_sociodemo",
+
+  "vw_sece_carga_ajustada",
+
+  "vw_sece_cargas_base",
+
+  "vw_sece_clinico",
+
+  "vw_sece_cronicidad",
+
+  "vw_sece_precocidad",
+
+  "vw_sece_sub_a",
+
+  "vw_sece_sub_c",
+
+  "vw_sece_vpr"
+
+];
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // =========================
     // STATE
@@ -856,9 +873,10 @@
 
     async function loadPatientsMap() {
       const { data, error } = await sb
-        .schema("public")
-        .from("pacientes")
-        .select("ID_USUARIO, nombre");
+            .schema("tesis_views")
+            .from(viewName)
+            .select("*")
+            .limit(1000);
 
       if (error) {
         console.error("Error cargando pacientes:", error);
