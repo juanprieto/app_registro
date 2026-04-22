@@ -375,6 +375,10 @@ canvas{
   <label>&nbsp;</label>
   <button id="printBtn" type="button" class="secondary">Imprimir resultados</button>
 </div>
+      <div>
+  <label>&nbsp;</label>
+  <button id="excelBtn" type="button" class="secondary">Exportar Excel</button>
+</div>
 
       <div id="status" class="status">Listo.</div>
     </div>
@@ -475,6 +479,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const tableHead = document.querySelector("#dataTable thead");
     const tableBody = document.querySelector("#dataTable tbody");
     const printBtn = document.getElementById("printBtn");
+    const excelBtn = document.getElementById("excelBtn");
 
     // =========================
     // HELPERS
@@ -1048,6 +1053,34 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         viewSelect.appendChild(opt);
       });
     }
+    function exportCurrentTableToExcel() {
+  if (!currentFilteredRows.length) {
+    alert("No hay datos para exportar.");
+    return;
+  }
+
+  const cols = orderColumns(
+    Object.keys(currentFilteredRows[0]).filter(col => col !== "id")
+  );
+
+  const exportRows = currentFilteredRows.map(row => {
+    const out = {};
+    cols.forEach(col => {
+      out[col] = row[col] ?? "";
+    });
+    return out;
+  });
+
+  const ws = XLSX.utils.json_to_sheet(exportRows);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "resultados");
+
+  const safeView = (viewSelect.value || "vista").replace(/[^\w\-]+/g, "_");
+  const today = new Date().toISOString().slice(0, 10);
+
+  XLSX.writeFile(wb, `${safeView}_${today}.xlsx`);
+}
 
     // =========================
     // EVENTS
@@ -1065,6 +1098,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     searchInput.addEventListener("input", refreshLocalView);
     printBtn.addEventListener("click", () => {
   window.print();
+      excelBtn.addEventListener("click", exportCurrentTableToExcel);
 });
 
     swapAxesBtn.addEventListener("click", () => {
