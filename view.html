@@ -6,311 +6,333 @@
   <title>SECE · Visualizador VW</title>
   <link rel="icon" href="data:," />
 
-
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     :root{
-  --bg:#f6f7fb;
-  --card:#ffffff;
-  --line:#d9deea;
-  --text:#1f2937;
-  --muted:#6b7280;
-  --accent:#2563eb;
-  --soft:#eef2ff;
-  --soft-text:#1e3a8a;
-}
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --line:#d9deea;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --accent:#2563eb;
+      --soft:#eef2ff;
+      --soft-text:#1e3a8a;
+    }
 
-*{ box-sizing:border-box; }
+    *{ box-sizing:border-box; }
 
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
 
-.wrap{
-  max-width:1400px;
-  margin:18px auto;
-  padding:0 14px;
-}
+    .wrap{
+      max-width:1400px;
+      margin:18px auto;
+      padding:0 14px;
+    }
 
-h1{
-  margin:0 0 12px;
-  font-size:24px;
-}
+    h1{
+      margin:0 0 12px;
+      font-size:24px;
+    }
 
-.card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:12px;
-  margin-bottom:14px;
-}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:14px;
+    }
 
-.controls-grid{
-  display:grid;
-  grid-template-columns: 1.2fr 1fr 230px 220px 220px;
-  gap:12px;
-  align-items:end;
-}
+    .controls-grid{
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr 0.9fr 0.9fr 0.9fr;
+      gap:10px;
+      align-items:end;
+    }
 
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  min-width:0;
-}
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
 
-.full-width{
-  grid-column: 1 / -1;
-}
+    .full-width{
+      grid-column: 1 / -1;
+    }
 
-label{
-  display:block;
-  font-size:13px;
-  color:var(--muted);
-  font-weight:700;
-}
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
 
-select, input, button{
-  width:100%;
-  padding:10px 12px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  background:#fff;
-  font-size:14px;
-  height:42px;
-}
+    select, input, button{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fff;
+      font-size:14px;
+      height:42px;
+    }
 
-#variableSelect{
-  height:120px;
-  padding:8px;
-}
+    #variableSelect{
+      height:84px;
+      padding:6px;
+    }
 
-button{
-  cursor:pointer;
-  background:var(--accent);
-  color:#fff;
-  border:none;
-  font-weight:700;
-}
+    button{
+      cursor:pointer;
+      background:var(--accent);
+      color:#fff;
+      border:none;
+      font-weight:700;
+    }
 
-button.secondary{
-  background:#eef2ff;
-  color:#1e3a8a;
-  border:1px solid #c7d2fe;
-}
-    
+    button.secondary{
+      background:#eef2ff;
+      color:#1e3a8a;
+      border:1px solid #c7d2fe;
+    }
 
-.row{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:end;
-  margin-top:8px;
-}
+    .actions-row{
+      display:grid;
+      grid-template-columns: 1.2fr 1fr 1fr auto auto;
+      gap:10px;
+      align-items:end;
+      margin-top:10px;
+    }
 
-.row > div{
-  flex:1 1 220px;
-}
+    .actions-row .small-btn{
+      width:auto;
+      min-width:140px;
+      height:38px;
+      padding:8px 14px;
+      white-space:nowrap;
+    }
 
-.meta{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:8px;
-}
+    .meta{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:8px;
+    }
 
-.status{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:8px;
-  white-space:pre-wrap;
-}
+    .status{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:8px;
+      white-space:pre-wrap;
+    }
 
-.table-wrap{
-  overflow:auto;
-  border:1px solid var(--line);
-  border-radius:12px;
-  margin-top:12px;
-  background:#fff;
-  max-height:600px;
-}
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      margin-top:12px;
+      background:#fff;
+      max-height:600px;
+    }
 
-table{
-  width:100%;
-  border-collapse:collapse;
-}
+    table{
+      width:100%;
+      border-collapse:collapse;
+    }
 
-th, td{
-  padding:10px 12px;
-  border-bottom:1px solid var(--line);
-  text-align:left;
-  font-size:13px;
-  white-space:nowrap;
-}
+    th, td{
+      padding:10px 12px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      font-size:13px;
+      white-space:nowrap;
+    }
 
-th{
-  background:#f8fafc;
-  position:sticky;
-  top:0;
-  z-index:1;
-  cursor:pointer;
-}
+    th{
+      background:#f8fafc;
+      position:sticky;
+      top:0;
+      z-index:1;
+      cursor:pointer;
+    }
 
-canvas{
-  width:100% !important;
-  max-height:420px;
-}
+    canvas{
+      width:100% !important;
+      max-height:420px;
+    }
 
-#patientChips{
-  display:flex;
-  gap:6px;
-  flex-wrap:wrap;
-  margin-top:8px;
-  min-height:20px;
-}
+    #patientChips{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-top:8px;
+      min-height:20px;
+    }
 
-.chip{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:6px 10px;
-  border-radius:999px;
-  background:var(--soft);
-  color:var(--soft-text);
-  font-size:13px;
-}
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:var(--soft);
+      color:var(--soft-text);
+      font-size:13px;
+    }
 
-.chip button{
-  border:none;
-  background:transparent;
-  color:var(--soft-text);
-  cursor:pointer;
-  width:auto;
-  padding:0;
-  font-size:16px;
-  line-height:1;
-  height:auto;
-}
+    .chip button{
+      border:none;
+      background:transparent;
+      color:var(--soft-text);
+      cursor:pointer;
+      width:auto;
+      padding:0;
+      font-size:16px;
+      line-height:1;
+      height:auto;
+    }
 
-#patientOptions{
-  border:1px solid var(--line);
-  border-radius:10px;
-  max-height:90px;
-  overflow:auto;
-  margin-top:8px;
-  background:#fff;
-}
+    #patientOptions{
+      border:1px solid var(--line);
+      border-radius:10px;
+      max-height:70px;
+      overflow:auto;
+      margin-top:6px;
+      background:#fff;
+    }
 
-.patient-option{
-  padding:8px 10px;
-  cursor:pointer;
-  border-bottom:1px solid #eef2f7;
-}
+    .patient-option{
+      padding:8px 10px;
+      cursor:pointer;
+      border-bottom:1px solid #eef2f7;
+    }
 
-.patient-option:hover{
-  background:#f8fafc;
-}
+    .patient-option:hover{
+      background:#f8fafc;
+    }
 
-@media (max-width: 1200px){
-  .controls-grid{
-    grid-template-columns: 1fr 1fr 1fr;
-  }
+    @media (max-width: 1200px){
+      .controls-grid{
+        grid-template-columns: 1fr 1fr 1fr;
+      }
 
-  .full-width{
-    grid-column: 1 / -1;
-  }
-}
+      .full-width{
+        grid-column: 1 / -1;
+      }
+    }
 
-@media (max-width: 800px){
-  .controls-grid{
-    grid-template-columns: 1fr 1fr;
-  }
-}
+    @media (max-width: 1100px){
+      .actions-row{
+        grid-template-columns: 1fr 1fr 1fr;
+      }
 
-@media (max-width: 600px){
-  .controls-grid{
-    grid-template-columns: 1fr;
-  }
-}
+      .actions-row .small-btn{
+        width:100%;
+        min-width:0;
+      }
+    }
+
+    @media (max-width: 800px){
+      .controls-grid{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 700px){
+      .actions-row{
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px){
+      .controls-grid{
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media print {
-  body {
-    background: #fff;
-  }
+      body {
+        background: #fff;
+      }
 
-  .wrap {
-    max-width: 100%;
-    margin: 0;
-    padding: 0;
-  }
+      .wrap {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
 
-  button,
-  #loadBtn,
-  #clearBtn,
-  #printBtn,
-  #swapAxesBtn,
-  #patientSearch,
-  #patientOptions,
-  #patientChips,
-  .status {
-    display: none !important;
-  }
+      button,
+      #loadBtn,
+      #clearBtn,
+      #printBtn,
+      #excelBtn,
+      #swapAxesBtn,
+      #patientSearch,
+      #patientOptions,
+      #patientChips,
+      .status {
+        display: none !important;
+      }
 
-  .card {
-    border: none;
-    box-shadow: none;
-    margin: 0 0 12px 0;
-    padding: 0;
-  }
+      .card {
+        border: none;
+        box-shadow: none;
+        margin: 0 0 12px 0;
+        padding: 0;
+      }
 
-  #chartCard {
-    display: none !important;
-  }
+      #chartCard {
+        display: none !important;
+      }
 
-  .table-wrap {
-    max-height: none;
-    overflow: visible;
-    border: none;
-  }
+      .table-wrap {
+        max-height: none;
+        overflow: visible;
+        border: none;
+      }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
 
-  th, td {
-    font-size: 11px;
-    padding: 6px 8px;
-    border: 1px solid #ccc;
-    white-space: nowrap;
-  }
+      th, td {
+        font-size: 11px;
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        white-space: nowrap;
+      }
 
-  th {
-    position: static;
-    background: #f3f4f6 !important;
-  }
-}
+      th {
+        position: static;
+        background: #f3f4f6 !important;
+      }
+    }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <h1>Visualizador de vistas SECE</h1>
 
     <div class="card">
       <div class="controls-grid">
-       <div class="field">
-  <label for="viewSelect">Vista</label>
-  <select id="viewSelect"></select>
-</div>
+        <div class="field">
+          <label for="viewSelect">Vista</label>
+          <select id="viewSelect"></select>
+        </div>
 
-<div class="field">
-  <label for="patientSearch">Paciente</label>
-  <input id="patientSearch" type="text" placeholder="Buscar paciente..." />
-</div>
+        <div class="field">
+          <label for="patientSearch">Paciente</label>
+          <input id="patientSearch" type="text" placeholder="Buscar paciente..." />
+        </div>
 
         <div class="field">
           <label for="variableSelect">Variables Y</label>
@@ -351,13 +373,13 @@ canvas{
           <button id="swapAxesBtn" type="button" class="secondary">Intercambiar X ↔ Y</button>
         </div>
 
-       <div class="field full-width">
-  <div id="patientChips"></div>
-  <div id="patientOptions"></div>
-</div>
+        <div class="field full-width">
+          <div id="patientChips"></div>
+          <div id="patientOptions"></div>
+        </div>
       </div>
 
-      <div class="row">
+      <div class="actions-row">
         <div>
           <label for="searchInput">Filtro texto libre</label>
           <input id="searchInput" type="text" placeholder="Buscar en filas cargadas" />
@@ -372,15 +394,17 @@ canvas{
           <label>&nbsp;</label>
           <button id="clearBtn" type="button" class="secondary">Limpiar filtros</button>
         </div>
+
+        <div>
+          <label>&nbsp;</label>
+          <button id="printBtn" type="button" class="secondary small-btn">Imprimir</button>
+        </div>
+
+        <div>
+          <label>&nbsp;</label>
+          <button id="excelBtn" type="button" class="secondary small-btn">Excel</button>
+        </div>
       </div>
-      <div>
-  <label>&nbsp;</label>
-  <button id="printBtn" type="button" class="secondary">Imprimir resultados</button>
-</div>
-      <div>
-  <label>&nbsp;</label>
-  <button id="excelBtn" type="button" class="secondary">Exportar Excel</button>
-</div>
 
       <div id="status" class="status">Listo.</div>
     </div>
@@ -405,49 +429,29 @@ canvas{
     // CONFIG
     // =========================
     const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
-    
+    const SUPABASE_ANON_KEY = "TU_ANON_KEY";
     const VIEWS = [
+      "vw_multi_bis",
+      "vw_multi_ceper",
+      "vw_multi_isp46",
+      "vw_multi_lsb50",
+      "vw_multi_uppsp",
+      "vw_sece_a_proporcion",
+      "vw_sece_c_conciencia",
+      "vw_sece_c_economica",
+      "vw_sece_c_educativo_laboral",
+      "vw_sece_c_sociodemo",
+      "vw_sece_carga_ajustada",
+      "vw_sece_cargas_base",
+      "vw_sece_clinico",
+      "vw_sece_cronicidad",
+      "vw_sece_precocidad",
+      "vw_sece_sub_a",
+      "vw_sece_sub_c",
+      "vw_sece_vpr"
+    ];
 
-  "vw_multi_bis",
-
-  "vw_multi_ceper",
-
-  "vw_multi_isp46",
-
-  "vw_multi_lsb50",
-
-  "vw_multi_uppsp",
-
-  "vw_sece_a_proporcion",
-
-  "vw_sece_c_conciencia",
-
-  "vw_sece_c_economica",
-
-  "vw_sece_c_educativo_laboral",
-
-  "vw_sece_c_sociodemo",
-
-  "vw_sece_carga_ajustada",
-
-  "vw_sece_cargas_base",
-
-  "vw_sece_clinico",
-
-  "vw_sece_cronicidad",
-
-  "vw_sece_precocidad",
-
-  "vw_sece_sub_a",
-
-  "vw_sece_sub_c",
-
-  "vw_sece_vpr"
-
-];
-
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // =========================
     // STATE
@@ -475,13 +479,13 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const searchInput = document.getElementById("searchInput");
     const loadBtn = document.getElementById("loadBtn");
     const clearBtn = document.getElementById("clearBtn");
+    const printBtn = document.getElementById("printBtn");
+    const excelBtn = document.getElementById("excelBtn");
     const statusEl = document.getElementById("status");
     const metaEl = document.getElementById("meta");
     const chartCard = document.getElementById("chartCard");
     const tableHead = document.querySelector("#dataTable thead");
     const tableBody = document.querySelector("#dataTable tbody");
-    const printBtn = document.getElementById("printBtn");
-    const excelBtn = document.getElementById("excelBtn");
 
     // =========================
     // HELPERS
@@ -938,99 +942,99 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         `Filas graficadas: ${chartRows.length} · Tipo: ${resolvedType} · Eje X: ${xCol || "automático"} · Variables Y: ${yVariables.join(", ")}`;
     }
 
-   async function loadPatientsMap() {
-  const { data, error } = await sb
-    .schema("public")
-    .from("pacientes")
-    .select("ID_USUARIO, nombre");
+    async function loadPatientsMap() {
+      const { data, error } = await sb
+        .schema("public")
+        .from("pacientes")
+        .select("ID_USUARIO, nombre");
 
-  if (error) {
-    console.error("Error cargando pacientes:", error);
-    return new Map();
-  }
+      if (error) {
+        console.error("Error cargando pacientes:", error);
+        return new Map();
+      }
 
-  const map = new Map();
+      const map = new Map();
 
-  (data || []).forEach(row => {
-    if (row.ID_USUARIO) {
-      map.set(String(row.ID_USUARIO), row.nombre || "");
+      (data || []).forEach(row => {
+        if (row.ID_USUARIO) {
+          map.set(String(row.ID_USUARIO), row.nombre || "");
+        }
+      });
+
+      return map;
     }
-  });
-
-  return map;
-}
 
     async function loadViewData(){
-  const viewName = viewSelect.value;
+      const viewName = viewSelect.value;
 
-  if (!viewName){
-    setStatus("Selecciona una vista.");
-    return;
-  }
+      if (!viewName){
+        setStatus("Selecciona una vista.");
+        return;
+      }
 
-  setStatus(`Cargando ${viewName}...`);
+      setStatus(`Cargando ${viewName}...`);
 
-  const { data, error } = await sb
-    .schema("tesis_views")
-    .from(viewName)
-    .select("*")
-    .limit(1000);
+      const { data, error } = await sb
+        .schema("tesis_views")
+        .from(viewName)
+        .select("*")
+        .limit(1000);
 
-  if (error){
-    setStatus(`Error al cargar ${viewName}: ${error.message}`);
-    console.error(error);
-    return;
-  }
+      if (error){
+        setStatus(`Error al cargar ${viewName}: ${error.message}`);
+        console.error(error);
+        return;
+      }
 
-  const patientsMap = await loadPatientsMap();
+      const patientsMap = await loadPatientsMap();
 
-  currentRows = (data || []).map(row => {
-    const idUsuario = row.ID_USUARIO ?? row.id_usuario ?? "";
-    return {
-      ...row,
-      nombre: patientsMap.get(String(idUsuario)) || row.nombre || ""
-    };
-  });
+      currentRows = (data || []).map(row => {
+        const idUsuario = row.ID_USUARIO ?? row.id_usuario ?? "";
+        return {
+          ...row,
+          nombre: patientsMap.get(String(idUsuario)) || row.nombre || ""
+        };
+      });
 
-  if (!currentRows.length){
-    setStatus(`La vista ${viewName} no devolvió filas.`);
-    variableSelect.innerHTML = "";
-    xVariableSelect.innerHTML = `<option value="">Automática</option>`;
-    renderTable([]);
-    if (currentChart) currentChart.destroy();
-    metaEl.textContent = "";
-    allPatients = [];
-    selectedPatients = [];
-    renderPatientChips();
-    renderPatientOptions("");
-    chartCard.style.display = "none";
-    return;
-  }
+      if (!currentRows.length){
+        setStatus(`La vista ${viewName} no devolvió filas.`);
+        variableSelect.innerHTML = "";
+        xVariableSelect.innerHTML = `<option value="">Automática</option>`;
+        renderTable([]);
+        if (currentChart) currentChart.destroy();
+        metaEl.textContent = "";
+        allPatients = [];
+        selectedPatients = [];
+        renderPatientChips();
+        renderPatientOptions("");
+        chartCard.style.display = "none";
+        return;
+      }
 
-  const firstRow = currentRows[0];
-  const patientCol = detectPatientColumn(firstRow);
-  const numericCols = getNumericColumns(currentRows);
-  const allCols = getAllColumns(currentRows);
+      const firstRow = currentRows[0];
+      const patientCol = detectPatientColumn(firstRow);
+      const numericCols = getNumericColumns(currentRows);
+      const allCols = getAllColumns(currentRows);
 
-  if (patientCol){
-    allPatients = uniqueSorted(currentRows.map(r => r[patientCol]));
-  } else {
-    allPatients = [];
-    selectedPatients = [];
-  }
+      if (patientCol){
+        allPatients = uniqueSorted(currentRows.map(r => r[patientCol]));
+      } else {
+        allPatients = [];
+        selectedPatients = [];
+      }
 
-  renderPatientChips();
-  renderPatientOptions("");
+      renderPatientChips();
+      renderPatientOptions("");
 
-  populateMultiSelect(variableSelect, numericCols);
-  populateSingleSelect(xVariableSelect, allCols, "Automática");
+      populateMultiSelect(variableSelect, numericCols);
+      populateSingleSelect(xVariableSelect, allCols, "Automática");
 
-  sortColumn = null;
-  sortDirection = "asc";
+      sortColumn = null;
+      sortDirection = "asc";
 
-  refreshLocalView();
-  setStatus(`Vista cargada: ${viewName} · Filas: ${currentRows.length}`);
-}
+      refreshLocalView();
+      setStatus(`Vista cargada: ${viewName} · Filas: ${currentRows.length}`);
+    }
 
     function refreshLocalView(){
       if (!currentRows.length) {
@@ -1055,59 +1059,60 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         viewSelect.appendChild(opt);
       });
     }
-function exportCurrentTableToExcel() {
-  if (typeof XLSX === "undefined") {
-    alert("Falta cargar la librería XLSX.");
-    return;
-  }
 
-  if (!currentFilteredRows.length) {
-    alert("No hay datos para exportar.");
-    return;
-  }
+    function exportCurrentTableToExcel() {
+      if (typeof XLSX === "undefined") {
+        alert("Falta cargar la librería XLSX.");
+        return;
+      }
 
-  const cols = orderColumns(
-    Object.keys(currentFilteredRows[0]).filter(col => col !== "id")
-  );
+      if (!currentFilteredRows.length) {
+        alert("No hay datos para exportar.");
+        return;
+      }
 
-  const exportRows = currentFilteredRows.map(row => {
-    const out = {};
-    cols.forEach(col => {
-      out[col] = row[col] ?? "";
-    });
-    return out;
-  });
+      const cols = orderColumns(
+        Object.keys(currentFilteredRows[0]).filter(col => col !== "id")
+      );
 
-  const ws = XLSX.utils.json_to_sheet(exportRows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "resultados");
+      const exportRows = currentFilteredRows.map(row => {
+        const out = {};
+        cols.forEach(col => {
+          out[col] = row[col] ?? "";
+        });
+        return out;
+      });
 
-  const safeView = (viewSelect.value || "vista").replace(/[^\w\-]+/g, "_");
-  const today = new Date().toISOString().slice(0, 10);
+      const ws = XLSX.utils.json_to_sheet(exportRows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "resultados");
 
-  XLSX.writeFile(wb, `${safeView}_${today}.xlsx`);
-}
+      const safeView = (viewSelect.value || "vista").replace(/[^\w\-]+/g, "_");
+      const today = new Date().toISOString().slice(0, 10);
+
+      XLSX.writeFile(wb, `${safeView}_${today}.xlsx`);
+    }
 
     // =========================
     // EVENTS
     // =========================
-   loadBtn.addEventListener("click", loadViewData);
+    loadBtn.addEventListener("click", loadViewData);
 
-patientSearch.addEventListener("input", () => {
-  renderPatientOptions(patientSearch.value.trim());
-});
+    patientSearch.addEventListener("input", () => {
+      renderPatientOptions(patientSearch.value.trim());
+    });
 
-variableSelect.addEventListener("change", refreshLocalView);
-xVariableSelect.addEventListener("change", refreshLocalView);
-chartTypeSelect.addEventListener("change", refreshLocalView);
-seriesLimitSelect.addEventListener("change", refreshLocalView);
-searchInput.addEventListener("input", refreshLocalView);
+    variableSelect.addEventListener("change", refreshLocalView);
+    xVariableSelect.addEventListener("change", refreshLocalView);
+    chartTypeSelect.addEventListener("change", refreshLocalView);
+    seriesLimitSelect.addEventListener("change", refreshLocalView);
+    searchInput.addEventListener("input", refreshLocalView);
 
-printBtn.addEventListener("click", () => {
-  window.print();
-});
+    printBtn.addEventListener("click", () => {
+      window.print();
+    });
 
-excelBtn.addEventListener("click", exportCurrentTableToExcel);
+    excelBtn.addEventListener("click", exportCurrentTableToExcel);
 
     swapAxesBtn.addEventListener("click", () => {
       const selectedY = getSelectedValues(variableSelect);
@@ -1159,4 +1164,3 @@ excelBtn.addEventListener("click", exportCurrentTableToExcel);
     setStatus("Selecciona una vista y pulsa Cargar datos.");
   </script>
 </body>
-</html>
