@@ -1091,21 +1091,23 @@ function exportCurrentTableToExcel() {
     // =========================
     // EVENTS
     // =========================
-    loadBtn.addEventListener("click", loadViewData);
+   loadBtn.addEventListener("click", loadViewData);
 
-    patientSearch.addEventListener("input", () => {
-      renderPatientOptions(patientSearch.value.trim());
-    });
-
-    variableSelect.addEventListener("change", refreshLocalView);
-    xVariableSelect.addEventListener("change", refreshLocalView);
-    chartTypeSelect.addEventListener("change", refreshLocalView);
-    seriesLimitSelect.addEventListener("change", refreshLocalView);
-    searchInput.addEventListener("input", refreshLocalView);
-    printBtn.addEventListener("click", () => {
-  window.print();
-      excelBtn.addEventListener("click", exportCurrentTableToExcel);
+patientSearch.addEventListener("input", () => {
+  renderPatientOptions(patientSearch.value.trim());
 });
+
+variableSelect.addEventListener("change", refreshLocalView);
+xVariableSelect.addEventListener("change", refreshLocalView);
+chartTypeSelect.addEventListener("change", refreshLocalView);
+seriesLimitSelect.addEventListener("change", refreshLocalView);
+searchInput.addEventListener("input", refreshLocalView);
+
+printBtn.addEventListener("click", () => {
+  window.print();
+});
+
+excelBtn.addEventListener("click", exportCurrentTableToExcel);
 
     swapAxesBtn.addEventListener("click", () => {
       const selectedY = getSelectedValues(variableSelect);
