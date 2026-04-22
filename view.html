@@ -871,28 +871,27 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         `Filas graficadas: ${chartRows.length} · Tipo: ${resolvedType} · Eje X: ${xCol || "automático"} · Variables Y: ${yVariables.join(", ")}`;
     }
 
-    async function loadPatientsMap() {
-      const { data, error } = await sb
-            .schema("tesis_views")
-            .from(viewName)
-            .select("*")
-            .limit(1000);
+   async function loadPatientsMap() {
+  const { data, error } = await sb
+    .schema("public")
+    .from("pacientes")
+    .select("ID_USUARIO, nombre");
 
-      if (error) {
-        console.error("Error cargando pacientes:", error);
-        return new Map();
-      }
+  if (error) {
+    console.error("Error cargando pacientes:", error);
+    return new Map();
+  }
 
-      const map = new Map();
+  const map = new Map();
 
-      (data || []).forEach(row => {
-        if (row.ID_USUARIO) {
-          map.set(String(row.ID_USUARIO), row.nombre || "");
-        }
-      });
-
-      return map;
+  (data || []).forEach(row => {
+    if (row.ID_USUARIO) {
+      map.set(String(row.ID_USUARIO), row.nombre || "");
     }
+  });
+
+  return map;
+}
 
     async function loadViewData(){
   const viewName = viewSelect.value;
