@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SECE · Visualizador VW</title>
-
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="data:," />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -32,7 +31,7 @@
     }
 
     .wrap{
-      max-width:1280px;
+      max-width:1400px;
       margin:24px auto;
       padding:0 16px;
     }
@@ -49,19 +48,33 @@
       padding:16px;
       margin-bottom:16px;
     }
-    
 
-    .grid{
+    .controls-grid{
       display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: 1.2fr 1.2fr 1fr 1fr 1fr 0.9fr 0.9fr;
       gap:12px;
+      align-items:end;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
+
+    .field-wide{
+      grid-column: span 2;
+    }
+
+    .full-width{
+      grid-column: 1 / -1;
     }
 
     label{
       display:block;
       font-size:13px;
       color:var(--muted);
-      margin-bottom:6px;
       font-weight:700;
     }
 
@@ -72,6 +85,12 @@
       border-radius:10px;
       background:#fff;
       font-size:14px;
+      height:42px;
+    }
+
+    #variableSelect{
+      height:180px;
+      padding:8px;
     }
 
     button{
@@ -140,6 +159,7 @@
       position:sticky;
       top:0;
       z-index:1;
+      cursor:pointer;
     }
 
     canvas{
@@ -175,14 +195,13 @@
       padding:0;
       font-size:16px;
       line-height:1;
+      height:auto;
     }
-.full-width{
-  grid-column: 1 / -1;
-}
+
     #patientOptions{
       border:1px solid var(--line);
       border-radius:10px;
-      max-height:72px;
+      max-height:120px;
       overflow:auto;
       margin-top:8px;
       background:#fff;
@@ -197,130 +216,123 @@
     .patient-option:hover{
       background:#f8fafc;
     }
+
+    @media (max-width: 1200px){
+      .controls-grid{
+        grid-template-columns: 1fr 1fr;
+      }
+      .field-wide{
+        grid-column: span 2;
+      }
+      .full-width{
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 700px){
+      .controls-grid{
+        grid-template-columns: 1fr;
+      }
+      .field-wide{
+        grid-column: span 1;
+      }
+    }
   </style>
 </head>
 <body>
-
   <div class="wrap">
-
     <h1>Visualizador de vistas SECE</h1>
 
     <div class="card">
-
-      <div class="grid">
-
-        <div>
-
+      <div class="controls-grid">
+        <div class="field field-wide">
           <label for="viewSelect">Vista</label>
-
-          <select id="viewSelect"></select><div>
-  <label for="variableSelect">Variables Y</label>
-  <select id="variableSelect" multiple size="8"></select>
-</div>
-
-<div>
-  <label for="xVariableSelect">Variable eje X</label>
-  <select id="xVariableSelect">
-    <option value="">Automática</option>
-  </select>
-</div>
-
-<div>
-  <label for="chartTypeSelect">Tipo de gráfico</label>
-  <select id="chartTypeSelect">
-    <option value="auto">Automático</option>
-    <option value="line">Líneas</option>
-    <option value="bar">Barras</option>
-    <option value="scatter">Dispersión</option>
-    <option value="histogram">Histograma</option>
-  </select>
-</div>
-
-<div>
-  <label for="seriesLimitSelect">Cuántas variables Y mostrar</label>
-  <select id="seriesLimitSelect">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3" selected>3</option>
-    <option value="5">5</option>
-    <option value="10">10</option>
-  </select>
-</div>
-
+          <select id="viewSelect"></select>
         </div>
 
-        
-
-        <div class="full-width">
-
+        <div class="field field-wide">
           <label for="patientSearch">Paciente</label>
-
           <input id="patientSearch" type="text" placeholder="Buscar paciente..." />
-
-          <div id="patientChips"></div>
-
-          <div id="patientOptions"></div>
-
         </div>
 
+        <div class="field">
+          <label for="variableSelect">Variables Y</label>
+          <select id="variableSelect" multiple size="8"></select>
+        </div>
+
+        <div class="field">
+          <label for="xVariableSelect">Variable eje X</label>
+          <select id="xVariableSelect">
+            <option value="">Automática</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="chartTypeSelect">Tipo de gráfico</label>
+          <select id="chartTypeSelect">
+            <option value="auto">Automático</option>
+            <option value="line">Líneas</option>
+            <option value="bar">Barras</option>
+            <option value="scatter">Dispersión</option>
+            <option value="histogram">Histograma</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="seriesLimitSelect">Cuántas variables Y mostrar</label>
+          <select id="seriesLimitSelect">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="swapAxesBtn" type="button" class="secondary">Intercambiar X ↔ Y</button>
+        </div>
+
+        <div class="field full-width">
+          <div id="patientChips"></div>
+          <div id="patientOptions"></div>
+        </div>
       </div>
 
       <div class="row">
-
         <div>
-
           <label for="searchInput">Filtro texto libre</label>
-
           <input id="searchInput" type="text" placeholder="Buscar en filas cargadas" />
-
         </div>
 
         <div>
-
           <label>&nbsp;</label>
-
           <button id="loadBtn" type="button">Cargar datos</button>
-
         </div>
 
         <div>
-
           <label>&nbsp;</label>
-
           <button id="clearBtn" type="button" class="secondary">Limpiar filtros</button>
-
         </div>
-
       </div>
 
       <div id="status" class="status">Listo.</div>
-
     </div>
 
     <div class="card" id="chartCard" style="display:none;">
-
       <canvas id="chart"></canvas>
-
       <div id="meta" class="meta"></div>
-
     </div>
 
     <div class="card">
-
       <div class="table-wrap">
-
         <table id="dataTable">
-
           <thead></thead>
-
           <tbody></tbody>
-
         </table>
-
       </div>
-
     </div>
-
   </div>
 
   <script>
@@ -328,8 +340,9 @@
     // CONFIG
     // =========================
     const SUPABASE_URL = "https://gqyqpdcavqgcyaoidulj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
 
+    const VIEW_SCHEMA = "tesis_views";
 
     const VIEWS = [
       "vw_multi_bis",
@@ -352,13 +365,13 @@
       "vw_sece_vpr"
     ];
 
-    // Un solo cliente
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // =========================
     // STATE
     // =========================
     let currentRows = [];
+    let currentFilteredRows = [];
     let currentChart = null;
     let selectedPatients = [];
     let allPatients = [];
@@ -376,11 +389,13 @@
     const xVariableSelect = document.getElementById("xVariableSelect");
     const chartTypeSelect = document.getElementById("chartTypeSelect");
     const seriesLimitSelect = document.getElementById("seriesLimitSelect");
+    const swapAxesBtn = document.getElementById("swapAxesBtn");
     const searchInput = document.getElementById("searchInput");
     const loadBtn = document.getElementById("loadBtn");
     const clearBtn = document.getElementById("clearBtn");
     const statusEl = document.getElementById("status");
-    const metaEl = document.getElementById("meta"); const chartCard = document.getElementById("chartCard");
+    const metaEl = document.getElementById("meta");
+    const chartCard = document.getElementById("chartCard");
     const tableHead = document.querySelector("#dataTable thead");
     const tableBody = document.querySelector("#dataTable tbody");
 
@@ -449,7 +464,7 @@
       return Object.keys(rows[0]).filter(col => col !== "id");
     }
 
-    function populateSelect(selectEl, values, firstLabel){
+    function populateSingleSelect(selectEl, values, firstLabel){
       selectEl.innerHTML = "";
 
       const first = document.createElement("option");
@@ -457,6 +472,16 @@
       first.textContent = firstLabel;
       selectEl.appendChild(first);
 
+      values.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        selectEl.appendChild(opt);
+      });
+    }
+
+    function populateMultiSelect(selectEl, values){
+      selectEl.innerHTML = "";
       values.forEach(v => {
         const opt = document.createElement("option");
         opt.value = v;
@@ -481,87 +506,87 @@
 
       return [...preferred, ...rest];
     }
+
     function normalizeValue(value){
-  if (value === null || value === undefined || value === "") return null;
+      if (value === null || value === undefined || value === "") return null;
 
-  const asNumber = Number(value);
-  if (!isNaN(asNumber) && String(value).trim() !== "") return asNumber;
+      const asNumber = Number(value);
+      if (!isNaN(asNumber) && String(value).trim() !== "") return asNumber;
 
-  const asDate = Date.parse(value);
-  if (!isNaN(asDate)) return asDate;
+      const asDate = Date.parse(value);
+      if (!isNaN(asDate)) return asDate;
 
-  return String(value).toLowerCase();
-}
+      return String(value).toLowerCase();
+    }
 
-function sortRows(rows){
-  if (!sortColumn) return rows;
+    function sortRows(rows){
+      if (!sortColumn) return rows;
 
-  const sorted = [...rows].sort((a, b) => {
-    const va = normalizeValue(a[sortColumn]);
-    const vb = normalizeValue(b[sortColumn]);
+      const sorted = [...rows].sort((a, b) => {
+        const va = normalizeValue(a[sortColumn]);
+        const vb = normalizeValue(b[sortColumn]);
 
-    if (va === null && vb === null) return 0;
-    if (va === null) return 1;
-    if (vb === null) return -1;
+        if (va === null && vb === null) return 0;
+        if (va === null) return 1;
+        if (vb === null) return -1;
 
-    if (va < vb) return sortDirection === "asc" ? -1 : 1;
-    if (va > vb) return sortDirection === "asc" ? 1 : -1;
-    return 0;
-  });
+        if (va < vb) return sortDirection === "asc" ? -1 : 1;
+        if (va > vb) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
 
-  return sorted;
-}
+      return sorted;
+    }
 
     function renderTable(rows){
-  tableHead.innerHTML = "";
-  tableBody.innerHTML = "";
+      tableHead.innerHTML = "";
+      tableBody.innerHTML = "";
 
-  if (!rows.length) return;
+      if (!rows.length) return;
 
-  const cols = orderColumns(
-    Object.keys(rows[0]).filter(col => col !== "id")
-  );
+      const cols = orderColumns(
+        Object.keys(rows[0]).filter(col => col !== "id")
+      );
 
-  const sortedRows = sortRows(rows);
+      const sortedRows = sortRows(rows);
 
-  const trHead = document.createElement("tr");
+      const trHead = document.createElement("tr");
 
-  cols.forEach(col => {
-    const th = document.createElement("th");
-    th.style.cursor = "pointer";
+      cols.forEach(col => {
+        const th = document.createElement("th");
 
-    const arrow =
-      sortColumn === col
-        ? (sortDirection === "asc" ? " ▲" : " ▼")
-        : "";
+        const arrow =
+          sortColumn === col
+            ? (sortDirection === "asc" ? " ▲" : " ▼")
+            : "";
 
-    th.textContent = col + arrow;
+        th.textContent = col + arrow;
 
-    th.onclick = () => {
-      if (sortColumn === col) {
-        sortDirection = sortDirection === "asc" ? "desc" : "asc";
-      } else {
-        sortColumn = col;
-        sortDirection = "asc";
-      }
-      refreshLocalView();
-    };
+        th.onclick = () => {
+          if (sortColumn === col) {
+            sortDirection = sortDirection === "asc" ? "desc" : "asc";
+          } else {
+            sortColumn = col;
+            sortDirection = "asc";
+          }
+          refreshLocalView();
+        };
 
-    trHead.appendChild(th);
-  });
+        trHead.appendChild(th);
+      });
 
-  tableHead.appendChild(trHead);
+      tableHead.appendChild(trHead);
 
-  sortedRows.forEach(row => {
-    const tr = document.createElement("tr");
-    cols.forEach(col => {
-      const td = document.createElement("td");
-      td.textContent = row[col] ?? "";
-      tr.appendChild(td);
-    });
-    tableBody.appendChild(tr);
-  });
-}
+      sortedRows.forEach(row => {
+        const tr = document.createElement("tr");
+        cols.forEach(col => {
+          const td = document.createElement("td");
+          td.textContent = row[col] ?? "";
+          tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+      });
+    }
 
     function renderPatientChips() {
       patientChips.innerHTML = "";
@@ -635,202 +660,200 @@ function sortRows(rows){
 
       return out;
     }
+
     function getSelectedValues(selectEl) {
-  return Array.from(selectEl.selectedOptions)
-    .map(o => o.value)
-    .filter(Boolean);
-}
+      return Array.from(selectEl.selectedOptions)
+        .map(o => o.value)
+        .filter(Boolean);
+    }
 
-function isNumericValue(v) {
-  return v !== null && v !== undefined && v !== "" && !isNaN(Number(v));
-}
+    function isNumericValue(v) {
+      return v !== null && v !== undefined && v !== "" && !isNaN(Number(v));
+    }
 
-function buildHistogram(values, bins = 12) {
-  if (!values.length) return { labels: [], counts: [] };
+    function buildHistogram(values, bins = 12) {
+      if (!values.length) return { labels: [], counts: [] };
 
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
 
-  if (min === max) {
-    return {
-      labels: [String(min)],
-      counts: [values.length]
-    };
-  }
+      if (min === max) {
+        return {
+          labels: [String(min)],
+          counts: [values.length]
+        };
+      }
 
-  const width = (max - min) / bins;
-  const counts = new Array(bins).fill(0);
-  const labels = [];
+      const width = (max - min) / bins;
+      const counts = new Array(bins).fill(0);
+      const labels = [];
 
-  for (let i = 0; i < bins; i++) {
-    const start = min + i * width;
-    const end = i === bins - 1 ? max : start + width;
-    labels.push(`${start.toFixed(2)}-${end.toFixed(2)}`);
-  }
+      for (let i = 0; i < bins; i++) {
+        const start = min + i * width;
+        const end = i === bins - 1 ? max : start + width;
+        labels.push(`${start.toFixed(2)}-${end.toFixed(2)}`);
+      }
 
-  values.forEach(v => {
-    let idx = Math.floor((v - min) / width);
-    if (idx >= bins) idx = bins - 1;
-    if (idx < 0) idx = 0;
-    counts[idx]++;
-  });
+      values.forEach(v => {
+        let idx = Math.floor((v - min) / width);
+        if (idx >= bins) idx = bins - 1;
+        if (idx < 0) idx = 0;
+        counts[idx]++;
+      });
 
-  return { labels, counts };
-}
+      return { labels, counts };
+    }
 
     function buildChart(rows) {
-  if (!rows.length) {
-    chartCard.style.display = "none";
-    metaEl.textContent = "";
-    if (currentChart) currentChart.destroy();
-    return;
-  }
-
-  const selectedYVariables = getSelectedValues(variableSelect);
-  if (!selectedYVariables.length) {
-    chartCard.style.display = "none";
-    metaEl.textContent = "";
-    if (currentChart) currentChart.destroy();
-    return;
-  }
-
-  chartCard.style.display = "block";
-
-  const autoDateCol = detectDateColumn(rows[0]);
-  const autoIdCol = detectIdColumn(rows[0]);
-  const autoPatientCol = detectPatientColumn(rows[0]);
-
-  const selectedX = xVariableSelect.value;
-  const xCol = selectedX || autoDateCol || autoPatientCol || autoIdCol;
-
-  const chartTypeRaw = chartTypeSelect.value || "auto";
-  const maxSeries = Number(seriesLimitSelect.value || 3);
-  const yVariables = selectedYVariables.slice(0, maxSeries);
-
-  const resolvedType =
-    chartTypeRaw === "auto"
-      ? ((xCol && xCol.toLowerCase().includes("fecha")) ? "line" : "bar")
-      : chartTypeRaw;
-
-  if (currentChart) currentChart.destroy();
-
-  const ctx = document.getElementById("chart");
-
-  // HISTOGRAMA: usa solo la primera Y
-  if (resolvedType === "histogram") {
-    const yVar = yVariables[0];
-    const values = rows
-      .map(r => r[yVar])
-      .filter(isNumericValue)
-      .map(Number)
-      .slice(0, 500);
-
-    const hist = buildHistogram(values, 12);
-
-    currentChart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: hist.labels,
-        datasets: [{
-          label: `Histograma de ${yVar}`,
-          data: hist.counts
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: true }
-        },
-        scales: {
-          y: { beginAtZero: true }
-        }
+      if (!rows.length) {
+        chartCard.style.display = "none";
+        metaEl.textContent = "";
+        if (currentChart) currentChart.destroy();
+        return;
       }
-    });
 
-    metaEl.textContent =
-      `Tipo: histograma · Variable: ${yVar} · Valores usados: ${values.length}`;
-    return;
-  }
+      const selectedYVariables = getSelectedValues(variableSelect);
+      if (!selectedYVariables.length) {
+        chartCard.style.display = "none";
+        metaEl.textContent = "";
+        if (currentChart) currentChart.destroy();
+        return;
+      }
 
-  // FILAS BASE
-  let chartRows = rows.slice(0, 200);
+      chartCard.style.display = "block";
 
-  // SCATTER
-  if (resolvedType === "scatter") {
-    const datasets = yVariables.map((yVar) => {
-      const points = chartRows
-        .map((r, idx) => {
-          const rawY = r[yVar];
-          if (!isNumericValue(rawY)) return null;
+      const autoDateCol = detectDateColumn(rows[0]);
+      const autoIdCol = detectIdColumn(rows[0]);
+      const autoPatientCol = detectPatientColumn(rows[0]);
 
-          let rawX;
-          if (xCol && isNumericValue(r[xCol])) {
-            rawX = Number(r[xCol]);
-          } else {
-            rawX = idx + 1;
+      const selectedX = xVariableSelect.value;
+      const xCol = selectedX || autoDateCol || autoPatientCol || autoIdCol;
+
+      const chartTypeRaw = chartTypeSelect.value || "auto";
+      const maxSeries = Number(seriesLimitSelect.value || 3);
+      const yVariables = selectedYVariables.slice(0, maxSeries);
+
+      const resolvedType =
+        chartTypeRaw === "auto"
+          ? ((xCol && xCol.toLowerCase().includes("fecha")) ? "line" : "bar")
+          : chartTypeRaw;
+
+      if (currentChart) currentChart.destroy();
+
+      const ctx = document.getElementById("chart");
+
+      if (resolvedType === "histogram") {
+        const yVar = yVariables[0];
+        const values = rows
+          .map(r => r[yVar])
+          .filter(isNumericValue)
+          .map(Number)
+          .slice(0, 500);
+
+        const hist = buildHistogram(values, 12);
+
+        currentChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: hist.labels,
+            datasets: [{
+              label: `Histograma de ${yVar}`,
+              data: hist.counts
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true }
+            },
+            scales: {
+              y: { beginAtZero: true }
+            }
           }
+        });
 
-          return { x: rawX, y: Number(rawY) };
-        })
-        .filter(Boolean);
+        metaEl.textContent =
+          `Tipo: histograma · Variable: ${yVar} · Valores usados: ${values.length}`;
+        return;
+      }
 
-      return {
+      let chartRows = rows.slice(0, 200);
+
+      if (resolvedType === "scatter") {
+        const datasets = yVariables.map((yVar) => {
+          const points = chartRows
+            .map((r, idx) => {
+              const rawY = r[yVar];
+              if (!isNumericValue(rawY)) return null;
+
+              let rawX;
+              if (xCol && isNumericValue(r[xCol])) {
+                rawX = Number(r[xCol]);
+              } else {
+                rawX = idx + 1;
+              }
+
+              return { x: rawX, y: Number(rawY) };
+            })
+            .filter(Boolean);
+
+          return {
+            label: yVar,
+            data: points
+          };
+        });
+
+        currentChart = new Chart(ctx, {
+          type: "scatter",
+          data: { datasets },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true }
+            },
+            scales: {
+              x: { type: "linear", beginAtZero: false },
+              y: { beginAtZero: false }
+            }
+          }
+        });
+
+        metaEl.textContent =
+          `Tipo: dispersión · Eje X: ${xCol && isNumericValue(chartRows[0]?.[xCol]) ? xCol : "índice de fila"} · Variables Y: ${yVariables.join(", ")}`;
+        return;
+      }
+
+      const labels = chartRows.map((r, idx) => {
+        if (!xCol) return `fila ${idx + 1}`;
+        return String(r[xCol] ?? `fila ${idx + 1}`);
+      });
+
+      const datasets = yVariables.map((yVar) => ({
         label: yVar,
-        data: points
-      };
-    });
+        data: chartRows.map(r => isNumericValue(r[yVar]) ? Number(r[yVar]) : null)
+      }));
 
-    currentChart = new Chart(ctx, {
-      type: "scatter",
-      data: { datasets },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: true }
+      currentChart = new Chart(ctx, {
+        type: resolvedType,
+        data: {
+          labels,
+          datasets
         },
-        scales: {
-          x: { type: "linear", beginAtZero: false },
-          y: { beginAtZero: false }
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: { beginAtZero: false }
+          }
         }
-      }
-    });
+      });
 
-    metaEl.textContent =
-      `Tipo: dispersión · Eje X: ${xCol && isNumericValue(chartRows[0]?.[xCol]) ? xCol : "índice de fila"} · Variables Y: ${yVariables.join(", ")}`;
-    return;
-  }
-
-  // LINE / BAR
-  const labels = chartRows.map((r, idx) => {
-    if (!xCol) return `fila ${idx + 1}`;
-    return String(r[xCol] ?? `fila ${idx + 1}`);
-  });
-
-  const datasets = yVariables.map((yVar) => ({
-    label: yVar,
-    data: chartRows.map(r => isNumericValue(r[yVar]) ? Number(r[yVar]) : null)
-  }));
-
-  currentChart = new Chart(ctx, {
-    type: resolvedType,
-    data: {
-      labels,
-      datasets
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: true }
-      },
-      scales: {
-        y: { beginAtZero: false }
-      }
+      metaEl.textContent =
+        `Filas graficadas: ${chartRows.length} · Tipo: ${resolvedType} · Eje X: ${xCol || "automático"} · Variables Y: ${yVariables.join(", ")}`;
     }
-  });
 
-  metaEl.textContent =
-    `Filas graficadas: ${chartRows.length} · Tipo: ${resolvedType} · Eje X: ${xCol || "automático"} · Variables Y: ${yVariables.join(", ")}`;
-}
     async function loadPatientsMap() {
       const { data, error } = await sb
         .schema("public")
@@ -864,7 +887,7 @@ function buildHistogram(values, bins = 12) {
       setStatus(`Cargando ${viewName}...`);
 
       const { data, error } = await sb
-        .schema("tesis_views")
+        .schema(VIEW_SCHEMA)
         .from(viewName)
         .select("*")
         .limit(1000);
@@ -881,13 +904,13 @@ function buildHistogram(values, bins = 12) {
         const idUsuario = row.ID_USUARIO ?? row.id_usuario ?? "";
         return {
           ...row,
-          nombre: patientsMap.get(String(idUsuario)) || ""
+          nombre: patientsMap.get(String(idUsuario)) || row.nombre || ""
         };
       });
 
       if (!currentRows.length){
         setStatus(`La vista ${viewName} no devolvió filas.`);
-        variableSelect.innerHTML = `<option value="">Sin variables</option>`;
+        variableSelect.innerHTML = "";
         xVariableSelect.innerHTML = `<option value="">Automática</option>`;
         renderTable([]);
         if (currentChart) currentChart.destroy();
@@ -916,30 +939,32 @@ function buildHistogram(values, bins = 12) {
         renderPatientOptions("");
       }
 
-      populateSelect(variableSelect, numericCols, "Selecciona una variable");
-      populateSelect(xVariableSelect, allCols, "Automática");
+      populateMultiSelect(variableSelect, numericCols);
+      populateSingleSelect(xVariableSelect, allCols, "Automática");
 
-      const filtered = applyLocalFilters(currentRows);
       sortColumn = null;
       sortDirection = "asc";
-      renderTable(filtered);
-      buildChart(filtered);
 
+      refreshLocalView();
       setStatus(`Vista cargada: ${viewName} · Filas: ${currentRows.length}`);
     }
 
     function refreshLocalView(){
-      if (!currentRows.length) return;
+      if (!currentRows.length) {
+        currentFilteredRows = [];
+        renderTable([]);
+        buildChart([]);
+        return;
+      }
 
-      const filtered = applyLocalFilters(currentRows);
-      renderTable(filtered);
-      buildChart(filtered);
-      setStatus(`Filas visibles: ${filtered.length} / ${currentRows.length}`);
+      currentFilteredRows = applyLocalFilters(currentRows);
+      renderTable(currentFilteredRows);
+      buildChart(currentFilteredRows);
+      setStatus(`Filas visibles: ${currentFilteredRows.length} / ${currentRows.length}`);
     }
 
     function initViews(){
       viewSelect.innerHTML = "";
-
       VIEWS.forEach(vw => {
         const opt = document.createElement("option");
         opt.value = vw;
@@ -959,16 +984,46 @@ function buildHistogram(values, bins = 12) {
 
     variableSelect.addEventListener("change", refreshLocalView);
     xVariableSelect.addEventListener("change", refreshLocalView);
-    chartTypeSelect.addEventListener("change", () => buildChart(currentRows));
-    seriesLimitSelect.addEventListener("change", () => buildChart(currentRows));
+    chartTypeSelect.addEventListener("change", refreshLocalView);
+    seriesLimitSelect.addEventListener("change", refreshLocalView);
     searchInput.addEventListener("input", refreshLocalView);
+
+    swapAxesBtn.addEventListener("click", () => {
+      const selectedY = getSelectedValues(variableSelect);
+
+      if (selectedY.length !== 1) {
+        alert("Para intercambiar X e Y debes seleccionar exactamente una variable Y.");
+        return;
+      }
+
+      const currentY = selectedY[0];
+      const currentX = xVariableSelect.value;
+
+      if (!currentX) {
+        alert("Primero elige una variable X explícita para poder intercambiar.");
+        return;
+      }
+
+      Array.from(variableSelect.options).forEach(opt => {
+        opt.selected = (opt.value === currentX);
+      });
+
+      xVariableSelect.value = currentY;
+      refreshLocalView();
+    });
 
     clearBtn.addEventListener("click", () => {
       selectedPatients = [];
       patientSearch.value = "";
       searchInput.value = "";
-      variableSelect.value = "";
       xVariableSelect.value = "";
+      chartTypeSelect.value = "auto";
+      seriesLimitSelect.value = "3";
+
+      Array.from(variableSelect.options).forEach(opt => {
+        opt.selected = false;
+      });
+
       renderPatientChips();
       renderPatientOptions("");
       refreshLocalView();
