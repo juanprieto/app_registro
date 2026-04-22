@@ -895,77 +895,76 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
 
     async function loadViewData(){
-      const viewName = viewSelect.value;
+  const viewName = viewSelect.value;
 
-      if (!viewName){
-        setStatus("Selecciona una vista.");
-        return;
-      }
+  if (!viewName){
+    setStatus("Selecciona una vista.");
+    return;
+  }
 
-      setStatus(`Cargando ${viewName}...`);
+  setStatus(`Cargando ${viewName}...`);
 
-      const { data, error } = await sb
-        .schema(VIEW_SCHEMA)
-        .from(viewName)
-        .select("*")
-        .limit(1000);
+  const { data, error } = await sb
+    .schema("tesis_views")
+    .from(viewName)
+    .select("*")
+    .limit(1000);
 
-      if (error){
-        setStatus(`Error al cargar ${viewName}: ${error.message}`);
-        console.error(error);
-        return;
-      }
+  if (error){
+    setStatus(`Error al cargar ${viewName}: ${error.message}`);
+    console.error(error);
+    return;
+  }
 
-      const patientsMap = await loadPatientsMap();
+  const patientsMap = await loadPatientsMap();
 
-      currentRows = (data || []).map(row => {
-        const idUsuario = row.ID_USUARIO ?? row.id_usuario ?? "";
-        return {
-          ...row,
-          nombre: patientsMap.get(String(idUsuario)) || row.nombre || ""
-        };
-      });
+  currentRows = (data || []).map(row => {
+    const idUsuario = row.ID_USUARIO ?? row.id_usuario ?? "";
+    return {
+      ...row,
+      nombre: patientsMap.get(String(idUsuario)) || row.nombre || ""
+    };
+  });
 
-      if (!currentRows.length){
-        setStatus(`La vista ${viewName} no devolvió filas.`);
-        variableSelect.innerHTML = "";
-        xVariableSelect.innerHTML = `<option value="">Automática</option>`;
-        renderTable([]);
-        if (currentChart) currentChart.destroy();
-        metaEl.textContent = "";
-        allPatients = [];
-        selectedPatients = [];
-        renderPatientChips();
-        renderPatientOptions("");
-        chartCard.style.display = "none";
-        return;
-      }
+  if (!currentRows.length){
+    setStatus(`La vista ${viewName} no devolvió filas.`);
+    variableSelect.innerHTML = "";
+    xVariableSelect.innerHTML = `<option value="">Automática</option>`;
+    renderTable([]);
+    if (currentChart) currentChart.destroy();
+    metaEl.textContent = "";
+    allPatients = [];
+    selectedPatients = [];
+    renderPatientChips();
+    renderPatientOptions("");
+    chartCard.style.display = "none";
+    return;
+  }
 
-      const firstRow = currentRows[0];
-      const patientCol = detectPatientColumn(firstRow);
-      const numericCols = getNumericColumns(currentRows);
-      const allCols = getAllColumns(currentRows);
+  const firstRow = currentRows[0];
+  const patientCol = detectPatientColumn(firstRow);
+  const numericCols = getNumericColumns(currentRows);
+  const allCols = getAllColumns(currentRows);
 
-      if (patientCol){
-        allPatients = uniqueSorted(currentRows.map(r => r[patientCol]));
-        renderPatientChips();
-        renderPatientOptions("");
-      } else {
-        allPatients = [];
-        selectedPatients = [];
-        renderPatientChips();
-        renderPatientOptions("");
-      }
+  if (patientCol){
+    allPatients = uniqueSorted(currentRows.map(r => r[patientCol]));
+  } else {
+    allPatients = [];
+    selectedPatients = [];
+  }
 
-      populateMultiSelect(variableSelect, numericCols);
-      populateSingleSelect(xVariableSelect, allCols, "Automática");
+  renderPatientChips();
+  renderPatientOptions("");
 
-      sortColumn = null;
-      sortDirection = "asc";
+  populateMultiSelect(variableSelect, numericCols);
+  populateSingleSelect(xVariableSelect, allCols, "Automática");
 
-      refreshLocalView();
-      setStatus(`Vista cargada: ${viewName} · Filas: ${currentRows.length}`);
-    }
+  sortColumn = null;
+  sortDirection = "asc";
+
+  refreshLocalView();
+  setStatus(`Vista cargada: ${viewName} · Filas: ${currentRows.length}`);
+}
 
     function refreshLocalView(){
       if (!currentRows.length) {
