@@ -329,12 +329,7 @@
           <select id="viewSelect"></select>
         </div>
 
-        <div class="field">
-          <label for="patientSearch">Paciente</label>
-          <input id="patientSearch" type="text" placeholder="Buscar paciente..." />
-        </div>
-
-        <div class="field">
+            <div class="field">
           <label for="variableSelect">Variables Y</label>
           <select id="variableSelect" multiple size="8"></select>
         </div>
@@ -374,10 +369,7 @@
           <button id="swapAxesBtn" type="button" class="secondary">Intercambiar X ↔ Y</button>
         </div>
 
-        <div class="field full-width">
-          <div id="patientChips"></div>
-          <div id="patientOptions"></div>
-        </div>
+      
       </div>
 
       <div class="actions-row">
@@ -473,9 +465,6 @@
     // ELEMENTS
     // =========================
     const viewSelect = document.getElementById("viewSelect");
-    const patientSearch = document.getElementById("patientSearch");
-    const patientChips = document.getElementById("patientChips");
-    const patientOptions = document.getElementById("patientOptions");
     const variableSelect = document.getElementById("variableSelect");
     const xVariableSelect = document.getElementById("xVariableSelect");
     const chartTypeSelect = document.getElementById("chartTypeSelect");
@@ -678,58 +667,6 @@
           tr.appendChild(td);
         });
         tableBody.appendChild(tr);
-      });
-    }
-
-    function renderPatientChips() {
-      patientChips.innerHTML = "";
-
-      selectedPatients.forEach(name => {
-        const chip = document.createElement("div");
-        chip.className = "chip";
-
-        const text = document.createElement("span");
-        text.textContent = name;
-
-        const close = document.createElement("button");
-        close.textContent = "×";
-        close.type = "button";
-        close.onclick = () => {
-          selectedPatients = selectedPatients.filter(p => p !== name);
-          renderPatientChips();
-          renderPatientOptions(patientSearch.value.trim());
-          refreshLocalView();
-        };
-
-        chip.appendChild(text);
-        chip.appendChild(close);
-        patientChips.appendChild(chip);
-      });
-    }
-
-    function renderPatientOptions(query = "") {
-      patientOptions.innerHTML = "";
-
-      const normalized = query.toLowerCase();
-
-      const visible = allPatients.filter(name =>
-        !selectedPatients.includes(name) &&
-        (!normalized || String(name).toLowerCase().includes(normalized))
-      );
-
-      visible.forEach(name => {
-        const row = document.createElement("div");
-        row.className = "patient-option";
-        row.textContent = name;
-        row.onclick = () => {
-          selectedPatients.push(name);
-          selectedPatients = [...new Set(selectedPatients)].sort((a,b) => a.localeCompare(b, "es"));
-          patientSearch.value = "";
-          renderPatientChips();
-          renderPatientOptions("");
-          refreshLocalView();
-        };
-        patientOptions.appendChild(row);
       });
     }
 
@@ -947,27 +884,7 @@
         `Filas graficadas: ${chartRows.length} · Tipo: ${resolvedType} · Eje X: ${xCol || "automático"} · Variables Y: ${yVariables.join(", ")}`;
     }
 
-    async function loadPatientsMap() {
-      const { data, error } = await sb
-        .schema("public")
-        .from("pacientes")
-        .select("ID_USUARIO, nombre");
-
-      if (error) {
-        console.error("Error cargando pacientes:", error);
-        return new Map();
-      }
-
-      const map = new Map();
-
-      (data || []).forEach(row => {
-        if (row.ID_USUARIO) {
-          map.set(String(row.ID_USUARIO), row.nombre || "");
-        }
-      });
-
-      return map;
-    }
+   
 
     async function loadViewData(){
       const viewName = viewSelect.value;
@@ -991,15 +908,7 @@
         return;
       }
 
-      const patientsMap = await loadPatientsMap();
-
-      currentRows = (data || []).map(row => {
-        const idUsuario = row.ID_USUARIO ?? row.id_usuario ?? "";
-        return {
-          ...row,
-          nombre: patientsMap.get(String(idUsuario)) || row.nombre || ""
-        };
-      });
+      currentRows = (data || []).map(row => ({ ...row }));
 
       if (!currentRows.length){
         setStatus(`La vista ${viewName} no devolvió filas.`);
@@ -1017,19 +926,11 @@
       }
 
       const firstRow = currentRows[0];
-      const patientCol = detectPatientColumn(firstRow);
+      
       const numericCols = getNumericColumns(currentRows);
       const allCols = getAllColumns(currentRows);
 
-      if (patientCol){
-        allPatients = uniqueSorted(currentRows.map(r => r[patientCol]));
-      } else {
-        allPatients = [];
-        selectedPatients = [];
-      }
-
-      renderPatientChips();
-      renderPatientOptions("");
+      
 
       populateMultiSelect(variableSelect, numericCols);
       populateSingleSelect(xVariableSelect, allCols, "Automática");
@@ -1103,10 +1004,6 @@
     // =========================
     loadBtn.addEventListener("click", loadViewData);
 
-    patientSearch.addEventListener("input", () => {
-      renderPatientOptions(patientSearch.value.trim());
-    });
-
     variableSelect.addEventListener("change", refreshLocalView);
     xVariableSelect.addEventListener("change", refreshLocalView);
     chartTypeSelect.addEventListener("change", refreshLocalView);
@@ -1144,8 +1041,7 @@
     });
 
     clearBtn.addEventListener("click", () => {
-      selectedPatients = [];
-      patientSearch.value = "";
+    
       searchInput.value = "";
       xVariableSelect.value = "";
       chartTypeSelect.value = "auto";
@@ -1155,8 +1051,7 @@
         opt.selected = false;
       });
 
-      renderPatientChips();
-      renderPatientOptions("");
+     
       refreshLocalView();
     });
 
