@@ -168,13 +168,7 @@
       max-height:420px;
     }
 
-    #patientChips{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-      margin-top:8px;
-      min-height:20px;
-    }
+   
 
     .chip{
       display:inline-flex;
@@ -199,25 +193,7 @@
       height:auto;
     }
 
-    #patientOptions{
-      border:1px solid var(--line);
-      border-radius:10px;
-      max-height:70px;
-      overflow:auto;
-      margin-top:6px;
-      background:#fff;
-    }
-
-    .patient-option{
-      padding:8px 10px;
-      cursor:pointer;
-      border-bottom:1px solid #eef2f7;
-    }
-
-    .patient-option:hover{
-      background:#f8fafc;
-    }
-
+ 
     @media (max-width: 1200px){
       .controls-grid{
         grid-template-columns: 1fr 1fr 1fr;
@@ -274,10 +250,7 @@
       #printBtn,
       #excelBtn,
       #swapAxesBtn,
-      #patientSearch,
-      #patientOptions,
-      #patientChips,
-      .status {
+        .status {
         display: none !important;
       }
 
@@ -456,8 +429,6 @@
     let currentRows = [];
     let currentFilteredRows = [];
     let currentChart = null;
-    let selectedPatients = [];
-    let allPatients = [];
     let sortColumn = null;
     let sortDirection = "asc";
 
@@ -500,12 +471,7 @@
       return candidates.find(c => keys.includes(c)) || null;
     }
 
-    function detectPatientColumn(row){
-      if (!row) return null;
-      const keys = Object.keys(row);
-      const candidates = ["nombre", "paciente", "NOMBRE", "Paciente"];
-      return candidates.find(c => keys.includes(c)) || null;
-    }
+   
 
     function detectDateColumn(row){
       if (!row) return null;
@@ -673,13 +639,7 @@
     function applyLocalFilters(rows){
       if (!rows.length) return [];
 
-      const patientCol = detectPatientColumn(rows[0]);
-
-      let out = [...rows];
-
-      if (selectedPatients.length && patientCol){
-        out = out.filter(r => selectedPatients.includes(String(r[patientCol])));
-      }
+     
 
       if (searchInput.value.trim()){
         const q = searchInput.value.trim().toLowerCase();
@@ -754,10 +714,10 @@
 
       const autoDateCol = detectDateColumn(rows[0]);
       const autoIdCol = detectIdColumn(rows[0]);
-      const autoPatientCol = detectPatientColumn(rows[0]);
+     
 
       const selectedX = xVariableSelect.value;
-      const xCol = selectedX || autoDateCol || autoPatientCol || autoIdCol;
+      const xCol = selectedX || autoDateCol || autoIdCol;
 
       const chartTypeRaw = chartTypeSelect.value || "auto";
       const maxSeries = Number(seriesLimitSelect.value || 3);
@@ -917,10 +877,7 @@
         renderTable([]);
         if (currentChart) currentChart.destroy();
         metaEl.textContent = "";
-        allPatients = [];
-        selectedPatients = [];
-        renderPatientChips();
-        renderPatientOptions("");
+       
         chartCard.style.display = "none";
         return;
       }
@@ -1059,8 +1016,6 @@
     // INIT
     // =========================
     initViews();
-    renderPatientChips();
-    renderPatientOptions("");
     setStatus("Selecciona una vista y pulsa Cargar datos.");
   </script>
 </body>
