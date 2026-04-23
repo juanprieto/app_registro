@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SECE · Visualizador VW</title>
+  <title>Visualizador VW</title>
   <link rel="icon" href="data:," />
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
@@ -459,10 +459,7 @@
       statusEl.textContent = text;
     }
 
-    function uniqueSorted(arr){
-      return [...new Set(arr.filter(v => v !== null && v !== undefined && v !== ""))]
-        .sort((a,b) => String(a).localeCompare(String(b), "es"));
-    }
+   
 
     function detectIdColumn(row){
       if (!row) return null;
@@ -540,7 +537,7 @@
 
     function orderColumns(cols){
       const preferredOrder = [
-        "nombre",
+       
         "ID_USUARIO",
         "id_usuario",
         "fecha",
@@ -637,19 +634,19 @@
     }
 
     function applyLocalFilters(rows){
-      if (!rows.length) return [];
+  if (!rows.length) return [];
 
-     
+  let out = [...rows];
 
-      if (searchInput.value.trim()){
-        const q = searchInput.value.trim().toLowerCase();
-        out = out.filter(r =>
-          Object.values(r).some(v => String(v ?? "").toLowerCase().includes(q))
-        );
-      }
+  if (searchInput.value.trim()){
+    const q = searchInput.value.trim().toLowerCase();
+    out = out.filter(r =>
+      Object.values(r).some(v => String(v ?? "").toLowerCase().includes(q))
+    );
+  }
 
-      return out;
-    }
+  return out;
+}
 
     function getSelectedValues(selectEl) {
       return Array.from(selectEl.selectedOptions)
@@ -882,7 +879,7 @@
         return;
       }
 
-      const firstRow = currentRows[0];
+     
       
       const numericCols = getNumericColumns(currentRows);
       const allCols = getAllColumns(currentRows);
