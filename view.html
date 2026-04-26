@@ -433,6 +433,7 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdxeXFwZGNhdnFnY3lhb2lkdWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Nzk5MzIsImV4cCI6MjA4NDU1NTkzMn0.nHu3OIS8S20thJxUmVVybb7Ox5B2qkhv7qxc1X2Va7g";
 
    const VIEWS = [
+  // VPS / MULTI
   "vw_multi_bis",
   "vw_multi_ceper",
   "vw_multi_isp46",
@@ -447,7 +448,11 @@
   "vw_multi_dom_int",
   "vw_multi_dom_ext",
   "vw_multi_vps",
+
+  // Factor estable / F_R
   "vw_fusion_fr",
+
+  // SECE / VPR
   "vw_sece_a_proporcion",
   "vw_sece_c_conciencia",
   "vw_sece_c_economica",
@@ -460,7 +465,11 @@
   "vw_sece_precocidad",
   "vw_sece_sub_a",
   "vw_sece_sub_c",
-  "vw_sece_vpr"
+  "vw_sece_vpr",
+
+  // Longitudinal
+  "vw_longitudinal_mpath_base",
+  "vw_longitudinal_registro_diario"
 ];
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
