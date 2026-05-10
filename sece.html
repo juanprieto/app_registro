@@ -752,7 +752,9 @@
         B10: val(d.B10), B11: val(d.B11), B12: val(d.B12),
 
         D1: val(d.D1), D2: val(d.D2), D3: val(d.D3), D4: val(d.D4),
-        D5: val(d.D5), D6: val(d.D6), D7: val(d.D7), D8: val(d.D8),
+        D5: val(d.D5), D6: val(d.D6),
+        D7: MAP_PROBLEMATICA[d.D7] || null,
+        D8: MAP_PROBLEMATICA[d.D8] || null,
 
         THC_inicio: fechaVal(d.E1), THC_fin: fechaVal(d.E2), THC_modo: val(d.E3), THC_freq: freq(d.E4),
         OH_inicio: fechaVal(d.F1), OH_fin: fechaVal(d.F2), OH_modo: val(d.F3), OH_freq: freq(d.F4),
